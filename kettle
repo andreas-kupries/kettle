@@ -1,7 +1,12 @@
 #!/usr/bin/env tclsh
 # -*- tcl -*-
 lappend auto_path [file dirname [file dirname [file normalize [info script]/___]]]
-package require kettle
+if {[catch {
+    # Try local first, for when we install ourselves.
+    source [lindex $auto_path end]/kettle.tcl
+}]} {
+    package require kettle
+}
 if {[lindex $argv 0] eq {-f}} {
     set argv [lassign $argv __ buildfile]
 } elseif {[file exists build.tcl]} {
