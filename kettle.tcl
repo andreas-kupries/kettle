@@ -14,14 +14,41 @@ package require Tcl 8.5
 namespace eval ::kettle {}
 
 # # ## ### ##### ######## ############# #####################
+## API. For use in recipes.
+
+proc ::kettle::path {path} {
+    variable mydir
+    return [file join $mydir $path]
+}
+
+proc ::kettle::libdir {} {
+    global argv
+    if {[llength $argv] && [file exists [set p [lindex $argv 0]]]} {
+	set argv [lassign $argv _]
+    } else {
+	set p [info library]
+    }
+    proc ::kettle::libdir {} [list return $p]
+    return $p
+}
+
+proc ::kettle::bindir {} {
+    set p [libdir]
+    if {$p eq [info library]} {
+	set p [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
+    } else {
+	set p [file dirname $p]/bin
+    }
+    proc ::kettle::bindir {} [list return $p]
+    return $p
+}
+
+# # ## ### ##### ######## ############# #####################
 ## Core API for recipe management. Not exported for build scripts,
 ## these are for build helper packages.
 
 proc ::kettle::Def {name description script} {
     variable recipe
-    if {[dict exists $recipe $name]} {
-	return -code error "Duplicate definition of \"$name\""
-    }
 
     set help [Indent \
 		  [Undent \
@@ -33,8 +60,17 @@ proc ::kettle::Def {name description script} {
 	set cmdline " $cmdline"
     }
 
-    dict set recipe $name script [list apply [list {} $script]]
-    dict set recipe $name help $cmdline\n$help
+    if {[dict exists $recipe $name]} {
+	# Extend definition.
+	dict update recipe $name def {
+	    dict lappend def script [list apply [list {} $script]]
+	    dict append  def help   \n$help
+	}
+    } else {
+	# First definition.
+	dict set recipe $name script [list [list apply [list {} $script]]]
+	dict set recipe $name help   $cmdline\n$help
+    }
     return
 }
 
@@ -57,7 +93,10 @@ proc ::kettle::Run {name args} {
     if {![dict exists $recipe $name]} {
 	return -code error "No definition for \"$name\""
     }
-    eval [dict get $recipe $name script] $args
+    foreach cmd [dict get $recipe $name script] {
+	#puts |$cmd|
+	eval $cmd $args
+    }
     return
 }
 
@@ -88,7 +127,7 @@ proc ::kettle::Recipes {} {
 
 proc ::kettle::Indent {text prefix} {
     set text [string trimright $text]
-    set res [list]
+    set res {}
     foreach line [split $text \n] {
 	if {[string trim $line] eq {}} {
 	    lappend res {}
@@ -100,11 +139,10 @@ proc ::kettle::Indent {text prefix} {
 }
 
 proc ::kettle::Undent {text} {
-
-    if {$text == {}} {return {}}
+    if {$text eq {}} { return {} }
 
     set lines [split $text \n]
-    set ne [list]
+    set ne {}
     foreach l $lines {
 	if {[string length [string trim $l]] == 0} continue
 	lappend ne $l
@@ -118,7 +156,7 @@ proc ::kettle::Undent {text} {
 
     set len [string length $lcp]
 
-    set res [list]
+    set res {}
     foreach l $lines {
 	if {[string trim $l] eq {}} {
 	    lappend res {}
@@ -158,12 +196,14 @@ proc ::kettle::LCP {list} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## State, Initialization
+## State Initialization, Ensemblification
 
 namespace eval ::kettle {
     variable recipe {}
-    #namespace export ;#def undef has run help recipes
-    namespace ensemble create
+    variable mydir  [file dirname [file normalize [info script]]]
+
+    namespace export {[a-z]*} ;#def undef has run help recipes
+    namespace ensemble create -prefixes 0 -unknown ::kettle::Unknown
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -345,7 +385,8 @@ proc   ::exit {{status 0}} {
 	if {[catch {
 	    kettle::Run $cmd
 	}]} {
-	    kettle::Help Usage:
+	    #puts $::errorInfo
+	    kettle::Help {Usage: }
 	}
 	# See the rename above, no recursion!
 	exit
@@ -356,16 +397,18 @@ proc   ::exit {{status 0}} {
 
 # # ## ### ##### ######## ############# #####################
 ## Automatic loading of kettle packages when encountering unknown
-## kettle commands.
+## kettle commands, via the ensemble unknown handler.
 
-# -- ... ensemble unknown ...
-
-
-rename ::unknown ::kettle::Unknown
-proc ::unknown {args} {
-
-puts |$args|
-
+proc ::kettle::Unknown {args} {
+    set package kettle::[lindex $args 1]
+    #puts "...Loading $package"
+    if {[catch {
+	package require $package
+    }]} {
+	puts $::errorInfo
+	kettle::done 1
+    }
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
