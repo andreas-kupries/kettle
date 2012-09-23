@@ -1,0 +1,2 @@
+#!kettle -f
+#kettle tcl
