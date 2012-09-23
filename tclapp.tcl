@@ -29,6 +29,8 @@ proc ::kettle::tclapp {fname} {
 	set fname [file tail $src]
 	set dst   $dstdir/$fname
 
+	### TODO ### Edit hash bang of application to use the installing tclsh
+
 	puts "Installing into:       $dstdir ..."
 	file mkdir $dstdir
 	file copy -force $src $dst
