@@ -1,25 +1,38 @@
 #!/usr/bin/env tclsh
 # -*- tcl -*-
-lappend auto_path [file dirname [file dirname [file normalize [info script]/___]]]
-if {[catch {
-    # Try local first, for when we install ourselves.
-    source [lindex $auto_path end]/kettle.tcl
-}]} {
-    package require kettle
-}
-if {[lindex $argv 0] eq {-f}} {
-    set argv [lassign $argv __ buildfile]
-} elseif {[file exists build.tcl]} {
-    set buildfile build.tcl
-} else {
-    puts stderr "Build definition file neither specified, nor found"
-    kettle::done 1
-}
-if {[catch {
-    source $buildfile
-}]} {
-    # Report troubles in the declarations and abort.
-    puts stderr $::errorInfo
-    kettle::done 1
-}
+
+apply {{selfdir} {
+    global argv auto_path
+
+    lappend auto_path $selfdir
+    if {[catch {
+	# Try local first, for when we install ourselves.
+	source $selfdir/kettle.tcl
+    }]} {
+	package require kettle
+    }
+
+    if {[lindex $argv 0] eq {-f}} {
+	set argv [lassign $argv __ buildfile]
+    } elseif {[file exists build.tcl]} {
+	set buildfile build.tcl
+    } else {
+	puts stderr "Build definition file neither specified, nor found"
+	kettle::done 1
+    }
+
+    if {[lindex $argv 0] eq {-v}} {
+	set argv [lassign $argv __]
+	kettle verbose
+    }
+
+    kettle::Sources [file dirname [file dirname [file normalize $buildfile/__]]]
+    if {[catch {
+	source $buildfile
+    }]} {
+	# Report troubles in the declarations and abort.
+	puts stderr $::errorInfo
+	kettle::done 1
+    }
+}} [file dirname [file dirname [file normalize [info script]/__]]]
 # remainder of activity automatic on ::exit

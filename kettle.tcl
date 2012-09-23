@@ -21,31 +21,31 @@ proc ::kettle::path {path} {
     return [file join $mydir $path]
 }
 
-proc ::kettle::libdir {} {
-    global argv
-    if {[llength $argv] && [file exists [set p [lindex $argv 0]]]} {
-	set argv [lassign $argv _]
-    } else {
-	set p [info library]
-    }
-    proc ::kettle::libdir {} [list return $p]
-    return $p
+proc ::kettle::verbose {} {
+    variable verbose 1
+    return
+ }
+
+proc ::kettle::log {text} {
+    variable verbose
+    if {!$verbose} return
+    puts [uplevel 1 [list subst $text]]
+    return
 }
 
-proc ::kettle::bindir {} {
-    set p [libdir]
-    if {$p eq [info library]} {
-	set p [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
-    } else {
-	set p [file dirname $p]/bin
-    }
-    proc ::kettle::bindir {} [list return $p]
-    return $p
+proc ::kettle::sources {{path {}}} {
+    variable srcdir
+    return [file join $srcdir $path]
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Core API for recipe management. Not exported for build scripts,
 ## these are for build helper packages.
+
+proc ::kettle::Sources {p} {
+    variable srcdir $p
+    return
+}
 
 proc ::kettle::Def {name description script} {
     variable recipe
@@ -93,6 +93,7 @@ proc ::kettle::Run {name args} {
     if {![dict exists $recipe $name]} {
 	return -code error "No definition for \"$name\""
     }
+    log {	run ($name) ...}
     foreach cmd [dict get $recipe $name script] {
 	#puts |$cmd|
 	eval $cmd $args
@@ -199,8 +200,9 @@ proc ::kettle::LCP {list} {
 ## State Initialization, Ensemblification
 
 namespace eval ::kettle {
-    variable recipe {}
-    variable mydir  [file dirname [file normalize [info script]]]
+    variable recipe  {}
+    variable verbose 0
+    variable mydir   [file dirname [file normalize [info script]]]
 
     namespace export {[a-z]*} ;#def undef has run help recipes
     namespace ensemble create -prefixes 0 -unknown ::kettle::Unknown
@@ -238,7 +240,6 @@ kettle::Def gui {
     --
     Graphical interface to the installation process.
 } {
-    namespace eval kettle::gui {}
     variable kettle::gui::INSTALLPATH
 
     package require Tk
@@ -254,9 +255,10 @@ kettle::Def gui {
     .st setwidget .t
 
     .t tag configure stdout -font {Helvetica 8}
-    .t tag configure stderr -background red    -font {Helvetica 12}
-    .t tag configure ok     -background green  -font {Helvetica 8}
-    .t tag configure warn   -background yellow -font {Helvetica 12}
+    .t tag configure stderr -background red       -font {Helvetica 12}
+    .t tag configure ok     -background green     -font {Helvetica 8}
+    .t tag configure warn   -background yellow    -font {Helvetica 12}
+    .t tag configure note   -background lightblue -font {Helvetica 8}
 
     grid .l  -row 0 -column 0 -sticky new
     grid .e  -row 0 -column 1 -sticky new
@@ -312,49 +314,58 @@ kettle::Def gui {
 	return
     }
 
-    proc ::kettle::gui::tag {t} {
-	variable tag $t
-	return
-    }
-
     rename ::exit   ::_exit
     proc   ::exit {{status 0}} {
 	::kettle::gui::tag ok
-	puts DONE
+	::puts DONE
 	return
     }
 
     wm protocol . WM_DELETE_WINDOW ::_exit
 
-    proc ::kettle::gui::install {} {
-	variable INSTALLPATH
-	variable NOTE
-
-	.i configure -state disabled
-	.q configure -state disabled
-
-	set NOTE {ok DONE}
-	set fail [catch {
-	    set argv [list $INSTALLPATH]
-	    kettle::Run install
-	    puts ""
-	    tag  [lindex $NOTE 0]
-	    puts [lindex $NOTE 1]
-	} e o]
-
-	.i configure -state normal
-	.q configure -state normal -bg green
-
-	if {$fail} {
-	    # rethrow
-	    return {*}$o $e
-	}
-	return
-    }
-
     # And start to interact with the user.
     vwait forever
     return
+}
+
+namespace eval kettle::gui {}
+
+proc ::kettle::gui::tag {t} {
+    variable tag $t
+    return
+}
+
+proc ::kettle::gui::install {} {
+    variable INSTALLPATH
+    variable NOTE
+
+    .i configure -state disabled
+    .q configure -state disabled
+
+    set NOTE {ok DONE}
+    set fail [catch {
+	set argv [list $INSTALLPATH]
+	kettle::Run install
+	::puts ""
+	tag  [lindex $NOTE 0]
+	::puts [lindex $NOTE 1]
+    } e o]
+
+    .i configure -state normal
+    .q configure -state normal -bg green
+
+    if {$fail} {
+	# rethrow
+	return {*}$o $e
+    }
+    return
+}
+
+namespace eval kettle::gui {
+    variable tag {}
+
+    namespace export tag install
+    namespace ensemble create
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -385,8 +396,8 @@ proc   ::exit {{status 0}} {
 	if {[catch {
 	    kettle::Run $cmd
 	}]} {
-	    #puts $::errorInfo
-	    kettle::Help {Usage: }
+	    puts $::errorInfo
+	    #kettle::Help {Usage: }
 	}
 	# See the rename above, no recursion!
 	exit

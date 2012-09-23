@@ -10,7 +10,7 @@
 
 package require Tcl 8.5
 package require  kettle ; # core
-namespace eval ::kettle {}
+package require  kettle::util
 
 # # ## ### ##### ######## ############# #####################
 ## State, Initialization
@@ -22,32 +22,46 @@ namespace eval ::kettle {}
 
 proc ::kettle::tclapp {fname} {
     ## Recipe: Pure Tcl application installation.
-    kettle::Def install "
+
+    set ihelp "
 	?lib-directory?
-	Install application $fname in the bin/ directory derived from the library directory.
-    " [list apply {{src dstdir} {
+	Install application $fname in the bin/ directory.
+    "
+    set icmd [list apply {{src dstdir} {
 	set fname [file tail $src]
 	set dst   $dstdir/$fname
-
-	### TODO ### Edit hash bang of application to use the installing tclsh
 
 	puts "Installing into:       $dstdir ..."
 	file mkdir $dstdir
 	file copy -force $src $dst
-	puts "Installed application: $dstdir/$fname"
-	return
-    }} [kettle path $fname] [kettle bindir]]
+	kettle util fixhashbang $dst [info nameofexecutable]
+	kettle util set-executable $dst
 
-    ## Recipe: Pure Tcl application removal.
-    kettle::Def drop "
+	puts -nonewline "Installed application: "
+	kettle gui tag note ; puts $dst
+	return
+    }} [kettle sources $fname] [kettle util bindir]]
+
+    set dhelp "
 	?lib-directory?
-	Remove application $fname from the bin/ directory derived from the library directory.
-    " [list apply {{dst} {
+	Remove application $fname from the bin/ directory.
+    "
+    set dcmd [list apply {{dst} {
 	file delete -force $dst
-	puts "Removed application: $dst"
-	return
-    }} [kettle bindir]/$fname]
 
+	puts -nonewline "Removed application: "
+	kettle gui tag note ; puts $dst
+	return
+    }} [kettle util bindir]/$fname]
+
+    foreach suffix {
+	{}
+	-application
+	-tcl-application
+    } {
+	kettle::Def install$suffix $ihelp $icmd
+	kettle::Def drop$suffix    $dhelp $dcmd
+    }
     return
 }
 
