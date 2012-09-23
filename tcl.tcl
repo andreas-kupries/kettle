@@ -64,7 +64,7 @@ proc ::kettle::tcl::Setup {files pn pv} {
 	puts $c "package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
 	close $c
 
-	file rename -force $dst ${dst}-old
+	catch { file rename -force $dst ${dst}-old }
 	file rename -force ${dst}-new $dst
 	file delete -force ${dst}-old
 
