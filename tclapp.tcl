@@ -23,45 +23,40 @@ namespace eval ::kettle {}
 proc ::kettle::tclapp {fname} {
     ## Recipe: Pure Tcl application installation.
 
-    set ihelp "
+    set src [kettle sources $fname]
+    set dst [kettle util bindir]/$fname
+
+    kettle::Def install-$fname "
 	?lib-directory?
 	Install application $fname in the bin/ directory.
-    "
-    set icmd [list apply {{src dstdir} {
-	set fname [file tail $src]
-	set dst   $dstdir/$fname
+    " [list apply {{fname src dst} {
+	kettle util install_path \
+	    "Installing application $src" \
+	    $src $dst {
+		kettle util fixhashbang    ${dst}-new [info nameofexecutable]
+		kettle util set-executable ${dst}-new
+	    }
+    }} $fname $src $dst]
 
-	puts "Installing into:       $dstdir ..."
-	file mkdir $dstdir
-	file copy -force $src $dst
-	kettle util fixhashbang $dst [info nameofexecutable]
-	kettle util set-executable $dst
-
-	puts -nonewline "Installed application: "
-	kettle gui tag note ; puts $dst
-	return
-    }} [kettle sources $fname] [kettle util bindir]]
-
-    set dhelp "
+    kettle::Def drop-$fname "
 	?lib-directory?
 	Remove application $fname from the bin/ directory.
-    "
-    set dcmd [list apply {{dst} {
-	file delete -force $dst
+    " [list apply {{dst} {
+	kettle util drop_path \
+	    "Remove application $dst" \
+	    $dst
+    }} $dst]
 
-	puts -nonewline "Removed application: "
-	kettle gui tag note ; puts $dst
-	return
-    }} [kettle util bindir]/$fname]
+    # Hook the application specific recipes into a hierarchy of more
+    # general recipes.
 
-    foreach suffix {
-	{}
-	-application
-	-tcl-application
-    } {
-	kettle::Def install$suffix $ihelp $icmd
-	kettle::Def drop$suffix    $dhelp $dcmd
-    }
+    kettle::DefHook install-$fname           install-tcl-applications
+    kettle::DefHook install-tcl-applications install-applications
+    kettle::DefHook install-applications     install
+
+    kettle::DefHook drop-$fname           drop-tcl-applications
+    kettle::DefHook drop-tcl-applications drop-applications
+    kettle::DefHook drop-applications     drop
     return
 }
 

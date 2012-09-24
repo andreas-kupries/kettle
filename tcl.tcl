@@ -43,57 +43,46 @@ proc ::kettle::tcl {} {
 }
 
 proc ::kettle::tcl::Setup {files pn pv} {
-
     set pdir [string map {:: _} $pn]
+    set dst  [kettle util libdir]/$pdir$pv
 
-    set ihelp "
+    kettle::Def install-$pn "
 	?lib-directory?
 	Install package $pn $pv in the lib/ directory.
-    "
-    set icmd [list apply {{dst files pn pv} {
-	puts "Installing into:       $dst ..."
+    " [list apply {{dst files pn pv} {
+	set tmpfile [pid].pkgIndex
 
-	set files [lassign $files primary]
-
-	file delete -force ${dst}-new
-	file mkdir         ${dst}-new
-
-	file copy $primary {*}$files ${dst}-new
-
-	set c [open ${dst}-new/pkgIndex.tcl w]
+	set primary [lindex $files 0]
+	set c [open $tmpfile w]
 	puts $c "package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
 	close $c
 
-	catch { file rename -force $dst ${dst}-old }
-	file rename -force ${dst}-new $dst
-	file delete -force ${dst}-old
-
-	puts -nonewline "Installed package:     "
-	kettle gui tag note ; puts $dst
+	kettle util install_group \
+	    "Installing package $dst" \
+	    $dst {*}$files $tmpfile
+	file delete $tmpfile
 	return
-    }} [kettle util libdir]/$pdir$pv $files $pn $pv]
+    }} $dst $files $pn $pv]
 
-    set dhelp "
+    kettle::Def drop-$pn "
 	?lib-directory?
 	Remove package $pn $pv from the lib/ directory.
-    "
-    set dcmd [list apply {{dst} {
-	file delete -force $dst
+    " [list apply {{dst} {
+	kettle util drop_path \
+	    "Remove package $dst" \
+	    $dst
+    }} $dst]
 
-	puts -nonewline "Removed package:     "
-	kettle gui tag note ; puts $dst
-	return
-    }} [kettle util libdir]/$pdir$pv]
+    # Hook the package specific recipes into a hierarchy of more
+    # general recipes.
 
-    foreach suffix {
-	{}
-	-package
-	-tcl-package
-    } {
-	## Recipe: General Tcl package installation.
-	kettle::Def install$suffix $ihelp $icmd
-	kettle::Def drop$suffix    $dhelp $dcmd
-    }
+    kettle::DefHook install-$pn          install-tcl-packages
+    kettle::DefHook install-tcl-packages install-packages
+    kettle::DefHook install-packages     install
+
+    kettle::DefHook drop-$pn          drop-tcl-packages
+    kettle::DefHook drop-tcl-packages drop-packages
+    kettle::DefHook drop-packages     drop
     return
 }
 

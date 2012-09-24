@@ -143,6 +143,86 @@ proc ::kettle::util::foreach-file {path pv script} {
     return
 }
 
+proc ::kettle::util::install_group {label dst args} {
+    # General installation of multiple files into a destination
+    # directory.
+
+    # args = files and directories to copy into group.
+
+    set new ${dst}-new
+    set old ${dst}-old
+
+    puts -nonewline "${label}: "
+
+    # Setup of destination, separate directory.
+    file delete -force $new
+    file mkdir         $new
+
+    # Fill destination
+    foreach path $args {
+	puts -nonewline *
+	file copy -force $path $new
+    }
+
+    # Swizzle old and new install (old might not exist).
+
+    file delete -force $old
+    catch { file rename $dst $old }
+    file rename -force $new $dst
+    file delete -force $old
+
+    puts -nonewline { }
+    ::kettle gui tag ok
+    puts OK
+    return
+}
+
+
+proc ::kettle::util::install_path {label dst src {postscript {}}} {
+    # General installation of a single file into a destination
+    # path.
+
+    set new ${dst}-new
+    set old ${dst}-old
+
+    puts -nonewline "${label}: "
+
+    # Setup of destination.
+    file mkdir [file dirname $dst]
+    file delete -force $new
+
+    # Copy to destination
+    puts -nonewline *
+    file copy -force $src $new
+
+    # User specified customizations, if any.
+    uplevel 1 $postscript
+
+    # Swizzle old and new install (old might not exist).
+
+    file delete -force $old
+    catch { file rename $dst $old }
+    file rename -force $new $dst
+    file delete -force $old
+
+    puts -nonewline { }
+    ::kettle gui tag ok
+    puts OK
+    return
+}
+
+proc ::kettle::util::drop_path {label dst} {
+    # General uninstallation of a destination directory.
+
+    puts -nonewline "${label}: "
+
+    file delete -force $dst
+
+    ::kettle gui tag ok
+    puts OK
+    return
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Ready
 

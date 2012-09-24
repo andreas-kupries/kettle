@@ -70,6 +70,22 @@ proc ::kettle::Def {name description script} {
 	# First definition.
 	dict set recipe $name script [list [list apply [list {} $script]]]
 	dict set recipe $name help   $cmdline\n$help
+	dict set recipe $name call   {}
+    }
+    return
+}
+
+proc ::kettle::DefHook {name base} {
+    variable recipe
+    if {![dict exists $recipe $base]} {
+	dict set recipe $base {
+	    script {}
+	    help   {}
+	    call   {}
+	}
+    }
+    dict update recipe $base def {
+	dict lappend def call $name
     }
     return
 }
@@ -97,6 +113,10 @@ proc ::kettle::Run {name args} {
     foreach cmd [dict get $recipe $name script] {
 	#puts |$cmd|
 	eval $cmd $args
+    }
+    # Run the extension recipes.
+    foreach r [lsort -unique [dict get $recipe $name call]] {
+	Run $r
     }
     return
 }
