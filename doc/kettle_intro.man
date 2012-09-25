@@ -1,0 +1,32 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin kettle_introduction n 1]
+[include include/general.inc]
+[titledesc {Kettle - Introduction to Kettle}]
+[description]
+[include include/welcome.inc]
+
+[comment {
+[para]
+What are your goals which drove you here ?
+
+[list_begin enumerated]
+[enum]
+[list_end]
+}]
+
+[section {Related Documents}]
+
+[list_begin enum]
+[enum] [term {Kettle - License}].
+[enum] [term {Kettle - How To Get The Sources}].
+[enum] [term {Kettle - The Installer's Guide}].
+[enum] [term {Kettle - The Developer's Guide}].
+[list_end]
+
+[section {System Architecture}]
+
+[image architecture]
+
+[include include/feedback.inc]
+[manpage_end]
+

@@ -26,6 +26,8 @@ apply {{selfdir} {
 	kettle verbose
     }
 
+    set argv [lassign $argv command]
+
     kettle::Sources [file dirname [file dirname [file normalize $buildfile/__]]]
     if {[catch {
 	source $buildfile
@@ -34,5 +36,9 @@ apply {{selfdir} {
 	puts stderr $::errorInfo
 	kettle::done 1
     }
+
+    set argv [list $command {*}$argv]
+
 }} [file dirname [file dirname [file normalize [info script]/__]]]
 # remainder of activity automatic on ::exit
+

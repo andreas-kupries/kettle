@@ -45,6 +45,32 @@ proc ::kettle::util::bindir {} {
     return $p
 }
 
+proc ::kettle::util::mandir {} {
+    set p [libdir]
+    if {$p eq [info library]} {
+	set p [file dirname [file dirname $p]]/man
+	log {	man/ Directory (Default) = $p}
+    } else {
+	set p [file dirname $p]/man
+	log {	man/ directory (User)    = $p}
+    }
+    proc ::kettle::util::mandir {} [list return $p]
+    return $p
+}
+
+proc ::kettle::util::htmldir {} {
+    set p [libdir]
+    if {$p eq [info library]} {
+	set p [file dirname [file dirname $p]]/html
+	log {	html/ Directory (Default) = $p}
+    } else {
+	set p [file dirname $p]/html
+	log {	html/ directory (User)    = $p}
+    }
+    proc ::kettle::util::htmldir {} [list return $p]
+    return $p
+}
+
 proc ::kettle::util::set-executable {path} {
     log {	!chmod ugo+x   $path}
     catch { file attributes $path -permissions ugo+x }
@@ -90,6 +116,30 @@ proc ::kettle::util::provides {file} {
     set pkgver  [lindex $provisions end 3]
     log {	Package: ($pkgname) ($pkgver)}
     return [list $pkgname $pkgver]
+}
+
+proc ::kettle::util::docfile {path} {
+    set c [open $path r]
+    fconfigure $c -translation binary -buffersize 1024 -buffering full
+    set test [read $c 1024]
+    close $c
+    if {([regexp "\\\[manpage_begin " $test] &&
+	 !([regexp -- {--- !doctools ---} $test] || [regexp -- "!tcl\.tk//DSL doctools//EN//" $test])) ||
+	  ([regexp -- {--- doctools ---} $test]  || [regexp -- "tcl\.tk//DSL doctools//EN//" $test])} {
+	return 1
+    } 
+    return 0
+}
+
+proc ::kettle::util::diafile {path} {
+    set c [open $path r]
+    fconfigure $c -translation binary -buffersize 1024 -buffering full
+    set test [read $c 1024]
+    close $c
+    if {([regexp {tcl.tk//DSL diagram//EN//1.0} $test]} {
+	return 1
+    } 
+    return 0
 }
 
 proc ::kettle::util::foreach-file {path pv script} {
