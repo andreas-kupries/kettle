@@ -24,24 +24,19 @@ proc ::kettle::tclapp {fname} {
     ## Recipe: Pure Tcl application installation.
 
     set src [kettle sources $fname]
-    set dst [kettle bindir]/$fname
 
     kettle::Def install-app-$fname "Install application $fname" \
-	[list apply {{fname src dst} {
-	    kettle util install_path \
-		"Installing application $src" \
-		$src $dst {
-		    kettle util fixhashbang    ${dst}-new [info nameofexecutable]
-		    kettle util set-executable ${dst}-new
-		}
-	}} $fname $src $dst]
+	[list apply {{src} {
+	    util install-script \
+		$src [bindir] \
+		[info nameofexecutable]
+	} ::kettle} $src]
 
     kettle::Def drop-app-$fname "Remove application $fname" \
-	[list apply {{dst} {
-	    kettle util drop_path \
-		"Remove application $dst" \
-		$dst
-	}} $dst]
+	[list apply {{src} {
+	    util uninstall-application \
+		$src [bindir]
+	} ::kettle} $src]
 
     # Hook the application specific recipes into a hierarchy of more
     # general recipes.
