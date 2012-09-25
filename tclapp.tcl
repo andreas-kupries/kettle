@@ -32,7 +32,7 @@ proc ::kettle::tclapp {fname} {
 		[info nameofexecutable]
 	} ::kettle} $src]
 
-    kettle::Def drop-app-$fname "Remove application $fname" \
+    kettle::Def drop-app-$fname "Uninstall application $fname" \
 	[list apply {{src} {
 	    util uninstall-application \
 		$src [bindir]

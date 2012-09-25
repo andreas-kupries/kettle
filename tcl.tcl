@@ -24,6 +24,10 @@ proc ::kettle::tcl {} {
     # Auto-search for packages to install, collect names, versions, and files.
     # Auto-search for documentation, testsuites, benchmarks.
 
+    doc
+    #testsuites
+    #benchmarks
+
     set packages {}
     kettle util foreach-file [sources] path {
 	if {[catch {
@@ -67,7 +71,7 @@ proc ::kettle::tcl::Setup {files pn pv} {
 	    return
 	} ::kettle} $pkgdir $files $pn $pv]
 
-    kettle::Def drop-package-$pn "Remove package $pn $pv" \
+    kettle::Def drop-package-$pn "Uninstall package $pn $pv" \
 	[list apply {{pkgdir pn pv} {
 	    util uninstall-file-group \
 		"package $pn $pv" \
