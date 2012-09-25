@@ -109,16 +109,39 @@ proc ::kettle::doc::Setup {docsrcdir} {
 	Install HTML documentation
     } {
 	set src [sources [doc::Dest]/www]
-	set dst [htmldir]/[file dirname [sources]]
+	set dst [htmldir]/[file tail [sources]]
 
 	util install-file-group "HTML documentation" \
 	    $dst {*}[glob -directory $src *]
 	return
     }
 
+    kettle::Def drop-doc-manpages {
+	Uninstall manpages
+    } {
+	set src [sources [doc::Dest]/man/files]
+	set dst [mandir]/mann
+
+	util uninstall-file-set "manpages" \
+	    $dst {*}[glob -directory $src -tails *.n]
+	return
+    }
+
+    kettle::Def drop-doc-html {
+	Uninstall HTML documentation
+    } {
+	set dst [htmldir]/[file tail [sources]]
+	util uninstall-file-group "HTML documentation" $dst
+	return
+    }
+
     kettle::SetParent install-doc-html     install-doc
     kettle::SetParent install-doc-manpages install-doc
     kettle::SetParent install-doc install
+
+    kettle::SetParent drop-doc-html     drop-doc
+    kettle::SetParent drop-doc-manpages drop-doc
+    kettle::SetParent drop-doc drop
 
     ## TODO ## uninstallation of documentation ...
     return
