@@ -170,8 +170,7 @@ proc ::kettle::util::install_group {label dst args} {
     file delete -force $old
 
     puts -nonewline { }
-    ::kettle gui tag ok
-    puts OK
+    ok { puts OK }
     return
 }
 
@@ -204,8 +203,7 @@ proc ::kettle::util::install_path {label dst src {postscript {}}} {
     file delete -force $old
 
     puts -nonewline { }
-    ::kettle gui tag ok
-    puts OK
+    ok { puts OK }
     return
 }
 
@@ -216,8 +214,7 @@ proc ::kettle::util::drop_path {label dst} {
 
     file delete -force $dst
 
-    ::kettle gui tag ok
-    puts OK
+    ok { puts OK }
     return
 }
 
@@ -226,6 +223,8 @@ proc ::kettle::util::drop_path {label dst} {
 
 namespace eval ::kettle::util {
     namespace import ::kettle::log
+    namespace import ::kettle::puts
+    namespace import ::kettle::ok
 
     namespace export {[a-z]*}
     namespace ensemble create

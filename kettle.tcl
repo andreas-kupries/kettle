@@ -40,7 +40,7 @@ namespace eval ::kettle {
 proc ::kettle::log {text} {
     variable trace
     if {!$trace} return
-    puts [uplevel 1 [list subst $text]]
+    debug { puts [uplevel 1 [list subst $text]] }
     return
 }
 
@@ -103,7 +103,7 @@ proc ::kettle::Def {name description script} {
 
     InitRecipe $name
     dict update recipe $name def {
-	dict lappend def script [list apply [list {} $script]]
+	dict lappend def script [list apply [list {} $script ::kettle]]
 	dict lappend def help   [Reflow $description]
     }
     return
@@ -155,8 +155,7 @@ proc ::kettle::Help {prefix} {
 
     foreach goal [lsort -dict [dict keys $recipe]] {
 	puts ""
-	kettle gui tag note
-	puts $prefix${goal}
+	note { puts $prefix${goal} }
 
 	set children [Children $goal]
 	set help     [dict get $recipe $goal help]
@@ -318,12 +317,9 @@ kettle::Def help {
 kettle::Def gui {
     Graphical interface to the system.
 } {
-    variable kettle::gui::INSTALLPATH
-
-    proc ::kettle::gui::ingui {script} {
-	uplevel 1 $script
-	return
-    }
+    variable buttons
+    variable INSTALLPATH
+    kettle::Gui!
 
     # Dynamic adaptation to the config database contents, and
     # ability to extend that database from the GUI.
@@ -333,42 +329,49 @@ kettle::Def gui {
     package require widget::scrolledwindow
 
     label  .l -text {Install Path: }
-    entry  .e -textvariable ::INSTALLPATH
-
-    foreach r [lsort -dict [kettle::Recipes]] {
-	# ignore some of the standard recipes, match (*)
-	if {$r in {gui recipes}} continue
-
-	button .i$r -command [list ::kettle::gui::Run $r] -text $r -anchor w
-    }
-    button .q -command ::_exit -text Exit -anchor w
-
-    widget::scrolledwindow .st -borderwidth 1 -relief sunken
-    text   .t
-    .st setwidget .t
-
-    .t tag configure stdout -font {Helvetica 8}
-    .t tag configure stderr -background red       -font {Helvetica 12}
-    .t tag configure ok     -background green     -font {Helvetica 8}
-    .t tag configure warn   -background yellow    -font {Helvetica 12}
-    .t tag configure note   -background lightblue -font {Helvetica 8}
-
-    grid .l  -row 0 -column 0 -sticky new
-    grid .e  -row 0 -column 1 -sticky new
+    entry  .e -textvariable ::kettle::INSTALLPATH
 
     set rr 0
     foreach r [lsort -dict [kettle::Recipes]] {
 	# ignore some of the standard recipes, match (*)
 	if {$r in {gui recipes}} continue
 
-	grid .i$r  -row $rr -column 2 -sticky new
+	lappend buttons [button .i$rr \
+			     -command [list ::kettle::GuiRun $r] \
+			     -text $r -anchor w]
+	grid   .i$rr -row $rr -column 2 -sticky new
 	grid rowconfigure . $rr -weight 0
 	incr rr
     }
-    grid .q -row $rr -column 2 -sticky new
+
+    lappend buttons [button .q -command ::_exit -text Exit -anchor w]
+    grid   .q -row $rr -column 2 -sticky new
+
+    widget::scrolledwindow .st -borderwidth 1 -relief sunken
+    text   .t
+    .st setwidget .t
+
+    # semantic tags
+    .t tag configure stdout                       ;# -font {Helvetica 8}
+    .t tag configure stderr -background red       ;# -font {Helvetica 12}
+    .t tag configure ok     -background green     ;# -font {Helvetica 8}
+    .t tag configure warn   -background yellow    ;# -font {Helvetica 12}
+    .t tag configure note   -background lightblue ;# -font {Helvetica 8}
+    .t tag configure debug  -background cyan      ;# -font {Helvetica 12}
+
+    # color tags
+    .t tag configure red    -background red    ;# -font {Helvetica 8}
+    .t tag configure green  -background green  ;# -font {Helvetica 8}
+    .t tag configure blue   -background blue   ;# -font {Helvetica 8}
+    .t tag configure white  -background white  ;# -font {Helvetica 8}
+    .t tag configure yellow -background yellow ;# -font {Helvetica 8}
+    .t tag configure cyan   -background cyan   ;# -font {Helvetica 8}
+
+    grid .l  -row 0 -column 0 -sticky new
+    grid .e  -row 0 -column 1 -sticky new
     grid .st -row 1 -column 0 -sticky swen -columnspan 2 -rowspan $rr
 
-    grid rowconfigure . $rr -weight 1
+    grid rowconfigure    . $rr -weight 1
 
     grid columnconfigure . 0 -weight 0
     grid columnconfigure . 1 -weight 1
@@ -376,17 +379,14 @@ kettle::Def gui {
 
     set INSTALLPATH [info library]
 
-    # Redirect all output into our log window, disable uncontrolled exit.
-    # The latter may come out of deeper layers, like, for example, critcl
-    # compilation.
-
-    rename ::puts ::kettle::gui::PutsBuiltin
-    rename ::kettle::gui::Puts ::puts
+    # Disable uncontrolled exit. This may come out of deeper layers,
+    # like, for example, critcl compilation.
 
     rename ::exit   ::_exit
     proc   ::exit {{status 0}} {
-	::kettle::gui::tag ok
-	::puts DONE
+	apply {{} {
+	    ok { puts DONE }
+	} ::kettle}
 	return
     }
 
@@ -397,55 +397,94 @@ kettle::Def gui {
     return
 }
 
-namespace eval kettle::gui {}
+# # ## ### ##### ######## ############# #####################
+## Generic output (text or gui).
 
-proc ::kettle::gui::ingui {script} { return }
+foreach {tag color} {
+    ok     green
+    warn   yellow
+    note   blue
+    debug  cyan
 
-proc ::kettle::gui::tag {t} {
-    variable tag $t
+    red    red
+    green  green
+    blue   blue
+    white  white
+    yellow yellow
+    cyan   cyan
+} {
+    proc ::kettle::$tag {args} "Color $tag $color \{*\}\$args"
+}
+proc ::kettle::Color {t c {script {}}} {
+    variable gui
+    if {$gui} {
+	variable tag $t
+	if {$script ne {}} {
+	    uplevel 2 $script
+	    variable tag {}
+	}
+    } else {
+	# ANSI control codes
+	#variable tag $t
+	if {$script ne {}} {
+	    uplevel 2 $script
+	    #variable tag {}
+	}
+    }
+}
+
+proc ::kettle::puts {args} {
+    variable gui
+    if {$gui} {
+	variable tag
+	set newline 1
+	if {[lindex $args 0] eq "-nonewline"} {
+	    set newline 0
+	    set args [lrange $args 1 end]
+	}
+	if {[llength $args] == 2} {
+	    lassign $args chan text
+	    if {$chan ni {stdout stderr}} {
+		::puts {*}$args
+		return
+	    }
+	} else {
+	    set text [lindex $args 0]
+	    set chan stdout
+	}
+	# chan <=> tag, if not overriden
+	if {[string match {Files left*} $text]} {
+	    set tag warn
+	    set text \n$text
+	}
+	if {$tag eq {}} { set tag $chan }
+	#::puts $tag/$text
+
+	.t insert end-1c $text $tag
+	if {$newline} { 
+	    .t insert end-1c \n
+	}
+	update
+    } else {
+	::puts {*}$args
+    }
     return
 }
 
-proc ::kettle::gui::Clear {} {
+# # ## ### ##### ######## ############# #####################
+## GUI support code.
+
+proc ::kettle::Gui! {} {
+    variable gui 1
+    return
+}
+
+proc ::kettle::GuiClear {} {
     .t delete 0.1 end
     return
 }
 
-proc ::kettle::gui::Puts {args} {
-    variable ::kettle::gui::tag
-    set newline 1
-    if {[lindex $args 0] eq "-nonewline"} {
-	set newline 0
-	set args [lrange $args 1 end]
-    }
-    if {[llength $args] == 2} {
-	lassign $args chan text
-	if {$chan ni {stdout stderr}} {
-	    ::kettle::gui::PutsBuiltin {*}[lrange [info level 0] 1 end]
-	    return
-	}
-    } else {
-	set text [lindex $args 0]
-	set chan stdout
-    }
-    # chan <=> tag, if not overriden
-    if {[string match {Files left*} $text]} {
-	set tag warn
-	set text \n$text
-    }
-    if {$tag eq {}} { set tag $chan }
-    #::kettle::gui::PutsBuiltin $tag/$text
-
-    .t insert end-1c $text $tag
-    set tag {}
-    if {$newline} { 
-	.t insert end-1c \n
-    }
-    update
-    return
-}
-
-proc ::kettle::gui::Run {goal} {
+proc ::kettle::GuiRun {goal} {
     variable INSTALLPATH
     variable NOTE
 
@@ -453,24 +492,18 @@ proc ::kettle::gui::Run {goal} {
     #=> update option database
     kettle option: --lib-dir $INSTALLPATH
 
-    # TODO: MUST disable all buttons.
-    .i$goal configure -state disabled
-    .q configure -state disabled
-
+    State disabled
     # TODO look for code changing this on failure.
     set NOTE {ok DONE}
     set fail [catch {
-	kettle::gui::Clear
+	kettle::GuiClear
 	kettle::Reset
 	kettle::Run $goal
-	::puts ""
-	tag    [lindex $NOTE 0]
-	::puts [lindex $NOTE 1]
+	puts ""
+	[lindex $NOTE 0] { puts [lindex $NOTE 1] }
     } e o]
 
-    # TODO: MUST re-enable all buttons.
-    .i$goal configure -state normal
-    .q configure -state normal -bg green
+    State normal
 
     if {$fail} {
 	# rethrow
@@ -479,11 +512,16 @@ proc ::kettle::gui::Run {goal} {
     return
 }
 
-namespace eval kettle::gui {
-    variable tag {}
+proc ::kettle::State {e} {
+    variable buttons
+    foreach b $buttons { $b configure -state $e }
+    return
+}
 
-    namespace export tag ingui
-    namespace ensemble create
+namespace eval kettle {
+    variable gui 0
+    variable tag {}
+    variable buttons {}
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -613,7 +651,7 @@ proc ::kettle::FixExit {} {
 
 proc ::kettle::Unknown {args} {
     set package kettle::[lindex $args 1]
-    #puts "...Loading $package"
+    log {...Loading $package}
     if {[catch {
 	package require $package
     }]} {
