@@ -21,6 +21,10 @@ proc ::kettle::path {path} {
     return [file join $mydir $path]
 }
 
+proc ::kettle::norm {path} {
+    return [file dirname [file normalize $path/__]]
+}
+
 proc ::kettle::verbose {} {
     variable verbose 1
     return
@@ -38,54 +42,77 @@ proc ::kettle::sources {{path {}}} {
     return [file join $srcdir $path]
 }
 
+namespace eval ::kettle {
+    variable verbose 0
+    variable mydir   [file dirname [file normalize [info script]]]
+}
+
+# # ## ### ##### ######## ############# #####################
+## Command line option database, and defaults.
+
+proc ::kettle::option? {o} {
+    variable config
+    return [dict exists $config $o]
+}
+
+proc ::kettle::option: {o {v {}}} {
+    variable config
+    dict set config $o $v
+    return $v
+}
+
+proc ::kettle::option-get {o} {
+    variable config
+    return [dict get config $o]
+}
+
+namespace eval ::kettle {
+    variable config {}
+}
+
+apply {{} {
+    variable config
+
+    dict set config --exec-prefix [file dirname [file dirname [info library]]]
+    dict set config --bin-dir     [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
+    dict set config --lib-dir     [info library]
+
+    dict set config --prefix      [dict get $config --exec-prefix]
+    dict set config --man-dir     [dict get $config --prefix]/man
+    dict set config --html-dir    [dict get $config --prefix]/man
+
+} ::kettle}
+
 # # ## ### ##### ######## ############# #####################
 ## Core API for recipe management. Not exported for build scripts,
 ## these are for build helper packages.
 
-proc ::kettle::Sources {p} {
-    variable srcdir $p
-    return
-}
-
 proc ::kettle::Def {name description script} {
     variable recipe
 
-    set help [Indent \
-		  [Undent \
-		       [join [lassign [split [string trim $description] \n] cmdline] \n]] \
-		  {    }]
-    if {$cmdline eq "--"} {
-	set cmdline {}
-    } {
-	set cmdline " $cmdline"
-    }
-
-    if {[dict exists $recipe $name]} {
-	# Extend definition.
-	dict update recipe $name def {
-	    dict lappend def script [list apply [list {} $script]]
-	    dict append  def help   \n$help
-	}
-    } else {
-	# First definition.
-	dict set recipe $name script [list [list apply [list {} $script]]]
-	dict set recipe $name help   $cmdline\n$help
-	dict set recipe $name call   {}
+    InitRecipe $name
+    dict update recipe $name def {
+	dict lappend def script [list apply [list {} $script]]
+	dict append  def help   \n[Reflow $description]
     }
     return
 }
 
-proc ::kettle::DefHook {name base} {
+proc ::kettle::SetParent {name parent} {
     variable recipe
-    if {![dict exists $recipe $base]} {
-	dict set recipe $base {
-	    script {}
-	    help   {}
-	    call   {}
-	}
-    }
-    dict update recipe $base def {
-	dict lappend def call $name
+
+    InitRecipe $name
+    dict set recipe $name parent $parent
+    return
+}
+
+proc ::kettle::InitRecipe {name} {
+    variable recipe
+    if {[dict exists $recipe $name]} return
+    dict set recipe $name {
+	script {}
+	help   {}
+	parent {}
     }
     return
 }
@@ -104,21 +131,9 @@ proc ::kettle::Has {name} {
     return [dict exists $recipe $name]
 }
 
-proc ::kettle::Run {name args} {
+proc ::kettle::Recipes {} {
     variable recipe
-    if {![dict exists $recipe $name]} {
-	return -code error "No definition for \"$name\""
-    }
-    log {	run ($name) ...}
-    foreach cmd [dict get $recipe $name script] {
-	#puts |$cmd|
-	eval $cmd $args
-    }
-    # Run the extension recipes.
-    foreach r [lsort -unique [dict get $recipe $name call]] {
-	Run $r
-    }
-    return
+    return [dict keys $recipe]
 }
 
 proc ::kettle::Help {prefix {topic {}}} {
@@ -138,13 +153,44 @@ proc ::kettle::Help {prefix {topic {}}} {
     return
 }
 
-proc ::kettle::Recipes {} {
+proc ::kettle::Run {name} {
     variable recipe
-    return [dict keys $recipe]
+    variable done
+
+    if {![dict exists $recipe $name]} {
+	return -code error "No definition for \"$name\""
+    }
+
+    # Ignore goals already executed.
+    if {[dict exists $done $name]} return
+    dict set done $name .
+
+    # Determine the recipe's children and run them first.
+    dict for $recipe {c v} {
+	if {![dict get $v parent] eq $name} continue
+	Run $c
+    }
+
+    # Now run the recipe itself
+    log {	run ($name) ...}
+    foreach cmd [dict get $recipe $name script] {
+	#puts |$cmd|
+	eval $cmd
+    }
+    return
+}
+
+namespace eval ::kettle {
+    variable recipe {}
+    variable done   {}
 }
 
 # # ## ### ##### ######## ############# #####################
-## Internal helpers.
+## Internal helpers for help text processing
+
+proc ::kettle::Reflow {help} {
+    return [Indent [Undent [string trim $help]] {    }]
+}
 
 proc ::kettle::Indent {text prefix} {
     set text [string trimright $text]
@@ -217,23 +263,10 @@ proc ::kettle::LCP {list} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## State Initialization, Ensemblification
-
-namespace eval ::kettle {
-    variable recipe  {}
-    variable verbose 0
-    variable mydir   [file dirname [file normalize [info script]]]
-
-    namespace export {[a-z]*} ;#def undef has run help recipes
-    namespace ensemble create -prefixes 0 -unknown ::kettle::Unknown
-}
-
-# # ## ### ##### ######## ############# #####################
 ## Standard recipes.
 
 ## Recipe introspection.
 kettle::Def recipes {
-    --
     List all available recipes (build targets), without details.
 } {
     puts [lsort -dict [kettle::Recipes]]
@@ -241,34 +274,32 @@ kettle::Def recipes {
 
 # Recipe help.
 kettle::Def help {
-    ?recipe?
-    Print the help, all or for the specified recipe.
+    Print the help.
 } {
-    global argv
-    # TODO: generalized argument processing. - mothership!
-    set n [llength $argv] 
-    if {$n != 1} {
-	kettle::Help {Usage: }
-    } else {
-	kettle::Help {} [lindex $argv 0]
-    }
+    kettle::Help {Usage: }
 }
 
 # Standard graphical interface to the install recipes.
 # TODO: Future: More dynamic adaptation to all recipes, through introspection.
 kettle::Def gui {
-    --
-    Graphical interface to the installation process.
+    Graphical interface to the system.
 } {
     variable kettle::gui::INSTALLPATH
+
+    # Dynamic adaptation to the config database contents, and
+    # ability to extend that database from the GUI.
+    # ==> ttk notebook, tree.
 
     package require Tk
     package require widget::scrolledwindow
 
     label  .l -text {Install Path: }
     entry  .e -textvariable ::INSTALLPATH
-    button .i -command ::kettle::gui::install -text Install
-    button .q -command ::_exit                -text Exit
+
+    foreach r [lsort -dict [kettle::Recipes]] {
+	button .i$r -command [list ::kettle::gui::run $r] -text $r
+    }
+    button .q -command ::_exit -text Exit
 
     widget::scrolledwindow .st -borderwidth 1 -relief sunken
     text   .t
@@ -282,8 +313,13 @@ kettle::Def gui {
 
     grid .l  -row 0 -column 0 -sticky new
     grid .e  -row 0 -column 1 -sticky new
-    grid .i  -row 0 -column 2 -sticky new
-    grid .q  -row 1 -column 2 -sticky new
+
+    set rr 0
+    foreach r [lsort -dict [kettle::Recipes]] {
+	grid .i$r  -row $rr -column 2 -sticky new
+	incr rr
+    }
+    grid .q -row $rr -column 2 -sticky new
     grid .st -row 1 -column 0 -sticky swen -columnspan 2
 
     grid rowconfigure . 0 -weight 0
@@ -355,23 +391,29 @@ proc ::kettle::gui::tag {t} {
     return
 }
 
-proc ::kettle::gui::install {} {
+proc ::kettle::gui::run {goal} {
     variable INSTALLPATH
     variable NOTE
 
-    .i configure -state disabled
+    #set argv [list $INSTALLPATH]
+    #=> update option database
+    option: --lib-dir $INSTALLPATH
+
+    # TODO: MUST disable all buttons.
+    .i$goal configure -state disabled
     .q configure -state disabled
 
+    # TODO look for code changing this on failure.
     set NOTE {ok DONE}
     set fail [catch {
-	set argv [list $INSTALLPATH]
-	kettle::Run install
+	kettle::Run $goal
 	::puts ""
-	tag  [lindex $NOTE 0]
+	tag    [lindex $NOTE 0]
 	::puts [lindex $NOTE 1]
     } e o]
 
-    .i configure -state normal
+    # TODO: MUST re-enable all buttons.
+    .i$goal configure -state normal
     .q configure -state normal -bg green
 
     if {$fail} {
@@ -389,41 +431,124 @@ namespace eval kettle::gui {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Core application functionality.
+## - Command line processing
+## - Declaration processing
+## - Goal processing
+
+namespace eval ::kettle {
+    variable goals  {}
+    variable decls  {}
+}
+
+proc ::kettle::ProcessDecls {} {
+    variable decls
+    variable srcdir [file dirname $decls]
+
+    if {[catch {
+	::source $decls
+    }]} {
+	# Report troubles in the declarations and abort.
+	puts stderr $::errorInfo
+	done 1
+    }
+    return
+}
+
+proc ::kettle::ProcessCmdline {} {
+    global argv
+
+    variable goals
+    variable decls
+
+    if {[lindex $argv 0] eq {-f}} {
+	set argv [lassign $argv __ path]
+	set decls [norm $path]
+
+    } elseif {[file exists build.tcl]} {
+	set decls [norm build.tcl]
+
+    } else {
+	puts stderr "Build declaration file neither specified, nor found"
+	done 1
+    }
+
+    if {[lindex $argv 0] eq {-v}} {
+	set argv [lrange $argv 1 end]
+	verbose
+    }
+
+    set goals {}
+    while {[llength $argv]} {
+	set o [lindex $argv 0]
+	switch -glob -- $o {
+	    --* {
+		option: $o [lindex $argv 1]
+		set argv [lrange $argv 2 end]
+	    }
+	    default {
+		lappend goals $o
+		set argv [lrange $argv 1 end]
+	    }
+	}
+    }
+    return
+}
+
+proc ::kettle::ProcessGoals {} {
+    FixExit
+    set goals [Goals]
+
+    if {[catch {
+	foreach goal $goals {
+	    Run $goal
+	}
+    }]} {
+	puts $::errorInfo
+	#kettle::Help {Usage: }
+    }
+    # See the rename above, no recursion!
+    ::exit 0
+}
+
+proc ::kettle::Goals {} {
+    variable goals
+    global tcl_platform
+    if {![llength $goals]} {
+	if {$tcl_platform(platform) eq "windows"} {
+	  lappend goals gui
+	} else {
+	    lappend goals help
+	}
+    }
+    return $goals
+}
+
+# # ## ### ##### ######## ############# #####################
 ## Automatic execution of command line processing and main,
 ## via interception of application exit.
 
 rename ::exit ::kettle::done
 proc   ::exit {{status 0}} {
     if {[catch {
-	global argv tcl_platform
-	if {![llength $argv]} {
-	    if {$tcl_platform(platform) eq "windows"} {
-		set cmd gui
-	    } else {
-		set cmd help
-	    }
-	} else {
-	    set argv [lassign $argv cmd]
-	}
-	# TODO: Need generic customizable command line / option processing
-
-	# Move old definition of exit back into place, in case a library
-	# invoked by a recipe uses it. This way it won't recurse back
-	# here, ad infinitum. We keep the other name active also.
-	rename ::exit {}
-	rename ::kettle::done ::exit
-	proc ::kettle::done {args} { ::exit {*}$args }
-	if {[catch {
-	    kettle::Run $cmd
-	}]} {
-	    puts $::errorInfo
-	    #kettle::Help {Usage: }
-	}
-	# See the rename above, no recursion!
-	exit
+	kettle::ProcessGoals
     } msg]} {
 	puts $::errorInfo
     }
+}
+
+proc ::kettle::FixExit {} {
+    # Move the old definition of exit back into place, in case a
+    # library invoked by a recipe uses it. This way it won't recurse
+    # back here, ad infinitum. We keep the other name active also.
+
+    rename ::exit         {}
+    rename ::kettle::done ::exit
+
+    proc ::kettle::done {args} {
+	::exit {*}$args
+    }
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -440,6 +565,14 @@ proc ::kettle::Unknown {args} {
 	kettle::done 1
     }
     return
+}
+
+# # ## ### ##### ######## ############# #####################
+## Export
+
+namespace eval ::kettle {
+    namespace export {[a-z]*} ;#def undef has run help recipes
+    namespace ensemble create -prefixes 0 -unknown ::kettle::Unknown
 }
 
 # # ## ### ##### ######## ############# #####################

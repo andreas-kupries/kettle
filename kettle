@@ -2,8 +2,7 @@
 # -*- tcl -*-
 
 apply {{selfdir} {
-    global argv auto_path
-
+    global  auto_path
     lappend auto_path $selfdir
     if {[catch {
 	# Try local first, for when we install ourselves.
@@ -11,28 +10,8 @@ apply {{selfdir} {
     }]} {
 	package require kettle
     }
-
-    if {[lindex $argv 0] eq {-f}} {
-	set argv [lassign $argv __ buildfile]
-    } elseif {[file exists build.tcl]} {
-	set buildfile build.tcl
-    } else {
-	puts stderr "Build definition file neither specified, nor found"
-	kettle::done 1
-    }
-
-    if {[lindex $argv 0] eq {-v}} {
-	set argv [lassign $argv __]
-	kettle verbose
-    }
-
-    kettle::Sources [file dirname [file dirname [file normalize $buildfile/__]]]
-    if {[catch {
-	source $buildfile
-    }]} {
-	# Report troubles in the declarations and abort.
-	puts stderr $::errorInfo
-	kettle::done 1
-    }
+    kettle::ProcessCmdline
+    kettle::ProcessDecls
+    kettle::ProcessGoals
 }} [file dirname [file dirname [file normalize [info script]/__]]]
-# remainder of activity automatic on ::exit
+# remainder of activity is automatically on ::exit
