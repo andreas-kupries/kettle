@@ -24,39 +24,35 @@ proc ::kettle::tclapp {fname} {
     ## Recipe: Pure Tcl application installation.
 
     set src [kettle sources $fname]
-    set dst [kettle util bindir]/$fname
+    set dst [kettle bindir]/$fname
 
-    kettle::Def install-$fname "
-	?lib-directory?
-	Install application $fname in the bin/ directory.
-    " [list apply {{fname src dst} {
-	kettle util install_path \
-	    "Installing application $src" \
-	    $src $dst {
-		kettle util fixhashbang    ${dst}-new [info nameofexecutable]
-		kettle util set-executable ${dst}-new
-	    }
-    }} $fname $src $dst]
+    kettle::Def install-app-$fname "Install application $fname" \
+	[list apply {{fname src dst} {
+	    kettle util install_path \
+		"Installing application $src" \
+		$src $dst {
+		    kettle util fixhashbang    ${dst}-new [info nameofexecutable]
+		    kettle util set-executable ${dst}-new
+		}
+	}} $fname $src $dst]
 
-    kettle::Def drop-$fname "
-	?lib-directory?
-	Remove application $fname from the bin/ directory.
-    " [list apply {{dst} {
-	kettle util drop_path \
-	    "Remove application $dst" \
-	    $dst
-    }} $dst]
+    kettle::Def drop-app-$fname "Remove application $fname" \
+	[list apply {{dst} {
+	    kettle util drop_path \
+		"Remove application $dst" \
+		$dst
+	}} $dst]
 
     # Hook the application specific recipes into a hierarchy of more
     # general recipes.
 
-    kettle::DefHook install-$fname           install-tcl-applications
-    kettle::DefHook install-tcl-applications install-applications
-    kettle::DefHook install-applications     install
+    kettle::SetParent install-app-$fname       install-tcl-applications
+    kettle::SetParent install-tcl-applications install-applications
+    kettle::SetParent install-applications     install
 
-    kettle::DefHook drop-$fname           drop-tcl-applications
-    kettle::DefHook drop-tcl-applications drop-applications
-    kettle::DefHook drop-applications     drop
+    kettle::SetParent drop-app-$fname       drop-tcl-applications
+    kettle::SetParent drop-tcl-applications drop-applications
+    kettle::SetParent drop-applications     drop
     return
 }
 

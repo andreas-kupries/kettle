@@ -16,39 +16,50 @@ namespace eval ::kettle {}
 # # ## ### ##### ######## ############# #####################
 ## API. For use in recipes.
 
-proc ::kettle::path {path} {
-    variable mydir
-    return [file join $mydir $path]
+proc ::kettle::sources {{path {}}} {
+    variable srcdir
+    return [file join $srcdir $path]
 }
 
 proc ::kettle::norm {path} {
     return [file dirname [file normalize $path/__]]
 }
 
-proc ::kettle::verbose {} {
-    variable verbose 1
-    return
- }
+proc ::kettle::path {path} {
+    variable mydir
+    return [file join $mydir $path]
+}
+
+namespace eval ::kettle {
+    variable mydir [file dirname [file normalize [info script]]]
+}
+
+# # ## ### ##### ######## ############# #####################
+## Tracing of internals. Use in recipes and utilities.
 
 proc ::kettle::log {text} {
-    variable verbose
-    if {!$verbose} return
+    variable trace
+    if {!$trace} return
     puts [uplevel 1 [list subst $text]]
     return
 }
 
-proc ::kettle::sources {{path {}}} {
-    variable srcdir
-    return [file join $srcdir $path]
-}
+proc ::kettle::Trace {} {
+    variable trace 1
+    return
+ }
 
 namespace eval ::kettle {
-    variable verbose 0
-    variable mydir   [file dirname [file normalize [info script]]]
+    variable trace 0
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Command line option database, and defaults.
+
+proc ::kettle::libdir  {} { return [option-get --lib-dir] }
+proc ::kettle::bindir  {} { return [option-get --bin-dir] }
+proc ::kettle::mandir  {} { return [option-get --man-dir] }
+proc ::kettle::htmldir {} { return [option-get --html-dir] }
 
 proc ::kettle::option? {o} {
     variable config
@@ -63,7 +74,7 @@ proc ::kettle::option: {o {v {}}} {
 
 proc ::kettle::option-get {o} {
     variable config
-    return [dict get config $o]
+    return [dict get $config $o]
 }
 
 namespace eval ::kettle {
@@ -93,7 +104,7 @@ proc ::kettle::Def {name description script} {
     InitRecipe $name
     dict update recipe $name def {
 	dict lappend def script [list apply [list {} $script]]
-	dict append  def help   \n[Reflow $description]
+	dict lappend def help   [Reflow $description]
     }
     return
 }
@@ -102,6 +113,7 @@ proc ::kettle::SetParent {name parent} {
     variable recipe
 
     InitRecipe $name
+    InitRecipe $parent
     dict set recipe $name parent $parent
     return
 }
@@ -136,20 +148,32 @@ proc ::kettle::Recipes {} {
     return [dict keys $recipe]
 }
 
-proc ::kettle::Help {prefix {topic {}}} {
+proc ::kettle::Help {prefix} {
     global   argv0
     variable recipe
     append prefix $argv0 " "
-    if {[llength [info level 0]] == 3} {
-	if {![dict exists $recipe $topic]} {
-	    return -code error "No definition for \"$topic\""
+
+    foreach goal [lsort -dict [dict keys $recipe]] {
+	puts ""
+	kettle gui tag note
+	puts $prefix${goal}
+
+	set children [Children $goal]
+	set help     [dict get $recipe $goal help]
+
+	if {[llength $children]} {
+	    puts "\t==> [join [lsort -dict $children] "\n\t==> "]"
 	}
-	puts "\n$prefix${topic}[dict get $recipe $topic help]"
-    } else {
-	foreach topic [lsort -dict [dict keys $recipe]] {
-	    puts "\n$prefix${topic}[dict get $recipe $topic help]"
+	if {[llength $help]} {
+	    puts [join [lsort -unique $help] \n]
 	}
     }
+
+    return
+}
+
+proc ::kettle::Reset {} {
+    variable done {}
     return
 }
 
@@ -166,18 +190,28 @@ proc ::kettle::Run {name} {
     dict set done $name .
 
     # Determine the recipe's children and run them first.
-    dict for $recipe {c v} {
-	if {![dict get $v parent] eq $name} continue
+    foreach c [Children $name] {
 	Run $c
     }
 
     # Now run the recipe itself
     log {	run ($name) ...}
-    foreach cmd [dict get $recipe $name script] {
+    foreach cmd [lsort -unique [dict get $recipe $name script]] {
 	#puts |$cmd|
 	eval $cmd
     }
     return
+}
+
+proc ::kettle::Children {name} {
+    # Determine the recipe's children
+    variable recipe
+    set result {}
+    dict for {c v} $recipe {
+	if {[dict get $v parent] ne $name} continue
+	lappend result $c
+    }
+    return $result
 }
 
 namespace eval ::kettle {
@@ -286,6 +320,11 @@ kettle::Def gui {
 } {
     variable kettle::gui::INSTALLPATH
 
+    proc ::kettle::gui::ingui {script} {
+	uplevel 1 $script
+	return
+    }
+
     # Dynamic adaptation to the config database contents, and
     # ability to extend that database from the GUI.
     # ==> ttk notebook, tree.
@@ -297,9 +336,12 @@ kettle::Def gui {
     entry  .e -textvariable ::INSTALLPATH
 
     foreach r [lsort -dict [kettle::Recipes]] {
-	button .i$r -command [list ::kettle::gui::run $r] -text $r
+	# ignore some of the standard recipes, match (*)
+	if {$r in {gui recipes}} continue
+
+	button .i$r -command [list ::kettle::gui::Run $r] -text $r -anchor w
     }
-    button .q -command ::_exit -text Exit
+    button .q -command ::_exit -text Exit -anchor w
 
     widget::scrolledwindow .st -borderwidth 1 -relief sunken
     text   .t
@@ -316,14 +358,17 @@ kettle::Def gui {
 
     set rr 0
     foreach r [lsort -dict [kettle::Recipes]] {
+	# ignore some of the standard recipes, match (*)
+	if {$r in {gui recipes}} continue
+
 	grid .i$r  -row $rr -column 2 -sticky new
+	grid rowconfigure . $rr -weight 0
 	incr rr
     }
     grid .q -row $rr -column 2 -sticky new
-    grid .st -row 1 -column 0 -sticky swen -columnspan 2
+    grid .st -row 1 -column 0 -sticky swen -columnspan 2 -rowspan $rr
 
-    grid rowconfigure . 0 -weight 0
-    grid rowconfigure . 1 -weight 1
+    grid rowconfigure . $rr -weight 1
 
     grid columnconfigure . 0 -weight 0
     grid columnconfigure . 1 -weight 1
@@ -335,40 +380,8 @@ kettle::Def gui {
     # The latter may come out of deeper layers, like, for example, critcl
     # compilation.
 
-    rename ::puts ::kettle::gui::puts
-    proc   ::puts {args} {
-	variable ::kettle::gui::tag
-	set newline 1
-	if {[lindex $args 0] eq "-nonewline"} {
-	    set newline 0
-	    set args [lrange $args 1 end]
-	}
-	if {[llength $args] == 2} {
-	    lassign $args chan text
-	    if {$chan ni {stdout stderr}} {
-		::kettle::gui::puts {*}[lrange [info level 0] 1 end]
-		return
-	    }
-	} else {
-	    set text [lindex $args 0]
-	    set chan stdout
-	}
-	# chan <=> tag, if not overriden
-	if {[string match {Files left*} $text]} {
-	    set tag warn
-	    set text \n$text
-	}
-	if {$tag eq {}} { set tag $chan }
-	#::kettle::gui::puts $tag/$text
-
-	.t insert end-1c $text $tag
-	set tag {}
-	if {$newline} { 
-	    .t insert end-1c \n
-	}
-	update
-	return
-    }
+    rename ::puts ::kettle::gui::PutsBuiltin
+    rename ::kettle::gui::Puts ::puts
 
     rename ::exit   ::_exit
     proc   ::exit {{status 0}} {
@@ -386,18 +399,59 @@ kettle::Def gui {
 
 namespace eval kettle::gui {}
 
+proc ::kettle::gui::ingui {script} { return }
+
 proc ::kettle::gui::tag {t} {
     variable tag $t
     return
 }
 
-proc ::kettle::gui::run {goal} {
+proc ::kettle::gui::Clear {} {
+    .t delete 0.1 end
+    return
+}
+
+proc ::kettle::gui::Puts {args} {
+    variable ::kettle::gui::tag
+    set newline 1
+    if {[lindex $args 0] eq "-nonewline"} {
+	set newline 0
+	set args [lrange $args 1 end]
+    }
+    if {[llength $args] == 2} {
+	lassign $args chan text
+	if {$chan ni {stdout stderr}} {
+	    ::kettle::gui::PutsBuiltin {*}[lrange [info level 0] 1 end]
+	    return
+	}
+    } else {
+	set text [lindex $args 0]
+	set chan stdout
+    }
+    # chan <=> tag, if not overriden
+    if {[string match {Files left*} $text]} {
+	set tag warn
+	set text \n$text
+    }
+    if {$tag eq {}} { set tag $chan }
+    #::kettle::gui::PutsBuiltin $tag/$text
+
+    .t insert end-1c $text $tag
+    set tag {}
+    if {$newline} { 
+	.t insert end-1c \n
+    }
+    update
+    return
+}
+
+proc ::kettle::gui::Run {goal} {
     variable INSTALLPATH
     variable NOTE
 
     #set argv [list $INSTALLPATH]
     #=> update option database
-    option: --lib-dir $INSTALLPATH
+    kettle option: --lib-dir $INSTALLPATH
 
     # TODO: MUST disable all buttons.
     .i$goal configure -state disabled
@@ -406,6 +460,8 @@ proc ::kettle::gui::run {goal} {
     # TODO look for code changing this on failure.
     set NOTE {ok DONE}
     set fail [catch {
+	kettle::gui::Clear
+	kettle::Reset
 	kettle::Run $goal
 	::puts ""
 	tag    [lindex $NOTE 0]
@@ -426,7 +482,7 @@ proc ::kettle::gui::run {goal} {
 namespace eval kettle::gui {
     variable tag {}
 
-    namespace export tag install
+    namespace export tag ingui
     namespace ensemble create
 }
 
@@ -475,7 +531,7 @@ proc ::kettle::ProcessCmdline {} {
 
     if {[lindex $argv 0] eq {-v}} {
 	set argv [lrange $argv 1 end]
-	verbose
+	Trace
     }
 
     set goals {}

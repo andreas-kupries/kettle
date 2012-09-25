@@ -2,16 +2,18 @@
 # -*- tcl -*-
 
 apply {{selfdir} {
-    global  auto_path
-    lappend auto_path $selfdir
-    if {[catch {
-	# Try local first, for when we install ourselves.
+    if {[file exists $selfdir/kettle.tcl]} {
+	# Look for a local copy first, for when we install ourselves.
 	source $selfdir/kettle.tcl
-    }]} {
+    } else {
+	# use the installed core.
 	package require kettle
     }
+
     kettle::ProcessCmdline
     kettle::ProcessDecls
     kettle::ProcessGoals
+
 }} [file dirname [file dirname [file normalize [info script]/__]]]
 # remainder of activity is automatically on ::exit
+
