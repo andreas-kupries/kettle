@@ -402,37 +402,51 @@ kettle::Def gui {
 # # ## ### ##### ######## ############# #####################
 ## Generic output (text or gui).
 
-foreach {tag color} {
-    ok     green
-    warn   yellow
-    err    red
-    note   blue
-    debug  cyan
+apply {{} {
+    foreach tag {
+	ok    warn   err   note    
+	debug red    green blue    
+	white yellow cyan  magenta 
+    } {
+	interp alias {} ::kettle::$tag {} ::kettle::Color $tag
+    }
 
-    red    red
-    green  green
-    blue   blue
-    white  white
-    yellow yellow
-    cyan   cyan
-} {
-    proc ::kettle::$tag {args} "Color $tag $color \{*\}\$args"
+    foreach {tag chars} {
+	ok      \033\[32m
+	warn    \033\[33m
+	err     \033\[31m
+	note    \033\[34m
+	debug   \033\[36m
+	red     \033\[31m
+	green   \033\[32m
+	yellow  \033\[33m
+	blue    \033\[34m
+	magenta \033\[35m
+	cyan    \033\[36m
+	white   \033\[37m
+	reset   \033\[0m
+    } {
+	set t $tag ; if {$tag eq "reset"} { set t {} }
+	interp alias {} ::kettle::H$tag {} ::kettle::Hilit $t $chars
+    }
+}}
+
+proc ::kettle::Color {t {script {}}} {
+    H$t
+    if {$script ne {}} {
+	uplevel 1 $script
+	Hreset
+    }
 }
-proc ::kettle::Color {t c {script {}}} {
+
+proc ::kettle::Hilit {tag chars} {
     variable gui
     if {$gui} {
 	variable tag $t
-	if {$script ne {}} {
-	    uplevel 2 $script
-	    variable tag {}
-	}
     } else {
-	# ANSI control codes
-	#variable tag $t
-	if {$script ne {}} {
-	    uplevel 2 $script
-	    #variable tag {}
-	}
+	## TODO ## check for non-tty/win to disable.
+	## Requires TclX however (fstat stdout tty)
+	::puts -nonewline $chars
     }
 }
 
