@@ -87,6 +87,8 @@ proc ::kettle::util::foreach-file {path pv script} {
 
     upvar 1 $pv thepath
 
+    set ex [kettle option-get --ignore-glob]
+
     set known {}
     lappend waiting $path
     while {[llength $waiting]} {
@@ -104,6 +106,9 @@ proc ::kettle::util::foreach-file {path pv script} {
 	    set c [file dirname [file normalize $current/___]]
 	    if {[dict exists $known $c]} continue
 	    dict set known $c .
+
+	    # Ignore non-development files.
+	    if {[Ignore $ex $c]} continue
 
 	    # Expand directories.
 	    if {[file isdirectory $c]} {
@@ -133,6 +138,14 @@ proc ::kettle::util::foreach-file {path pv script} {
 	}
     }
     return
+}
+
+proc ::kettle::util::Ignore {patterns path} {
+    set path [file tail $path]
+    foreach p $patterns {
+	if {[string match $p $path]} { return 1 }
+    }
+    return 0
 }
 
 proc ::kettle::util::tmpfile {{prefix kettle_util_}} {
@@ -171,7 +184,9 @@ proc ::kettle::util::copy-file {src dstdir} {
 
     puts -nonewline "\tInstalling file [file tail $src]: "
     if {[catch {
-	file copy $src $dstdir/[file tail $src]
+	if {![kettle option-get --dry]} {
+	    file copy $src $dstdir/[file tail $src]
+	}
     } msg]} {
 	err { puts "FAIL ($msg)" }
 	kettle status-fail
@@ -198,7 +213,9 @@ proc ::kettle::util::remove-path {path} {
 
     puts -nonewline "\tUninstalling ${path}: "
     if {[catch {
+	if {![kettle option-get --dry]} {
 	file delete -force $path
+	}
     } msg]} {
 	err { puts "FAIL ($msg)" }
 	kettle status-fail
@@ -227,10 +244,12 @@ proc ::kettle::util::install-application {src dstdir} {
     puts "Installing application \"$fname\""
     puts "    Into $dstdir"
 
-    # Save existing file, if any.
-    file delete -force $dstdir/${fname}.old
-    catch {
-	file rename $dstdir/${fname} $dstdir/${fname}.old
+    if {![kettle option-get --dry]} {
+	# Save existing file, if any.
+	file delete -force $dstdir/${fname}.old
+	catch {
+	    file rename $dstdir/${fname} $dstdir/${fname}.old
+	}
     }
 
     if {![copy-file $src $dstdir]} {
@@ -240,7 +259,9 @@ proc ::kettle::util::install-application {src dstdir} {
 	}
     }
 
-    set-executable $dstdir/$fname
+    if {![kettle option-get --dry]} {
+	set-executable $dstdir/$fname
+    }
     return
 }
 
@@ -255,9 +276,11 @@ proc ::kettle::util::install-script {src dstdir shell} {
     puts "    Into $dstdir"
 
     # Save existing file, if any.
-    file delete -force $dstdir/${fname}.old
-    catch {
-	file rename $dstdir/${fname} $dstdir/${fname}.old
+    if {![kettle option-get --dry]} {
+	file delete -force $dstdir/${fname}.old
+	catch {
+	    file rename $dstdir/${fname} $dstdir/${fname}.old
+	}
     }
 
     if {![copy-file $src $dstdir]} {
@@ -267,8 +290,10 @@ proc ::kettle::util::install-script {src dstdir shell} {
 	}
     }
 
-    fixhashbang    $dstdir/$fname $shell
-    set-executable $dstdir/$fname
+    if {![kettle option-get --dry]} {
+	fixhashbang    $dstdir/$fname $shell
+	set-executable $dstdir/$fname
+    }
     return
 }
 
@@ -284,9 +309,11 @@ proc ::kettle::util::install-file-group {label dstdir args} {
     set new ${dstdir}-new
     set old ${dstdir}-old
 
-    # Clean temporary destination. Remove left-overs from previous runs.
-    file delete -force $new
-    file mkdir         $new
+    if {![kettle option-get --dry]} {
+	# Clean temporary destination. Remove left-overs from previous runs.
+	file delete -force $new
+	file mkdir         $new
+    }
 
     if {![copy-files $new {*}$args]} {
 	file delete -force $new
@@ -296,10 +323,12 @@ proc ::kettle::util::install-file-group {label dstdir args} {
     # Now shuffle old and new things around to put the new into place.
     puts -nonewline {    Commmit: }
     if {[catch {
-	file delete -force $old
-	catch { file rename $dstdir $old }
-	file rename -force $new $dstdir
-	file delete -force $old
+	if {![kettle option-get --dry]} {
+	    file delete -force $old
+	    catch { file rename $dstdir $old }
+	    file rename -force $new $dstdir
+	    file delete -force $old
+	}
     } msg]} {
 	err { puts "FAIL ($msg)" }
 	kettle status-fail
@@ -342,10 +371,30 @@ proc ::kettle::util::uninstall-application {src dstdir} {
 proc ::kettle::util::uninstall-file-group {label dstdir} {
     kettle status-check
 
-    puts "Uninstall $label"
+    puts "Uninstalling $label"
     puts "    From $dstdir"
 
     remove-path $dstdir
+    return
+}
+
+proc ::kettle::util::uninstall-file-set {label dstdir args} {
+    # Install multiple files into a destination directory.
+    # The destination has to exist. The files in the set
+    # are only loosely coupled. Example: manpages.
+
+    kettle status-check
+
+    puts "Uninstalling $label"
+    puts "    From $dstdir"
+
+    ## Consider removal of existing files ...
+    ## Except, for manpages we want to be informed of clashes.
+    ## for others it might make sense ...
+
+    foreach f $args {
+	if {![remove-path $dstdir/$f]} return
+    }
     return
 }
 

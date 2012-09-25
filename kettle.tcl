@@ -90,7 +90,15 @@ apply {{} {
 
     dict set config --prefix      [dict get $config --exec-prefix]
     dict set config --man-dir     [dict get $config --prefix]/man
-    dict set config --html-dir    [dict get $config --prefix]/man
+    dict set config --html-dir    [dict get $config --prefix]/html
+
+    dict set config --ignore-glob {
+	*~ _FOSSIL_ .fslckout .fos .git .svn CVS .hg RCS SCCS
+	*.bak *.bzr *.cdv *.pc _MTN _build _darcs _sgbak blib
+	autom4te.cache cover_db ~.dep ~.dot ~.nib ~.plst
+    }
+
+    dict set config --dry 0
 
 } ::kettle}
 
@@ -164,7 +172,7 @@ proc ::kettle::Help {prefix} {
 	    puts "\t==> [join [lsort -dict $children] "\n\t==> "]"
 	}
 	if {[llength $help]} {
-	    puts [join [lsort -unique $help] \n]
+	    puts [join $help \n]
 	}
     }
 
@@ -196,7 +204,7 @@ proc ::kettle::Run {name} {
 
     # Now run the recipe itself
     log {	run ($name) ...}
-    foreach cmd [lsort -unique [dict get $recipe $name script]] {
+    foreach cmd [dict get $recipe $name script] {
 	#puts |$cmd|
 	eval $cmd
     }
