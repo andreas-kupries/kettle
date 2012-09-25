@@ -23,23 +23,27 @@ namespace eval ::kettle::doc {}
 option: --doc-destination embedded
 
 proc ::kettle::doc-destination {dstdir} {
-    # TODO: Reject absolute path.
+    # TODO: Reject absolute path?
     # TODO: Reject path outside of sources?
+
+    # Actually both make sense. For 1, the package may be part of a
+    # larger structure, with a consolidated hierarchy for doc
+    # results. And 2, the user may want the docs somewhere else.
+
     option: --doc-destination $dstdir
     return
 }
 
-proc ::kettle::doc {{docsrcdir {}}} {
+proc ::kettle::doc {{docsrcdir doc}} {
     # Overwrite self, we run only once for effect.
     proc ::kettle::doc args {}
 
     # Auto-search for documentation files.
+    # Auto-search for figures!
 
-    if {$docsrcdir eq {}} {
-	set docsrcdir [kettle sources doc]
-    } else {
-	set docsrcdir [kettle norm $docsrcdir]
-    }
+    set docsrcdir [kettle norm $docsrcdir]
+
+    # TODO figures - sub directory of docsrcdir!
 
     set ok 0
     kettle util foreach-file $docsrcdir path {
