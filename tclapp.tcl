@@ -23,45 +23,31 @@ namespace eval ::kettle {}
 proc ::kettle::tclapp {fname} {
     ## Recipe: Pure Tcl application installation.
 
-    set ihelp "
-	?lib-directory?
-	Install application $fname in the bin/ directory.
-    "
-    set icmd [list apply {{src dstdir} {
-	set fname [file tail $src]
-	set dst   $dstdir/$fname
+    set src [kettle sources $fname]
 
-	puts "Installing into:       $dstdir ..."
-	file mkdir $dstdir
-	file copy -force $src $dst
-	kettle util fixhashbang $dst [info nameofexecutable]
-	kettle util set-executable $dst
+    kettle::Def install-app-$fname "Install application $fname" \
+	[list apply {{src} {
+	    util install-script \
+		$src [bindir] \
+		[info nameofexecutable]
+	} ::kettle} $src]
 
-	puts -nonewline "Installed application: "
-	kettle gui tag note ; puts $dst
-	return
-    }} [kettle sources $fname] [kettle util bindir]]
+    kettle::Def drop-app-$fname "Uninstall application $fname" \
+	[list apply {{src} {
+	    util uninstall-application \
+		$src [bindir]
+	} ::kettle} $src]
 
-    set dhelp "
-	?lib-directory?
-	Remove application $fname from the bin/ directory.
-    "
-    set dcmd [list apply {{dst} {
-	file delete -force $dst
+    # Hook the application specific recipes into a hierarchy of more
+    # general recipes.
 
-	puts -nonewline "Removed application: "
-	kettle gui tag note ; puts $dst
-	return
-    }} [kettle util bindir]/$fname]
+    kettle::SetParent install-app-$fname       install-tcl-applications
+    kettle::SetParent install-tcl-applications install-applications
+    kettle::SetParent install-applications     install
 
-    foreach suffix {
-	{}
-	-application
-	-tcl-application
-    } {
-	kettle::Def install$suffix $ihelp $icmd
-	kettle::Def drop$suffix    $dhelp $dcmd
-    }
+    kettle::SetParent drop-app-$fname       drop-tcl-applications
+    kettle::SetParent drop-tcl-applications drop-applications
+    kettle::SetParent drop-applications     drop
     return
 }
 
