@@ -20,35 +20,53 @@ namespace eval ::kettle::doc {}
 # # ## ### ##### ######## ############# #####################
 ## API.
 
-proc ::kettle::doc {{root {}}} {
-    # Auto-search for documentation files.
+option: --doc-destination embedded
 
-    if {$root eq {}} {
-	set root [kettle sources]/doc
-    }
-
-    set ok 0
-    kettle util foreach-file $root path {
-	if {![kettle util docfile $path]} continue
-	set ok 1
-    }
-
-    if {!$ok} return
-    doc::Setup $root
+proc ::kettle::doc-destination {dstdir} {
+    # TODO: Reject absolute path.
+    # TODO: Reject path outside of sources?
+    option: --doc-destination $dstdir
     return
 }
 
-proc ::kettle::doc::Setup {root} {
+proc ::kettle::doc {{docsrcdir {}}} {
+    # Overwrite self, we run only once for effect.
+    proc ::kettle::doc args {}
 
-    set topdir [file normalize [kettle sources]]
+    # Auto-search for documentation files.
+
+    if {$docsrcdir eq {}} {
+	set docsrcdir [kettle sources doc]
+    } else {
+	set docsrcdir [kettle norm $docsrcdir]
+    }
+
+    set ok 0
+    kettle util foreach-file $docsrcdir path {
+	if {![kettle util docfile $path]} continue
+	set ok 1
+	break
+    }
+
+    if {!$ok} return
+    doc::Setup $docsrcdir
+    return
+}
+
+proc ::kettle::doc::Dest {} {
+    return [kettle option-get --doc-destination]
+}
+
+proc ::kettle::doc::Setup {docsrcdir} {
 
     kettle::Def doc {
 	(Re)generate the documentation embedded in the repository.
-    } [list apply {{docroot topdir} {
-	set here [pwd]
+    } [list apply {{docsrcdir} {
 
-	cd $docroot
-	set dst $topdir/embedded
+	set here [pwd]
+	set dst  [sources [doc::Dest]]
+
+	cd $docsrcdir
 
 	puts "Removing old documentation..."
 	file delete -force $dst
@@ -57,54 +75,52 @@ proc ::kettle::doc::Setup {root} {
 	file mkdir $dst/www
 
 	## TODO ## Put the exec calls into a utility command which
-	## ensures proper output to the gui as well.
+	## ---- ## ensures proper output to the gui as well.
 
 	puts "Generating man pages..."
 	exec 2>@ stderr >@ stdout dtplite -ext n -o $dst/man nroff .
+	# Note: Might be better to run them separately.
+	# Note @: Or we shuffle the results a bit more in the post processing stage.
 
 	puts "Generating 1st html..."
 	exec 2>@ stderr >@ stdout dtplite -merge -o $dst/www html .
 	puts "Generating 2nd html, resolving cross-references..."
 	exec 2>@ stderr >@ stdout dtplite -merge -o $dst/www html .
 
-	cd  $dst/man
-	file delete -force .idxdoc .tocdoc
-	cd  ../www
-	file delete -force .idxdoc .tocdoc
+	# Remove some of the generated files, consider them transient.
+	cd  $dst/man ; file delete -force .idxdoc .tocdoc
+	cd  ../www   ; file delete -force .idxdoc .tocdoc
 
 	cd $here
-    }} $root $topdir]
+    } ::kettle} $docsrcdir]
 
     kettle::Def install-doc-manpages {
 	Install manpages
-    } [list apply {{src} {
-	# ... embedded/man
-	set dst [kettle mandir]/mann
-	foreach m [glob -directory $src *] {
-	    file copy -force $m $dst
-	}
+    } {
+	set src [sources [doc::Dest]/man/files]
+	set dst [mandir]/mann
+
+	util install-file-set "manpages" \
+	    $dst {*}[glob -directory $src *.n]
 	return
-    }} $topdir/embedded/man/files]
+    }
 
     kettle::Def install-doc-html {
 	Install HTML documentation
-    } [list apply {{src name} {
-	# ... embedded/ww
+    } {
+	set src [sources [doc::Dest]/www]
+	set dst [htmldir]/[file dirname [sources]]
 
-	set dst [kettle htmldir]/$name
-
-	file mkdir ${dst}-new
-	file copy -force {*} [glob -directory $src *] ${dst}-new
-
-	catch { file rename -force $dst ${dst}-old }
-	file rename -force ${dst}-new $dst
-	file delete -force ${dst}-old
+	util install-file-group "HTML documentation" \
+	    $dst {*}[glob -directory $src *]
 	return
-    }} $topdir/embedded/www [file tail $topdir]]
+    }
 
     kettle::SetParent install-doc-html     install-doc
     kettle::SetParent install-doc-manpages install-doc
     kettle::SetParent install-doc install
+
+    ## TODO ## uninstallation of documentation ...
     return
 }
 

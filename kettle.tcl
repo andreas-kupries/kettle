@@ -173,6 +173,7 @@ proc ::kettle::Help {prefix} {
 
 proc ::kettle::Reset {} {
     variable done {}
+    status-ok
     return
 }
 
@@ -354,6 +355,7 @@ kettle::Def gui {
     # semantic tags
     .t tag configure stdout                       ;# -font {Helvetica 8}
     .t tag configure stderr -background red       ;# -font {Helvetica 12}
+    .t tag configure err    -background red       ;# -font {Helvetica 12}
     .t tag configure ok     -background green     ;# -font {Helvetica 8}
     .t tag configure warn   -background yellow    ;# -font {Helvetica 12}
     .t tag configure note   -background lightblue ;# -font {Helvetica 8}
@@ -403,6 +405,7 @@ kettle::Def gui {
 foreach {tag color} {
     ok     green
     warn   yellow
+    err    red
     note   blue
     debug  cyan
 
@@ -472,6 +475,35 @@ proc ::kettle::puts {args} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Status management
+
+proc ::kettle::status-check {} {
+    variable NOTE
+    if {[lindex $NOTE 0] ne "warn"} return
+    return -code return
+}
+
+proc ::kettle::status-ok {} {
+    variable NOTE
+    set NOTE {ok DONE}
+    return
+}
+
+proc ::kettle::status-fail {} {
+    variable NOTE
+    set NOTE {warn {DONE with FAILURES}}
+    return
+}
+
+proc ::kettle::ShowStatus {} {
+    variable NOTE
+    lassign $NOTE tag message
+    puts ""
+    $tag { puts $message }
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
 ## GUI support code.
 
 proc ::kettle::Gui! {} {
@@ -486,21 +518,19 @@ proc ::kettle::GuiClear {} {
 
 proc ::kettle::GuiRun {goal} {
     variable INSTALLPATH
-    variable NOTE
 
     #set argv [list $INSTALLPATH]
     #=> update option database
     kettle option: --lib-dir $INSTALLPATH
 
     State disabled
-    # TODO look for code changing this on failure.
-    set NOTE {ok DONE}
+
+    GuiClear
+    Reset
+
     set fail [catch {
-	kettle::GuiClear
-	kettle::Reset
-	kettle::Run $goal
-	puts ""
-	[lindex $NOTE 0] { puts [lindex $NOTE 1] }
+	Run $goal
+	ShowStatus
     } e o]
 
     State normal
@@ -593,6 +623,7 @@ proc ::kettle::ProcessGoals {} {
     FixExit
     set goals [Goals]
 
+    Reset
     if {[catch {
 	foreach goal $goals {
 	    Run $goal

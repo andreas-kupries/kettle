@@ -25,9 +25,9 @@ proc ::kettle::tcl {} {
     # Auto-search for documentation, testsuites, benchmarks.
 
     set packages {}
-    kettle util foreach-file [kettle sources] path {
+    kettle util foreach-file [sources] path {
 	if {[catch {
-	    lassign [kettle util provides $path] pn pv
+	    lassign [util provides $path] pn pv
 	}]} continue
 	lappend packages $path $pn $pv
     }
@@ -35,50 +35,53 @@ proc ::kettle::tcl {} {
     foreach {primary pn pv} $packages {
 	set     files {}
 	lappend files $primary
-	# TODO: Look for files referenced by the primary.
 
+	# TODO: Look for files referenced by the primary.
 	tcl::Setup $files $pn $pv
     }
     return
 }
 
 proc ::kettle::tcl::Setup {files pn pv} {
-    kettle::log {	Tcl Package Setup $pn $pv ... $files}
+    kettle log {	Tcl Package Setup $pn $pv ... $files}
 
-    set pdir [string map {:: _} $pn]
-    set dst  [kettle libdir]/$pdir$pv
+    set pkgdir [kettle libdir]/[string map {:: _} $pn]$pv
 
-    kettle::Def install-pkg-$pn "Install package $pn $pv" \
-	[list apply {{dst files pn pv} {
-	    set tmpfile [pid].pkgIndex
+    kettle::Def install-package-$pn "Install package $pn $pv" \
+	[list apply {{pkgdir files pn pv} {
+
+	    set tmpdir [util tmpfile]
+	    file mkdir $tmpdir
+	    set tmpfile $tmpdir/pkgIndex.tcl
 
 	    set primary [lindex $files 0]
-	    set c [open $tmpfile w]
-	    puts $c "package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
-	    close $c
+	    util write $tmpfile \
+		"package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
 
-	    kettle util install_group \
-		"Installing package $dst" \
-		$dst {*}$files $tmpfile
+	    util install-file-group \
+		"package $pn $pv" \
+		$pkgdir {*}$files $tmpfile
+
 	    file delete $tmpfile
+	    file delete $tmpdir
 	    return
-	}} $dst $files $pn $pv]
+	} ::kettle} $pkgdir $files $pn $pv]
 
-    kettle::Def drop-pkg-$pn "Remove package $pn $pv" \
-	[list apply {{dst} {
-	    kettle util drop_path \
-		"Remove package $dst" \
-		$dst
-	}} $dst]
+    kettle::Def drop-package-$pn "Remove package $pn $pv" \
+	[list apply {{pkgdir pn pv} {
+	    util uninstall-file-group \
+		"package $pn $pv" \
+		$pkgdir
+	} ::kettle} $pkgdir $pn $pv]
 
     # Hook the package specific recipes into a hierarchy of more
     # general recipes.
 
-    kettle::SetParent install-pkg-$pn      install-tcl-packages
+    kettle::SetParent install-package-$pn  install-tcl-packages
     kettle::SetParent install-tcl-packages install-packages
     kettle::SetParent install-packages     install
 
-    kettle::SetParent drop-pkg-$pn      drop-tcl-packages
+    kettle::SetParent drop-package-$pn  drop-tcl-packages
     kettle::SetParent drop-tcl-packages drop-packages
     kettle::SetParent drop-packages     drop
     return
