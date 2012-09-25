@@ -43,46 +43,44 @@ proc ::kettle::tcl {} {
 }
 
 proc ::kettle::tcl::Setup {files pn pv} {
+    kettle::log {	Tcl Package Setup $pn $pv ... $files}
+
     set pdir [string map {:: _} $pn]
-    set dst  [kettle util libdir]/$pdir$pv
+    set dst  [kettle libdir]/$pdir$pv
 
-    kettle::Def install-$pn "
-	?lib-directory?
-	Install package $pn $pv in the lib/ directory.
-    " [list apply {{dst files pn pv} {
-	set tmpfile [pid].pkgIndex
+    kettle::Def install-pkg-$pn "Install package $pn $pv" \
+	[list apply {{dst files pn pv} {
+	    set tmpfile [pid].pkgIndex
 
-	set primary [lindex $files 0]
-	set c [open $tmpfile w]
-	puts $c "package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
-	close $c
+	    set primary [lindex $files 0]
+	    set c [open $tmpfile w]
+	    puts $c "package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
+	    close $c
 
-	kettle util install_group \
-	    "Installing package $dst" \
-	    $dst {*}$files $tmpfile
-	file delete $tmpfile
-	return
-    }} $dst $files $pn $pv]
+	    kettle util install_group \
+		"Installing package $dst" \
+		$dst {*}$files $tmpfile
+	    file delete $tmpfile
+	    return
+	}} $dst $files $pn $pv]
 
-    kettle::Def drop-$pn "
-	?lib-directory?
-	Remove package $pn $pv from the lib/ directory.
-    " [list apply {{dst} {
-	kettle util drop_path \
-	    "Remove package $dst" \
-	    $dst
-    }} $dst]
+    kettle::Def drop-pkg-$pn "Remove package $pn $pv" \
+	[list apply {{dst} {
+	    kettle util drop_path \
+		"Remove package $dst" \
+		$dst
+	}} $dst]
 
     # Hook the package specific recipes into a hierarchy of more
     # general recipes.
 
-    kettle::DefHook install-$pn          install-tcl-packages
-    kettle::DefHook install-tcl-packages install-packages
-    kettle::DefHook install-packages     install
+    kettle::SetParent install-pkg-$pn      install-tcl-packages
+    kettle::SetParent install-tcl-packages install-packages
+    kettle::SetParent install-packages     install
 
-    kettle::DefHook drop-$pn          drop-tcl-packages
-    kettle::DefHook drop-tcl-packages drop-packages
-    kettle::DefHook drop-packages     drop
+    kettle::SetParent drop-pkg-$pn      drop-tcl-packages
+    kettle::SetParent drop-tcl-packages drop-packages
+    kettle::SetParent drop-packages     drop
     return
 }
 

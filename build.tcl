@@ -6,6 +6,8 @@ catch {
     source [kettle path util.tcl]
     source [kettle path tclapp.tcl]
     source [kettle path tcl.tcl]
+    source [kettle path doc.tcl]
 }
 kettle tclapp kettle
 kettle tcl
+kettle doc

@@ -1,0 +1,39 @@
+# -*- tcl -*- tcl.tk//DSL diagram//EN//1.0
+## ====================================================================
+## DSL for dependency diagram. Default parameters.
+
+source [file join [file dirname [file normalize [info script]]] dsl_dependencies.inc]
+
+## ====================================================================
+## Dependencies, bottom-up, one procedure per package.
+
+proc kettle_core {} { box kettle color red }
+
+proc kettle_util {} {
+    box kettle::util color red
+    group { down ; ---> 3 ; kettle_core }
+}
+
+proc kettle_tcl {} {
+    box kettle::tcl color red
+    group { down ; ---   ; r ; --- ; d ; ---> } ;# util
+    group { down ; --- 6 ; r ; --- ; d ; ---> } ;# core
+}
+
+proc kettle_tclapp {} {
+    box kettle::tclapp color red
+    group { down ; ---   ; l ; --- ; d ; ---> ; kettle_util }
+    group { down ; --- ; r ; l ; --- 4 ; d ; --- ; r ; ---> } ;# core
+}
+
+## ====================================================================
+
+proc layout {} {
+    east
+    kettle_tcl ; move
+    kettle_tclapp
+}
+
+## ====================================================================
+
+layout

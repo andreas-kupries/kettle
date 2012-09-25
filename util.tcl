@@ -19,32 +19,6 @@ namespace eval ::kettle::util {}
 # # ## ### ##### ######## ############# #####################
 ## API.
 
-proc ::kettle::util::libdir {} {
-    global argv
-    if {[llength $argv] && [file exists [set p [lindex $argv 0]]]} {
-	set argv [lassign $argv _]
-	log {	lib/ directory (User)    = $p}
-    } else {
-	set p [info library]
-	log {	lib/ Directory (Default) = $p}
-    }
-    proc ::kettle::util::libdir {} [list return $p]
-    return $p
-}
-
-proc ::kettle::util::bindir {} {
-    set p [libdir]
-    if {$p eq [info library]} {
-	set p [file dirname [file dirname [file normalize [info nameofexecutable]/___]]]
-	log {	bin/ Directory (Default) = $p}
-    } else {
-	set p [file dirname $p]/bin
-	log {	bin/ directory (User)    = $p}
-    }
-    proc ::kettle::util::bindir {} [list return $p]
-    return $p
-}
-
 proc ::kettle::util::set-executable {path} {
     log {	!chmod ugo+x   $path}
     catch { file attributes $path -permissions ugo+x }
@@ -90,6 +64,30 @@ proc ::kettle::util::provides {file} {
     set pkgver  [lindex $provisions end 3]
     log {	Package: ($pkgname) ($pkgver)}
     return [list $pkgname $pkgver]
+}
+
+proc ::kettle::util::docfile {path} {
+    set c [open $path r]
+    fconfigure $c -translation binary -buffersize 1024 -buffering full
+    set test [read $c 1024]
+    close $c
+    if {([regexp "\\\[manpage_begin " $test] &&
+	 !([regexp -- {--- !doctools ---} $test] || [regexp -- "!tcl\.tk//DSL doctools//EN//" $test])) ||
+	  ([regexp -- {--- doctools ---} $test]  || [regexp -- "tcl\.tk//DSL doctools//EN//" $test])} {
+	return 1
+    } 
+    return 0
+}
+
+proc ::kettle::util::diafile {path} {
+    set c [open $path r]
+    fconfigure $c -translation binary -buffersize 1024 -buffering full
+    set test [read $c 1024]
+    close $c
+    if {([regexp {tcl.tk//DSL diagram//EN//1.0} $test]} {
+	return 1
+    } 
+    return 0
 }
 
 proc ::kettle::util::foreach-file {path pv script} {
