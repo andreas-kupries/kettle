@@ -248,6 +248,8 @@ package require \fBTcl  8.5\fR
 .sp
 \fBkettle doc-destination\fR \fIpath\fR
 .sp
+\fBkettle figures\fR ?\fIfigroot\fR?
+.sp
 .BE
 .SH DESCRIPTION
 .PP
@@ -335,6 +337,11 @@ without being includes from a master file configuring it.
 The "doc" recipe uses the \fBdtplite\fR application to
 perform the various conversions. It will fail if this
 application cannot be found on the \fBPATH\fR.
+.IP [6]
+This command calls "\fBkettle figures\fR \fIdocroot\fR/figures"
+to search for and handle diagrams. Any non-standard settings
+for diagrams must be declared before \fBkettle doc\fR itself
+is used.
 .RE
 .TP
 \fBkettle doc-destination\fR \fIpath\fR
@@ -347,6 +354,47 @@ destination for the package/application.
 .sp
 It can also be adjusted on a per-run basis through the option
 \fB--doc-destination\fR of \fBkettle\fR
+.TP
+\fBkettle figures\fR ?\fIfigroot\fR?
+This command declares the presence of \fBdiagram\fR-based figures
+under the directory \fIfigroot\fR, which is a path relative to the
+source directory we are in.
+.sp
+If not specified \fIfigroot\fR defaults to "\fIdoc/figures\fR".
+.sp
+If figures are found the command will define two recipes,
+"figures" and "show-figures". When invoked the first will convert the
+figures into raster images in PNG format and save them as siblings to
+their source files. The second will launch a \fBTk\fR-based GUI
+rendering the figures to a canvas.
+.sp
+Now for various important notes, limitations, etc.:
+.RS
+.IP [1]
+This command is run for effect only once, even if invoked
+multiple times. First invocation wins.
+.IP [2]
+This command is run implicitly by \fBkettle doc\fR, using
+its \fIdocroot\fR as basis for \fIfigroot\fR, i.e.
+"\fI\fIdocroot\fR/figures\fR".
+.IP [3]
+The previous two items together mean that any non-standard
+settings for the figure root must come before
+\fBkettle doc\fR, if that command is used, directly, or
+indirectly (like through \fBkettle tcl\fR, for example).
+.IP [4]
+Diagram files are recognized by containing the marker
+.RS
+.IP \(bu
+"\fBtcl.tk//DSL diagram//EN//\fR"
+.RE
+.IP
+in their first 1024 characters.
+.IP [5]
+The two recipes use the tklib \fBdia\fR application to
+perform the conversion and GUI display. They will fail if
+this application cannot be found on the \fBPATH\fR.
+.RE
 .PP
 .SH "BUILD.TCL EXAMPLE"
 A simple example of a build.tcl script is that for kettle itself.

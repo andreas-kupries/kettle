@@ -17,7 +17,7 @@ namespace eval ::kettle::figures {}
 # # ## ### ##### ######## ############# #####################
 ## API.
 
-proc ::kettle::figures {{figsrcdir doc}} {
+proc ::kettle::figures {{figsrcdir doc/figures}} {
     # Overwrite self, we run only once for effect.
     proc ::kettle::figures args {}
 
