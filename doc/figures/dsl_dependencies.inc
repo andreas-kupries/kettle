@@ -1,4 +1,4 @@
-# -*- tcl -*- tcl.tk//DSL diagram//EN//1.0
+# -*- tcl -*- tcl.tk//DSL diagram include//EN//1.0
 # # ## ### ##### ######## #############
 ## DSL parameters, defaults.
 
@@ -8,9 +8,9 @@ proc default {var value} {
     set v $value
 }
 
-default grid [3 mm]
+default grid [4 mm]
 default bw   8
-default bh   4
+default bh   2
 default ll   2
 #default textfont {Helvetica 10}
 
