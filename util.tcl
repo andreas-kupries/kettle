@@ -60,7 +60,7 @@ proc ::kettle::util::provides {file} {
     # grep pattern above (*) as result for this package itself.
     set pkgname [lindex $provisions end 2]
     set pkgver  [lindex $provisions end 3]
-    log {	Package: ($pkgname) ($pkgver)}
+    log {    package: $pkgname $pkgver @ $file}
     return [list $pkgname $pkgver]
 }
 
@@ -76,7 +76,7 @@ proc ::kettle::util::docfile {path} {
 
 proc ::kettle::util::diafile {path} {
     set test [cathead $path 1024 -translation binary]
-    if {([regexp {tcl.tk//DSL diagram//EN//1.0} $test]} {
+    if {[regexp {tcl.tk//DSL diagram//EN//1.0} $test]} {
 	return 1
     } 
     return 0
