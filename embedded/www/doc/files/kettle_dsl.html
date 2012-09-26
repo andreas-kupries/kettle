@@ -129,6 +129,7 @@
 <li><a href="#1"><b class="cmd">kettle doc</b> <span class="opt">?<i class="arg">docroot</i>?</span></a></li>
 <li><a href="#2"><b class="cmd">kettle doc-destination</b> <i class="arg">path</i></a></li>
 <li><a href="#3"><b class="cmd">kettle figures</b> <span class="opt">?<i class="arg">figroot</i>?</span></a></li>
+<li><a href="#4"><b class="cmd">kettle tclapp</b> <i class="arg">path</i></a></li>
 </ul>
 </div>
 </div>
@@ -241,6 +242,16 @@ rendering the figures to a canvas.</p>
 	perform the conversion and GUI display. They will fail if
 	this application cannot be found on the <b class="variable">PATH</b>.</p></li>
 </ol></dd>
+<dt><a name="4"><b class="cmd">kettle tclapp</b> <i class="arg">path</i></a></dt>
+<dd><p>This command declares the presence of a Tcl script application found 
+at the <i class="arg">path</i> under the package source directory.</p>
+<p>If the specified application is found the command will define
+two recipes to install and uninstall this application, with the names
+&quot;install-app-<i class="arg">path</i>&quot; and &quot;&quot;drop-app-<i class="arg">path</i>&quot;.</p>
+<p>It will further extend the recipes &quot;install-tcl-applications&quot;,
+&quot;install-applications&quot;, &quot;install&quot;, &quot;drop-tcl-applications&quot;,
+&quot;drop-applications&quot;, and &quot;drop&quot;.  This enables the package builder to
+(un)install the application as part of various groups.</p></dd>
 </dl>
 </div>
 <div id="section4" class="section"><h2><a name="section4">build.tcl Example</a></h2>

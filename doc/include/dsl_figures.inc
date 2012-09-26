@@ -35,7 +35,7 @@ rendering the figures to a canvas.
 [enum]	Diagram files are recognized by containing the marker
 
 	[list_begin itemized]
-	[item] "[const "tcl\.tk//DSL diagram//EN//"]"
+	[item] "[const "tcl.tk//DSL diagram//EN//"]"
 	[list_end]
 
 	in their first 1024 characters.
