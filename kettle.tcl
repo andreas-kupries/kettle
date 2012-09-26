@@ -109,10 +109,13 @@ apply {{} {
 proc ::kettle::Def {name description script} {
     variable recipe
 
+    set description [Reflow $description]
+    log {DEF $name}
+
     InitRecipe $name
     dict update recipe $name def {
 	dict lappend def script [list apply [list {} $script ::kettle]]
-	dict lappend def help   [Reflow $description]
+	dict lappend def help   $description
     }
     return
 }
@@ -203,7 +206,7 @@ proc ::kettle::Run {name} {
     }
 
     # Now run the recipe itself
-    log {	run ($name) ...}
+    log {RUN ($name) ...}
     foreach cmd [dict get $recipe $name script] {
 	#puts |$cmd|
 	eval $cmd
@@ -306,6 +309,8 @@ proc ::kettle::LCP {list} {
 
 # # ## ### ##### ######## ############# #####################
 ## Standard recipes.
+
+kettle::Def null {No operation. Debugging} {}
 
 ## Recipe introspection.
 kettle::Def recipes {
@@ -447,7 +452,7 @@ proc ::kettle::Color {t {script {}}} {
     }
 }
 
-proc ::kettle::Hilit {tag chars} {
+proc ::kettle::Hilit {t chars} {
     variable gui
     if {$gui} {
 	variable tag $t
@@ -645,6 +650,7 @@ proc ::kettle::ProcessGoals {} {
     FixExit
     set goals [Goals]
 
+    log {}
     Reset
     if {[catch {
 	foreach goal $goals {
