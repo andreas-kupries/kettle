@@ -244,11 +244,23 @@ doc
 build tea
 .RS
 .TP
+\fBfiles/kettle.n\fR
+kettle
+.TP
 \fBfiles/kettle_changes.n\fR
 kettle_changes
 .TP
 \fBfiles/kettle_devguide.n\fR
 kettle_devguide
+.TP
+\fBfiles/kettle_doc.n\fR
+kettle_doc
+.TP
+\fBfiles/kettle_dsl.n\fR
+kettle_dsl
+.TP
+\fBfiles/kettle_figures.n\fR
+kettle_figures
 .TP
 \fBfiles/kettle_installer.n\fR
 kettle_install_guide
@@ -261,4 +273,13 @@ kettle_license
 .TP
 \fBfiles/kettle_sources.n\fR
 kettle_sources
+.TP
+\fBfiles/kettle_tcl.n\fR
+kettle_tcl
+.TP
+\fBfiles/kettle_tclapp.n\fR
+kettle_tclapp
+.TP
+\fBfiles/kettle_util.n\fR
+kettle_util
 .RE

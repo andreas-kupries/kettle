@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Struct/kettle/embedded/man/files/kettle_devguide.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Kettle/kettle/embedded/man/files/kettle_devguide.n' by tcllib/doctools with format 'nroff'
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -271,7 +271,23 @@ code management system is used, where to find it, how to set it up,
 etc.
 .SH "DEVELOPING FOR KETTLE"
 .SS "ARCHITECTURE & CONCEPTS"
-IMAGE: architecture
+.PS
+.nf
++-------------------------------------------------------------------------------+
+| build.tcl                                                                     |
++-------------------------------------------------------------------------------+
++-------------------------------------------------------------------------------+
+| kettle                                                                        |
+|        +----------------------------------------------------------------------+
+|        | +-------------+ +----------------+ +-------------+ +-----------------+
+|        | | kettle::tcl | | kettle::tclapp | | kettle::doc | | kettle::figures |
++--------+ +-------------+ +----------------+ +-------------+ +-----------------+
++-------------------------------------------------------------------------------+
+| kettle, kettle::util                                                          |
++-------------------------------------------------------------------------------+
+
+.fi
+.PE
 .SS "DIRECTORY STRUCTURE"
 .TP
 Helpers

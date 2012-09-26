@@ -1,6 +1,6 @@
 
 <html><head>
-<title>kettle_introduction - Kettle Quick Brew System</title>
+<title>kettle_tclapp - Kettle Quick Brew System</title>
 <style type="text/css"><!--
     HTML {
 	background: 	#FFFFFF;
@@ -92,9 +92,9 @@
     }
 --></style>
 </head>
-<! -- Generated from file 'doc/files/kettle_intro.html' by tcllib/doctools with format 'html'
+<! -- Generated from file 'doc/files/kettle_tclapp.html' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id$ kettle_introduction.n
+<! -- CVS: $Id$ kettle_tclapp.n
    -->
 <body><div class="doctools">
 <hr> [
@@ -102,18 +102,17 @@
 | <a href="../toc.html">Table Of Contents</a>
 | <a href="../../index.html">Keyword Index</a>
 ] <hr>
-<h1 class="title">kettle_introduction(n) 1 doc &quot;Kettle Quick Brew System&quot;</h1>
+<h1 class="title">kettle_tclapp(n) 0 doc &quot;Kettle Quick Brew System&quot;</h1>
 <div id="name" class="section"><h2><a name="name">Name</a></h2>
-<p>kettle_introduction - Kettle - Introduction to Kettle</p>
+<p>kettle_tclapp - Kettle - Tcl Script Applications</p>
 </div>
 <div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
 <ul class="toc">
 <li class="section"><a href="#toc">Table Of Contents</a></li>
 <li class="section"><a href="#synopsis">Synopsis</a></li>
 <li class="section"><a href="#section1">Description</a></li>
-<li class="section"><a href="#section2">Related Documents</a></li>
-<li class="section"><a href="#section3">System Architecture</a></li>
-<li class="section"><a href="#section4">Bugs, Ideas, Feedback</a></li>
+<li class="section"><a href="#section2">License</a></li>
+<li class="section"><a href="#section3">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
 </ul>
@@ -127,49 +126,12 @@
 </div>
 <div id="section1" class="section"><h2><a name="section1">Description</a></h2>
 <p>Welcome to Kettle, a set of packages providing support for writing
-build code for Tcl packages.
-Kettle is a system to make building Tcl packages quick and easy. More
-importantly, possibly, to make writing the build system for Tcl
-packages easy.</p>
-<p>As such kettle is several things actually:</p>
-<ol class="enumerated">
-<li><p>A DSL helping in the writing of a build system for package.</p></li>
-<li><p>A package implementing the DSL.</p></li>
-<li><p>An application which can serve as the interpreter for a build
-       file containing commands in the above DSL.</p></li>
-<li><p>Plus some internal supporting packages.</p></li>
-</ol>
-<p>All of these will be explained in the documentation, although not
-everything is for everybody. I.e. a user of the DSL requires a
-different set of knowledge than a developer working on extending
-kettle's DSL, etc.</p>
+build code for Tcl packages.</p>
 </div>
-<div id="section2" class="section"><h2><a name="section2">Related Documents</a></h2>
-<ol class="enumerated">
-<li><p><i class="term"><a href="kettle_license.html">Kettle - License</a></i>.</p></li>
-<li><p><i class="term"><a href="kettle_sources.html">Kettle - How To Get The Sources</a></i>.</p></li>
-<li><p><i class="term"><a href="kettle_installer.html">Kettle - The Installer's Guide</a></i>.</p></li>
-<li><p><i class="term"><a href="kettle_devguide.html">Kettle - The Developer's Guide</a></i>.</p></li>
-</ol>
+<div id="section2" class="section"><h2><a name="section2">License</a></h2>
+<p>This package, written by Andreas Kupries, is BSD licensed.</p>
 </div>
-<div id="section3" class="section"><h2><a name="section3">System Architecture</a></h2>
-<p>The image below provides a basic overview of the system's
-architecture, with a package's custom build file at the top, using DSL
-commands from the declaration and core layers, under the mediation of
-the kettle interpreter application.
-<img alt="architecture" src="../../image/architecture.png">
-The relevant manpages are</p>
-<ol class="enumerated">
-<li><p><i class="term"><a href="kettle_dsl.html">Kettle - Build Declarations</a></i></p></li>
-<li><p><i class="term"><a href="kettle.html">Kettle - Core</a></i></p></li>
-<li><p><i class="term"><a href="kettle_util.html">Kettle - Utilities</a></i></p></li>
-<li><p><i class="term"><a href="kettle_tcl.html">Kettle - Tcl Packages</a></i></p></li>
-<li><p><i class="term"><a href="kettle_tclapp.html">Kettle - Tcl Script Applications</a></i></p></li>
-<li><p><i class="term"><a href="kettle_doc.html">Kettle - Documentation</a></i></p></li>
-<li><p><i class="term"><a href="kettle_figures.html">Kettle - Figures</a></i></p></li>
-</ol>
-</div>
-<div id="section4" class="section"><h2><a name="section4">Bugs, Ideas, Feedback</a></h2>
+<div id="section3" class="section"><h2><a name="section3">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at the

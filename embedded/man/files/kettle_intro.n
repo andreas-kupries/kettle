@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Struct/kettle/embedded/man/files/kettle_intro.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/home/aku/Projects/Kettle/kettle/embedded/man/files/kettle_intro.n' by tcllib/doctools with format 'nroff'
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -249,6 +249,25 @@ package require \fBTcl  8.5\fR
 .PP
 Welcome to Kettle, a set of packages providing support for writing
 build code for Tcl packages.
+Kettle is a system to make building Tcl packages quick and easy. More
+importantly, possibly, to make writing the build system for Tcl
+packages easy.
+.PP
+As such kettle is several things actually:
+.IP [1]
+A DSL helping in the writing of a build system for package.
+.IP [2]
+A package implementing the DSL.
+.IP [3]
+An application which can serve as the interpreter for a build
+file containing commands in the above DSL.
+.IP [4]
+Plus some internal supporting packages.
+.PP
+All of these will be explained in the documentation, although not
+everything is for everybody. I.e. a user of the DSL requires a
+different set of knowledge than a developer working on extending
+kettle's DSL, etc.
 .SH "RELATED DOCUMENTS"
 .IP [1]
 \fIKettle - License\fR.
@@ -260,7 +279,43 @@ build code for Tcl packages.
 \fIKettle - The Developer's Guide\fR.
 .PP
 .SH "SYSTEM ARCHITECTURE"
-IMAGE: architecture
+The image below provides a basic overview of the system's
+architecture, with a package's custom build file at the top, using DSL
+commands from the declaration and core layers, under the mediation of
+the kettle interpreter application.
+.PS
+.nf
++-------------------------------------------------------------------------------+
+| build.tcl                                                                     |
++-------------------------------------------------------------------------------+
++-------------------------------------------------------------------------------+
+| kettle                                                                        |
+|        +----------------------------------------------------------------------+
+|        | +-------------+ +----------------+ +-------------+ +-----------------+
+|        | | kettle::tcl | | kettle::tclapp | | kettle::doc | | kettle::figures |
++--------+ +-------------+ +----------------+ +-------------+ +-----------------+
++-------------------------------------------------------------------------------+
+| kettle, kettle::util                                                          |
++-------------------------------------------------------------------------------+
+
+.fi
+.PE
+The relevant manpages are
+.IP [1]
+\fIKettle - Build Declarations\fR
+.IP [2]
+\fIKettle - Core\fR
+.IP [3]
+\fIKettle - Utilities\fR
+.IP [4]
+\fIKettle - Tcl Packages\fR
+.IP [5]
+\fIKettle - Tcl Script Applications\fR
+.IP [6]
+\fIKettle - Documentation\fR
+.IP [7]
+\fIKettle - Figures\fR
+.PP
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
