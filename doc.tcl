@@ -9,8 +9,8 @@
 ## Requisites
 
 package require Tcl 8.5
-package require  kettle ; # core
-package require  kettle::util
+package require kettle ; # core
+package require kettle::util
 
 # # ## ### ##### ######## ############# #####################
 ## State, Initialization
@@ -23,12 +23,15 @@ namespace eval ::kettle::doc {}
 option: --doc-destination embedded
 
 proc ::kettle::doc-destination {dstdir} {
-    # TODO: Reject absolute path?
-    # TODO: Reject path outside of sources?
-
-    # Actually both make sense. For 1, the package may be part of a
-    # larger structure, with a consolidated hierarchy for doc
-    # results. And 2, the user may want the docs somewhere else.
+    # NOTE: Both absolute paths and paths outside of the source
+    # directory have sensible use-cases, hence my choice to not reject
+    # them here.
+    #
+    # (1) The package in question may be part of a larger structure,
+    # with a consolidated hierarchy for doc results
+    #
+    # (2) The user may wish to redirect the generated documenation
+    # somewhere else.
 
     option: --doc-destination $dstdir
     return
@@ -38,22 +41,28 @@ proc ::kettle::doc {{docsrcdir doc}} {
     # Overwrite self, we run only once for effect.
     proc ::kettle::doc args {}
 
-    # Auto-search for documentation files.
-    # Auto-search for figures!
+    set ndocsrcdir [norm $docsrcdir]
+    set n [llength [file split $ndocsrcdir]]
 
-    set docsrcdir [kettle norm $docsrcdir]
+    # Heuristic search for figures
+    kettle figures $docsrcdir/figures
 
-    # TODO figures - sub directory of docsrcdir!
+    log {}
+    log {SCAN tcllib/doctools @ $docsrcdir/}
 
-    set ok 0
-    kettle util foreach-file $docsrcdir path {
-	if {![kettle util docfile $path]} continue
-	set ok 1
-	break
+    # Heuristic search for documentation files.
+    set manpages {}
+    util foreach-file $ndocsrcdir path {
+	if {![util docfile $path]} continue
+
+	set path [file join {*}[lrange [file split $path] $n end]] 
+
+	log {    Accepted: $docsrcdir/$path}
+	lappend manpages $path
     }
 
-    if {!$ok} return
-    doc::Setup $docsrcdir
+    if {![llength $manpages]} return
+    doc::Setup $ndocsrcdir $manpages
     return
 }
 
@@ -61,7 +70,7 @@ proc ::kettle::doc::Dest {} {
     return [kettle option-get --doc-destination]
 }
 
-proc ::kettle::doc::Setup {docsrcdir} {
+proc ::kettle::doc::Setup {docsrcdir manpages} {
 
     kettle::Def doc {
 	(Re)generate the documentation embedded in the repository.
@@ -146,8 +155,6 @@ proc ::kettle::doc::Setup {docsrcdir} {
     kettle::SetParent drop-doc-html     drop-doc
     kettle::SetParent drop-doc-manpages drop-doc
     kettle::SetParent drop-doc drop
-
-    ## TODO ## uninstallation of documentation ...
     return
 }
 
