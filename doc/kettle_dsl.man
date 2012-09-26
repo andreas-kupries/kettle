@@ -7,6 +7,18 @@
 [include include/welcome.inc]
 [para]
 
+[section {The kettle application}]
+    [include include/app.inc]
+
+[section {Build declarations}]
+    [include include/dsl_doc.inc]
+    [include include/dsl_figures.inc]
+    [include include/dsl_tcl.inc]
+    [include include/dsl_tclapp.inc]
+
+[section {build.tcl Example}]
+    [include include/app_example.inc]
+
 [include include/license.inc]
 [include include/feedback.inc]
 [manpage_end]

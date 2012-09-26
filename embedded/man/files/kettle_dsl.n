@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Kettle/kettle/embedded/man/files/kettle_dsl.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Struct/kettle/embedded/man/files/kettle_dsl.n' by tcllib/doctools with format 'nroff'
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -251,6 +251,40 @@ package require \fBTcl  8.5\fR
 Welcome to Kettle, a set of packages providing support for writing
 build code for Tcl packages.
 .PP
+Please read the document \fIKettle - Introduction to Kettle\fR,
+if you have not done so already, to get an overview of the whole system.
+.PP
+.SH "THE KETTLE APPLICATION"
+.SH "BUILD DECLARATIONS"
+.SH "BUILD.TCL EXAMPLE"
+A simple example of a build.tcl script is that for kettle itself.
+.PP
+Stripping out the special code taking core of the fact that it
+cannot assume to be installed already this reduces to the code below,
+and of that only the last two lines are relevant in terms of build
+declarations. The first three are the magic to find and run the kettle
+application in the \fBPATH\fR
+(The actual code assumes that \fBkettle\fR is found the working
+directory, again it cannot assume to be installed already).
+.PP
+.CS
+
+
+#!/bin/sh
+# -*- tcl -*- \\
+exec kettle -f "$0" "${1+$@}"
+kettle tcl
+kettle tclapp kettle
+
+.CE
+.PP
+We ask it to search for and handle all Tcl script packages to
+be found in the directory of the "\fIbuild.tcl\fR" file, and that we
+have one script application in that same directory.
+As the documentation files and figures are in the standard locations,
+we let \fBkettle tcl\fR handle them implicitly.
+.PP
+Done.
 .SH LICENSE
 This package, written by Andreas Kupries, is BSD licensed.
 .SH "BUGS, IDEAS, FEEDBACK"

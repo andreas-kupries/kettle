@@ -1,5 +1,6 @@
 [comment {-*- tcl -*- --- !doctools --- manpage}]
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
-[para]
-Welcome to Kettle, a set of packages providing support for writing
-build code for Tcl packages.
+[include welcome_basic.inc]
+
+[para] Please read the document [term {Kettle - Introduction to Kettle}],
+if you have not done so already, to get an overview of the whole system.

@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Kettle/kettle/embedded/man/files/kettle_intro.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Struct/kettle/embedded/man/files/kettle_intro.n' by tcllib/doctools with format 'nroff'
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -253,11 +253,11 @@ Kettle is a system to make building Tcl packages quick and easy. More
 importantly, possibly, to make writing the build system for Tcl
 packages easy.
 .PP
-As such kettle is several things actually:
+As such kettle is several things:
 .IP [1]
-A DSL helping in the writing of a build system for package.
+A DSL helping you to write build systems for your packages.
 .IP [2]
-A package implementing the DSL.
+A package implementing this DSL.
 .IP [3]
 An application which can serve as the interpreter for a build
 file containing commands in the above DSL.

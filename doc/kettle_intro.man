@@ -3,17 +3,17 @@
 [include include/general.inc]
 [titledesc {Kettle - Introduction to Kettle}]
 [description]
-[include include/welcome.inc]
+[include include/welcome_basic.inc]
 
 Kettle is a system to make building Tcl packages quick and easy. More
 importantly, possibly, to make writing the build system for Tcl
 packages easy.
 
-[para] As such kettle is several things actually:
+[para] As such kettle is several things:
 
 [list_begin enumerated]
-[enum] A DSL helping in the writing of a build system for package.
-[enum] A package implementing the DSL.
+[enum] A DSL helping you to write build systems for your packages.
+[enum] A package implementing this DSL.
 [enum] An application which can serve as the interpreter for a build
        file containing commands in the above DSL.
 [enum] Plus some internal supporting packages.
