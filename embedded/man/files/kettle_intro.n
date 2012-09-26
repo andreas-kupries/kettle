@@ -283,6 +283,7 @@ The image below provides a basic overview of the system's
 architecture, with a package's custom build file at the top, using DSL
 commands from the declaration and core layers, under the mediation of
 the kettle interpreter application.
+.PP
 .PS
 .nf
 +-------------------------------------------------------------------------------+
@@ -300,6 +301,7 @@ the kettle interpreter application.
 
 .fi
 .PE
+.PP
 The relevant manpages are
 .IP [1]
 \fIKettle - Build Declarations\fR

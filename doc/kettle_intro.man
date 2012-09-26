@@ -40,9 +40,9 @@ architecture, with a package's custom build file at the top, using DSL
 commands from the declaration and core layers, under the mediation of
 the kettle interpreter application.
 
-[image architecture]
+[para][image architecture]
 
-The relevant manpages are
+[para] The relevant manpages are
 
 [list_begin enumerated]
 [enum] [term {Kettle - Build Declarations}]
