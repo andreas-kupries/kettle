@@ -28,9 +28,9 @@ set boxwidth   [75 mm]
 set movelength  [5 mm]
 
 set B [block {
-    set hx [30 mm]
+    set hx [35 mm]
 
-    set P [area " " height [35 mm]]
+    set P [area " " height [40 mm]]
     set IO [area " Declarations" \
 		height $hx \
 		with sw \
@@ -38,11 +38,18 @@ set B [block {
     block {
 	set fillcolor white
 	set boxwidth  [30 mm]
+	set boxheight [10 mm]
 
 	east
 	xbox kettle::tcl
 	move
 	xbox kettle::tclapp
+	south
+	move
+	xbox kettle::figures
+	west
+	move
+	xbox kettle::doc
 
     } at $IO
 }]
