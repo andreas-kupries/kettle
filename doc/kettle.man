@@ -1,0 +1,12 @@
+[comment {-*- tcl -*- --- doctools ---}]
+[manpage_begin kettle n 0]
+[include include/general.inc]
+[titledesc {Kettle - Core}]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+[include include/license.inc]
+[include include/feedback.inc]
+[manpage_end]
