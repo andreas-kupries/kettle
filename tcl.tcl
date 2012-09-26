@@ -9,8 +9,8 @@
 ## Requisites
 
 package require Tcl 8.5
-package require  kettle ; # core
-package require  kettle::util
+package require kettle ; # core
+package require kettle::util
 
 # # ## ### ##### ######## ############# #####################
 ## State, Initialization
@@ -21,13 +21,18 @@ namespace eval ::kettle::tcl {}
 ## API.
 
 proc ::kettle::tcl {} {
-    # Auto-search for packages to install, collect names, versions, and files.
-    # Auto-search for documentation, testsuites, benchmarks.
 
+    # Heuristic search for documentation, testsuites, benchmarks.
     doc
     #testsuites
     #benchmarks
 
+    set n [llength [file split [sources]]]
+
+    log {}
+    log {SCAN tcl packages @ [sources]/}
+
+    # Heuristic search for packages to install, collect names, versions, and files.
     set packages {}
     kettle util foreach-file [sources] path {
 	if {[catch {
@@ -47,8 +52,6 @@ proc ::kettle::tcl {} {
 }
 
 proc ::kettle::tcl::Setup {files pn pv} {
-    kettle log {	Tcl Package Setup $pn $pv ... $files}
-
     set pkgdir [kettle libdir]/[string map {:: _} $pn]$pv
 
     kettle::Def install-package-$pn "Install package $pn $pv" \

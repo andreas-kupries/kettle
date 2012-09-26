@@ -9,8 +9,8 @@
 ## Requisites
 
 package require Tcl 8.5
-package require  kettle ; # core
-package require  kettle::util
+package require kettle ; # core
+package require kettle::util
 
 # # ## ### ##### ######## ############# #####################
 ## State, Initialization
@@ -23,7 +23,17 @@ namespace eval ::kettle {}
 proc ::kettle::tclapp {fname} {
     ## Recipe: Pure Tcl application installation.
 
+    log {}
+    log {DECLARE tcl application $fname @ [sources]}
+
     set src [kettle sources $fname]
+
+    if {![file exists $src]} {
+	log {    NOT FOUND}
+	return
+    }
+
+    log {    Accepted: $fname}
 
     kettle::Def install-app-$fname "Install application $fname" \
 	[list apply {{src} {
