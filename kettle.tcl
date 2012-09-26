@@ -429,7 +429,7 @@ apply {{} {
 	warn    \033\[33m
 	err     \033\[31m
 	note    \033\[34m
-	debug   \033\[36m
+	debug   \033\[35m
 	red     \033\[31m
 	green   \033\[32m
 	yellow  \033\[33m
