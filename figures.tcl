@@ -48,13 +48,26 @@ proc ::kettle::figures::Setup {figsrcdir figures} {
 
     kettle::Def figures {
 	(Re)generate the documentation figures.
-    } [list apply {{figsrcdir} {
+    } [list apply {{figsrcdir figures} {
 	puts "Generating (tklib) diagrams..."
 
 	set here [pwd]
 
 	cd $figsrcdir
 	exec 2>@ stderr >@ stdout dia convert -t -o . png {*}$figures
+
+	cd $here
+    } ::kettle} $figsrcdir $figures]
+
+    kettle::Def show-figures {
+	Show the documentation figures in a Tk GUI
+    } [list apply {{figsrcdir figures} {
+	puts "Generating (tklib) diagrams..."
+
+	set here [pwd]
+
+	cd $figsrcdir
+	exec 2>@ stderr >@ stdout dia show -t {*}$figures
 
 	cd $here
     } ::kettle} $figsrcdir $figures]
