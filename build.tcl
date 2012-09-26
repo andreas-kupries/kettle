@@ -9,7 +9,7 @@ catch {
     source [kettle path tclapp.tcl]
     source [kettle path tcl.tcl]
     source [kettle path doc.tcl]
+    source [kettle path figures.tcl]
 }
-kettle doc
 kettle tcl
 kettle tclapp kettle
