@@ -282,8 +282,17 @@ recipes, and display of general and recipe-specific help.
 Various utility and support packages providing the commands for
 the build declarations, and implementation helpers.
 .sp
-Currently supported are the (un)installation of pure Tcl packages
-and pure Tcl applications.
+Currently supported are
+.RS
+.IP [1]
+(Un)installation of pure Tcl packages.
+.IP [2]
+(Un)installation of Tcl script applications.
+.IP [3]
+(Re)generation and (un)installation of (tcllib) doctools based manpages.
+.IP [4]
+(Re)generation and display of (tklib) diagram based figures.
+.RE
 .PP
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
