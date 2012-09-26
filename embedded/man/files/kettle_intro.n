@@ -305,6 +305,11 @@ the kettle interpreter application.
 The relevant manpages are
 .IP [1]
 \fIKettle - Build Declarations\fR
+.sp
+This is what is important to a kettle user.
+.sp
+Everything else below is the reference documentation
+for kettle developers and maintainers.
 .IP [2]
 \fIKettle - Core\fR
 .IP [3]

@@ -46,6 +46,9 @@ the kettle interpreter application.
 
 [list_begin enumerated]
 [enum] [term {Kettle - Build Declarations}]
+[para] This is what is important to a kettle user.
+[para] Everything else below is the reference documentation
+       for kettle developers and maintainers.
 [enum] [term {Kettle - Core}]
 [enum] [term {Kettle - Utilities}]
 [enum] [term {Kettle - Tcl Packages}]
