@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Kettle/kettle/embedded/man/files/kettle.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Struct/kettle/embedded/man/files/kettle.n' by tcllib/doctools with format 'nroff'
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -250,6 +250,9 @@ package require \fBTcl  8.5\fR
 .PP
 Welcome to Kettle, a set of packages providing support for writing
 build code for Tcl packages.
+.PP
+Please read the document \fIKettle - Introduction to Kettle\fR,
+if you have not done so already, to get an overview of the whole system.
 .PP
 .SH LICENSE
 This package, written by Andreas Kupries, is BSD licensed.
