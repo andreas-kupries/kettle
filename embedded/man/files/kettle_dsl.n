@@ -250,6 +250,8 @@ package require \fBTcl  8.5\fR
 .sp
 \fBkettle figures\fR ?\fIfigroot\fR?
 .sp
+\fBkettle tclapp\fR \fIpath\fR
+.sp
 .BE
 .SH DESCRIPTION
 .PP
@@ -395,6 +397,19 @@ The two recipes use the tklib \fBdia\fR application to
 perform the conversion and GUI display. They will fail if
 this application cannot be found on the \fBPATH\fR.
 .RE
+.TP
+\fBkettle tclapp\fR \fIpath\fR
+This command declares the presence of a Tcl script application found
+at the \fIpath\fR under the package source directory.
+.sp
+If the specified application is found the command will define
+two recipes to install and uninstall this application, with the names
+"install-app-\fIpath\fR" and ""drop-app-\fIpath\fR".
+.sp
+It will further extend the recipes "install-tcl-applications",
+"install-applications", "install", "drop-tcl-applications",
+"drop-applications", and "drop".  This enables the package builder to
+(un)install the application as part of various groups.
 .PP
 .SH "BUILD.TCL EXAMPLE"
 A simple example of a build.tcl script is that for kettle itself.
