@@ -74,6 +74,11 @@ destination directory in the package sources (see recipe "doc" above).
 	perform the various conversions. It will fail if this
 	application cannot be found on the [var PATH].
 
+[enum]	This command calls "[cmd {kettle figures}] [arg docroot]/figures"
+	to search for and handle diagrams. Any non-standard settings
+	for diagrams must be declared before [cmd {kettle doc}] itself
+	is used.
+
 [list_end]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
