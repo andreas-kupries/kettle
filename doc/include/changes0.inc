@@ -32,8 +32,13 @@ The changes therefore describe the initial features of the system.
 [enum]	Various utility and support packages providing the commands for
 	the build declarations, and implementation helpers.
 
-[para]	Currently supported are the (un)installation of pure Tcl packages
-	and pure Tcl applications.
+[para]	Currently supported are
+[list_begin enumerated]
+[enum] (Un)installation of pure Tcl packages.
+[enum] (Un)installation of Tcl script applications.
+[enum] (Re)generation and (un)installation of (tcllib) doctools based manpages.
+[enum] (Re)generation and display of (tklib) diagram based figures.
+[list_end]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [list_end]
