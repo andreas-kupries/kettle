@@ -30,7 +30,14 @@ proc ::kettle::figures {{figsrcdir doc}} {
     # Heuristic search for figures
     set figures {}
     util foreach-file $nfigsrcdir path {
-	if {![util diafile $path]} continue
+	if {[catch {
+	    util diafile $path
+	} adia]} {
+	    set path [file join {*}[lrange [file split $path] $n end]] 
+	    err { puts "    Skipped: $figsrcdir/$path @ $adia" }
+	    continue
+	}
+	if {!$adia} continue
 
 	set path [file join {*}[lrange [file split $path] $n end]]
 

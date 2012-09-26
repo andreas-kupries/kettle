@@ -53,7 +53,14 @@ proc ::kettle::doc {{docsrcdir doc}} {
     # Heuristic search for documentation files.
     set manpages {}
     util foreach-file $ndocsrcdir path {
-	if {![util docfile $path]} continue
+	if {[catch {
+	    util docfile $path
+	} adoc]} {
+	    set path [file join {*}[lrange [file split $path] $n end]] 
+	    err { puts "    Skipped: $docsrcdir/$path @ $adoc" }
+	    continue
+	}
+	if {!$adoc} continue
 
 	set path [file join {*}[lrange [file split $path] $n end]] 
 

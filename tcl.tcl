@@ -36,8 +36,13 @@ proc ::kettle::tcl {} {
     set packages {}
     kettle util foreach-file [sources] path {
 	if {[catch {
-	    lassign [util provides $path] pn pv
-	}]} continue
+	    util provides $path
+	} data]} {
+	    if {$data eq "No package provided"} continue
+	    err { puts "    Skipped: $data" }
+	    continue
+	}
+	lassign $data pn pv
 	lappend packages $path $pn $pv
     }
 
