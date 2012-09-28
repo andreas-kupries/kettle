@@ -44,7 +44,7 @@ proc ::kettle::recipe::define {name description arguments script args} {
     Init $name
     dict update recipe $name def {
 	dict lappend def script \
-	    [list apply [list $arguments $script ::kettle] {*}$args]
+	    [lambda@ ::kettle $arguments $script {*}$args]
 	dict lappend def help   $description
     }
     return
