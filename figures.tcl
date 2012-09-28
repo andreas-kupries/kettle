@@ -16,6 +16,11 @@ proc ::kettle::figures {{figsrcdir doc/figures}} {
     io trace {}
     io trace {SCAN tklib/dia figures @ $figsrcdir/}
 
+    if {![file exists $root]} {
+	io trace {  NOT FOUND}
+	return
+    }
+
     # Heuristic search for figures
 
     set figures {}
@@ -53,7 +58,7 @@ proc ::kettle::figures {{figsrcdir doc/figures}} {
 
 	cd $here
 
-    } $figsrcdir $figures
+    } $root $figures
 
     recipe define show-figures {
 	Show the documentation figures in a Tk GUI
@@ -66,7 +71,7 @@ proc ::kettle::figures {{figsrcdir doc/figures}} {
 	exec 2>@ stderr >@ stdout dia show -t {*}$figures
 
 	cd $here
-    } $figsrcdir $figures
+    } $root $figures
 
     return
 }
