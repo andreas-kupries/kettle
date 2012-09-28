@@ -17,8 +17,9 @@ namespace eval ::kettle::gui {
     variable INSTALLPATH {}
     variable buttons     {}
 
-    namespace import ::kettle::option
     namespace import ::kettle::io
+    namespace import ::kettle::option
+    namespace import ::kettle::recipe
 }
 
 # # ## ### ##### ######## ############# #####################

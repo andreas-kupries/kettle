@@ -53,6 +53,12 @@ proc ::kettle::io::setwidget {t} {
     return
 }
 
+proc ::kettle::io::ingui {script} {
+variable textw
+    if {$textw eq {}} return
+    uplevel 1 $script
+}
+
 proc ::kettle::io::puts {args} {
     variable textw
 
@@ -130,7 +136,7 @@ proc ::kettle::io::Color {t {script {}}} {
 proc ::kettle::io::Hilit {t chars} {
     variable textw
     variable tag $t
-    if {$textw ene {}} return
+    if {$textw ne {}} return
     ## TODO ## check for non-tty/win to disable.
     ## Requires TclX however (fstat stdout tty)
     ::puts -nonewline $chars
@@ -146,7 +152,7 @@ apply {{} {
 	debug red    green blue    
 	white yellow cyan  magenta 
     } {
-	interp alias {} ::kettle::$tag {} ::kettle::Color $tag
+	interp alias {} ::kettle::io::$tag {} ::kettle::io::Color $tag
     }
 
     foreach {tag chars note} {
@@ -165,7 +171,7 @@ apply {{} {
 	reset   \033\[0m  {}
     } {
 	set t $tag ; if {$tag eq "reset"} { set t {} }
-	interp alias {} ::kettle::H$tag {} ::kettle::Hilit $t $chars
+	interp alias {} ::kettle::io::H$tag {} ::kettle::io::Hilit $t $chars
     }
 }}
 

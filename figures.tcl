@@ -3,7 +3,6 @@
 ## Handle tklib/diagram figures (documentation)
 
 namespace eval ::kettle { namespace export figures }
-namespace eval ::kettle::figures {}
 
 # # ## ### ##### ######## ############# #####################
 ## API.
@@ -24,9 +23,9 @@ proc ::kettle::figures {{figsrcdir doc/figures}} {
 	set spath [path strip $path $root]
 
 	if {[catch {
-	    path diafile $path
+	    path diagram-file $path
 	} adia]} {
-	    io puts stderr "    Skipped: $figsrcdir/$spath @ $adia"
+	    io err { io puts stderr "    Skipped: $figsrcdir/$spath @ $adia" }
 	    continue
 	}
 	if {!$adia} continue
@@ -73,9 +72,4 @@ proc ::kettle::figures {{figsrcdir doc/figures}} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Ready
-
-package provide kettle::figures 0
 return
-
-# # ## ### ##### ######## ############# #####################

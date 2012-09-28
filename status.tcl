@@ -44,12 +44,14 @@ proc ::kettle::status::fail {{msg {with FAILURES}}} {
 proc ::kettle::status::show {} {
     variable status
     variable message
-    io $status {
-	io puts -nonewline DONE
-	if {$message ne {}} {
-	    io puts " $message"
+    io ingui {
+	io $status {
+	    io puts -nonewline DONE
+	    if {$message ne {}} {
+		io puts " $message"
+	    }
+	    io puts {}
 	}
-	io puts {}
     }
     return
 }

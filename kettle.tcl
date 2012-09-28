@@ -9,6 +9,14 @@ package require Tcl 8.5
 namespace eval ::kettle {}
 
 # # ## ### ##### ######## ############# #####################
+## Export
+
+namespace eval ::kettle {
+    namespace export {[a-z]*}
+    namespace ensemble create
+}
+
+# # ## ### ##### ######## ############# #####################
 
 ::apply {{selfdir} {
     # # ## ### ##### ######## ############# ##################### Foundation
@@ -20,22 +28,14 @@ namespace eval ::kettle {}
     source $selfdir/gui.tcl      ; # GUI support.
     source $selfdir/standard.tcl ; # Standard recipes.
     # # ## ### ##### ######## ############# ##################### DSL
-    #source $selfdir/tclapp.tcl   ; # tcl script applications
-    #source $selfdir/tcl.tcl      ; # tcl packages
+    source $selfdir/tclapp.tcl   ; # tcl script applications
+    source $selfdir/tcl.tcl      ; # tcl packages
     source $selfdir/doc.tcl      ; # documentation (doctools)
     source $selfdir/figures.tcl  ; # figures       (diagram)
     # # ## ### ##### ######## ############# ##################### Application
     source $selfdir/app.tcl      ; # Application core.
     # # ## ### ##### ######## ############# #####################
 }} [file dirname [file normalize [info script]]]
-
-# # ## ### ##### ######## ############# #####################
-## Export
-
-namespace eval ::kettle {
-    #namespace export {[a-z]*}
-    namespace ensemble create
-}
 
 # # ## ### ##### ######## ############# #####################
 ## Ready
