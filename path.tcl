@@ -154,9 +154,23 @@ proc ::kettle::path::diagram-file {path} {
     return 0
 }
 
-proc ::kettle::path::foreach-file {path pv script} {
-    ## TODO ## Exclusion patterns! user.
+proc ::kettle::path::tcltest-file {path} {
+    set test [cathead $path 1024 -translation binary]
+    if {[regexp {tcl.tk//DSL tcltest//EN//} $test]} {
+	return 1
+    } 
+    return 0
+}
 
+proc ::kettle::path::bench-file {path} {
+    set test [cathead $path 1024 -translation binary]
+    if {[regexp {tcl.tk//DSL tclbench//EN//} $test]} {
+	return 1
+    } 
+    return 0
+}
+
+proc ::kettle::path::foreach-file {path pv script} {
     upvar 1 $pv thepath
 
     set ex [kettle::option get --ignore-glob]
