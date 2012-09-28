@@ -34,6 +34,12 @@ proc ::kettle::option::set {o {v {}}} {
     return $v
 }
 
+proc ::kettle::option::unset {o} {
+    variable config
+    dict unset config $o
+    return
+}
+
 proc ::kettle::option::get {o} {
     variable config
     return [dict get $config $o]
