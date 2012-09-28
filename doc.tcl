@@ -36,6 +36,11 @@ proc ::kettle::doc {{docsrcdir doc}} {
     io trace {}
     io trace {SCAN tcllib/doctools @ $docsrcdir/}
 
+    if {![file exists $root]} {
+	io trace {  NOT FOUND}
+	return
+    }
+
     # Heuristic search for documentation files.
     set manpages {}
     path foreach-file $root path {
