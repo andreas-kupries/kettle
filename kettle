@@ -1,6 +1,5 @@
 #!/usr/bin/env tclsh
 # -*- tcl -*-
-
 apply {{selfdir} {
     if {[file exists $selfdir/kettle.tcl]} {
 	# Look for a local copy first, for when we install ourselves.
@@ -9,11 +8,5 @@ apply {{selfdir} {
 	# use the installed core.
 	package require kettle
     }
-
-    kettle::ProcessCmdline
-    kettle::ProcessDecls
-    kettle::ProcessGoals
-
+    kettle::Application
 }} [file dirname [file dirname [file normalize [info script]/__]]]
-# remainder of activity is automatically on ::exit
-

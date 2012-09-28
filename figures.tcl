@@ -1,18 +1,8 @@
-## doc.tcl --
+# -*- tcl -*- Copyright (c) 2012 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
-#
-#	'kettle doc' command
-#
-# Copyright (c) 2012 Andreas Kupries
+## Handle tklib/diagram figures (documentation)
 
-# # ## ### ##### ######## ############# #####################
-## Requisites
-
-package require Tcl 8.5
-package require kettle ; # core
-package require kettle::util
-
-namespace eval ::kettle::figures {}
+namespace eval ::kettle { namespace export figures }
 
 # # ## ### ##### ######## ############# #####################
 ## API.
@@ -21,55 +11,54 @@ proc ::kettle::figures {{figsrcdir doc/figures}} {
     # Overwrite self, we run only once for effect.
     proc ::kettle::figures args {}
 
-    set nfigsrcdir [norm $figsrcdir]
-    set n [llength [file split $nfigsrcdir]]
+    set root [path sourcedir $figsrcdir]
 
-    log {}
-    log {SCAN tklib/dia figures @ $figsrcdir/}
+    io trace {}
+    io trace {SCAN tklib/dia figures @ $figsrcdir/}
 
     # Heuristic search for figures
+
     set figures {}
-    util foreach-file $nfigsrcdir path {
+    path foreach-file $root path {
+	set spath [path strip $path $root]
+
 	if {[catch {
-	    util diafile $path
+	    path diagram-file $path
 	} adia]} {
-	    set path [file join {*}[lrange [file split $path] $n end]] 
-	    err { puts "    Skipped: $figsrcdir/$path @ $adia" }
+	    io err { io puts stderr "    Skipped: $figsrcdir/$spath @ $adia" }
 	    continue
 	}
 	if {!$adia} continue
 
-	set path [file join {*}[lrange [file split $path] $n end]]
+	io trace {    Accepted: $figsrcdir/$spath}
 
-	log {    Accepted: $figsrcdir/$path}
-
-	lappend figures $path
+	lappend figures $spath
     }
 
     if {![llength $figures]} return
-    figures::Setup $nfigsrcdir $figures
-    return
-}
 
-proc ::kettle::figures::Setup {figsrcdir figures} {
+    # Put the figures into recipes.
 
-    kettle::Def figures {
+    recipe define figures {
 	(Re)generate the documentation figures.
-    } [list apply {{figsrcdir figures} {
-	puts "Generating (tklib) diagrams..."
+    } {figsrcdir figures} {
+
+	io puts "Generating (tklib) diagrams..."
 
 	set here [pwd]
 
+	# TODO # support code to pipe, or capture output for display.
 	cd $figsrcdir
 	exec 2>@ stderr >@ stdout dia convert -t -o . png {*}$figures
 
 	cd $here
-    } ::kettle} $figsrcdir $figures]
 
-    kettle::Def show-figures {
+    } $figsrcdir $figures
+
+    recipe define show-figures {
 	Show the documentation figures in a Tk GUI
-    } [list apply {{figsrcdir figures} {
-	puts "Generating (tklib) diagrams..."
+    } {figsrcdir figures} {
+	io puts "Generating (tklib) diagrams..."
 
 	set here [pwd]
 
@@ -77,15 +66,10 @@ proc ::kettle::figures::Setup {figsrcdir figures} {
 	exec 2>@ stderr >@ stdout dia show -t {*}$figures
 
 	cd $here
-    } ::kettle} $figsrcdir $figures]
+    } $figsrcdir $figures
 
     return
 }
 
 # # ## ### ##### ######## ############# #####################
-## Ready
-
-package provide kettle::figures 0
 return
-
-# # ## ### ##### ######## ############# #####################
