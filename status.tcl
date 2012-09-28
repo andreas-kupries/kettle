@@ -17,7 +17,7 @@ namespace eval ::kettle::status {
 
 namespace eval ::kettle::status {
     variable status  ok
-    variable message {}
+    variable message OK
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -31,11 +31,11 @@ proc ::kettle::status::check {} {
 
 proc ::kettle::status::ok {} {
     variable status  ok
-    variable message {}
+    variable message OK
     return
 }
 
-proc ::kettle::status::fail {{msg {with FAILURES}}} {
+proc ::kettle::status::fail {{msg FAIL}} {
     variable status  warn
     variable message $msg
     return
@@ -46,11 +46,7 @@ proc ::kettle::status::show {} {
     variable message
     io ingui {
 	io $status {
-	    io puts -nonewline DONE
-	    if {$message ne {}} {
-		io puts " $message"
-	    }
-	    io puts {}
+	    io puts $message
 	}
     }
     return
