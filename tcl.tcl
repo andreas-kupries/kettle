@@ -72,6 +72,11 @@ proc ::kettle::TclSetup {files pn pv} {
     recipe parent drop-package-$pn  drop-tcl-packages
     recipe parent drop-tcl-packages drop-packages
     recipe parent drop-packages     drop
+
+    recipe parent install-package-$pn debug-package-$pn  
+    recipe parent debug-package-$pn   debug-tcl-packages
+    recipe parent debug-tcl-packages  debug-packages
+    recipe parent debug-packages      debug
     return
 }
 

@@ -55,7 +55,11 @@ proc ::kettle::recipe::parent {name parent} {
 
     Init $name
     Init $parent
-    dict set recipe $name parent $parent
+    dict update recipe $name def {
+	dict lappend def parent $parent
+    }
+
+    io trace {PARENTS $name = [dict get $recipe $name parent]}
     return
 }
 
@@ -153,7 +157,7 @@ proc ::kettle::recipe::Children {name} {
     variable recipe
     set result {}
     dict for {c v} $recipe {
-	if {[dict get $v parent] ne $name} continue
+	if {$name ni [dict get $v parent]} continue
 	lappend result $c
     }
     return $result
