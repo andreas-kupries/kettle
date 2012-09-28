@@ -54,8 +54,14 @@ proc ::kettle::io::setwidget {t} {
 }
 
 proc ::kettle::io::ingui {script} {
-variable textw
+    variable textw
     if {$textw eq {}} return
+    uplevel 1 $script
+}
+
+proc ::kettle::io::interm {script} {
+    variable textw
+    if {$textw ne {}} return
     uplevel 1 $script
 }
 
@@ -91,6 +97,8 @@ proc ::kettle::io::puts {args} {
 
     # chan <=> tag, if not overriden
     ## TODO 'Files left' ?!
+    ## maybe hooks finto 'path exec' to match lines for colorization!
+
     if {[string match {Files left*} $text]} {
 	set tag warn
 	set text \n$text
@@ -98,6 +106,9 @@ proc ::kettle::io::puts {args} {
 
     if {$tag eq {}} { set tag $chan }
     #::puts $tag/$text
+
+    # Quick handling of \r, convert to newlines.
+    set text [string map [list \r \n] $text]
 
     $textw insert end-1c $text $tag
     if {$newline} { 
