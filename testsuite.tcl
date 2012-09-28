@@ -47,12 +47,13 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
     recipe define test {
 	Run the testsuite
     } {testsrcdir testsuite} {
-	# TODO ####
 
-	# run each test file in a separate sub process, to catch
-	# crashes and the like ...  assume that the test is self
-	# contained in terms of loading tcltest, utilities, and the
-	# like.
+	# We are running each test file in a separate sub process, to
+	# catch crashes, etc. ... We assume that the test file is self
+	# contained in terms of loading all its dependencies, like
+	# tcltest itself, utility commands it may need, etc. This
+	# assumption allows us to run it directly, using our own
+	# tcl executable as interpreter.
 
 	# options for tcltest. (l => line information for failed tests).
 
@@ -72,20 +73,17 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 
 	path in $testsrcdir {
 	    foreach test $testsuite {
-
 		io note { io puts ${test}... }
-
-		# path pipe - handle continue/break
-		# io - handle \r in GUI - possibly ignore
 
 		path pipe line {
 
-		    # First draft using the simple logic I used in
-		    # older build.tcl scripts (pre-kettle). This
-		    # should be replaced with the sak.tcl testsuite
-		    # support found in tcllib/tklib.
+		    # This first draft uses the simple output
+		    # processing logic I put into older build.tcl
+		    # scripts (pre-kettle). This should be replaced
+		    # with the sak.tcl testsuite support found in
+		    # tcllib/tklib.
 
-		    # TODO ## --log option ?
+		    # TODO ## test --log option ?
 		    #io puts $log $line ; # Full log.
 
 		    if {[string match "++++*"      $line] ||
