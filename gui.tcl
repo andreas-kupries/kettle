@@ -40,8 +40,8 @@ proc ::kettle::gui::make {} {
 
     set rr 0
     foreach r [lsort -dict [recipe names]] {
-	# ignore some of the standard recipes, match
-	if {$r in {gui recipes}} continue
+	# ignore the standard recipes which are nonsensical for the gui.
+	if {$r in {gui null recipes}} continue
 
 	lappend buttons [button .i$rr \
 			     -command [list ::kettle::gui::Run $r] \
