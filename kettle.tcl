@@ -17,6 +17,18 @@ namespace eval ::kettle {
 }
 
 # # ## ### ##### ######## ############# #####################
+## @owns: io.tcl
+## @owns: status.tcl
+## @owns: recipes.tcl
+## @owns: path.tcl
+## @owns: options.tcl
+## @owns: gui.tcl
+## @owns: standard.tcl
+## @owns: tclapp.tcl
+## @owns: tcl.tcl
+## @owns: doc.tcl
+## @owns: figures.tcl
+## @owns: app.tcl
 
 ::apply {{selfdir} {
     # # ## ### ##### ######## ############# ##################### Foundation
