@@ -28,23 +28,23 @@ proc ::kettle::path::strip {path prefix} {
 }
 
 proc ::kettle::path::sourcedir {{path {}}} {
-    return [file join [kettle::option get @srcdir] $path]
+    return [file join [kettle option get @srcdir] $path]
 }
 
 proc ::kettle::path::libdir {{path {}}} {
-    return [file join [kettle::option get --lib-dir] $path]
+    return [file join [kettle option get --lib-dir] $path]
 }
 
 proc ::kettle::path::bindir {{path {}}} {
-    return [file join [kettle::option get --bin-dir] $path]
+    return [file join [kettle option get --bin-dir] $path]
 }
 
 proc ::kettle::path::mandir {{path {}}} {
-    return [file join [kettle::option get --man-dir] $path]
+    return [file join [kettle option get --man-dir] $path]
 }
 
 proc ::kettle::path::htmldir {{path {}}} {
-    return [file join [kettle::option get --html-dir] $path]
+    return [file join [kettle option get --html-dir] $path]
 }
 
 proc ::kettle::path::set-executable {path} {
@@ -85,9 +85,7 @@ proc ::kettle::path::fixhashbang {file shell} {
     return
 }
 
-proc ::kettle::path::tcl-package-file {file pnv pvv fv} {
-    upvar 1 $pnv pkgname $pvv pkgver $fv files
-
+proc ::kettle::path::tcl-package-file {file} {
     set contents   [cat $file]
     set provisions [grep {*package provide *} $contents]
     if {![llength $provisions]} {
@@ -118,17 +116,16 @@ proc ::kettle::path::tcl-package-file {file pnv pvv fv} {
 	}
 
 	io trace {    Accepted: $pn $pv @ $file}
-	set pkgname $pn
-	set pkgver  $pv
 
 	lappend files $file
-
 	# Look for referenced dependent files.
 	foreach line [grep {* @owns: *} $contents] {
 	    if {![regexp {#\s+@owns:\s+(.*)$} $line -> path]} continue
 	    lappend files $path
 	}
 
+	# For 'scan'.
+	kettle option set @predicate [list $files $pn $pv]
 	return 1
     }
 
@@ -176,7 +173,7 @@ proc ::kettle::path::bench-file {path} {
 proc ::kettle::path::foreach-file {path pv script} {
     upvar 1 $pv thepath
 
-    set ex [kettle::option get --ignore-glob]
+    set ex [kettle option get --ignore-glob]
 
     set known {}
     lappend waiting $path
@@ -245,11 +242,20 @@ proc ::kettle::path::scan {label root predicate} {
     foreach-file $nroot path {
 	set spath [strip $path $nroot]
 	try {
+	    kettle option unset @predicate
 	    if {![uplevel 1 [list {*}$predicate $path]]} continue
+
 	    io trace {    Accepted: $spath}
-	    lappend result $spath
+
+	    if {[kettle option exists @predicate]} {
+		lappend result {*}[kettle option get @predicate]
+	    } else {
+		lappend result $spath
+	    }
 	} on error {e o} {
 	    io err { io puts "    Skipped: $path @ $e" }
+	} finally {
+	    kettle option unset @predicate
 	}
     }
 
