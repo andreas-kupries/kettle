@@ -138,35 +138,38 @@ proc ::kettle::path::tcl-package-file {file pnv pvv fv} {
 
 proc ::kettle::path::doctools-file {path} {
     set test [cathead $path 1024 -translation binary]
-    if {([regexp "\\\[manpage_begin " $test] &&
-	 !([regexp -- {--- !doctools ---} $test] || [regexp -- "!tcl\.tk//DSL doctools//EN//" $test])) ||
-	  ([regexp -- {--- doctools ---} $test]  || [regexp -- "tcl\.tk//DSL doctools//EN//" $test])} {
-	return 1
-    } 
+    # anti marker
+    if {[regexp -- {--- !doctools ---}            $test]} { return 0 }
+    if {[regexp -- "!tcl\.tk//DSL doctools//EN//" $test]} { return 0 }
+    # marker
+    if {[regexp "\\\[manpage_begin "             $test]} { return 1 }
+    if {[regexp -- {--- doctools ---}            $test]} { return 1 }
+    if {[regexp -- "tcl\.tk//DSL doctools//EN//" $test]} { return 1 }
+    # no usable marker
     return 0
 }
 
 proc ::kettle::path::diagram-file {path} {
     set test [cathead $path 1024 -translation binary]
-    if {[regexp {tcl.tk//DSL diagram//EN//1.0} $test]} {
-	return 1
-    } 
+    # marker
+    if {[regexp {tcl.tk//DSL diagram//EN//1.0} $test]} { return 1 }
+    # no usable marker
     return 0
 }
 
 proc ::kettle::path::tcltest-file {path} {
     set test [cathead $path 1024 -translation binary]
-    if {[regexp {tcl.tk//DSL tcltest//EN//} $test]} {
-	return 1
-    } 
+    # marker
+    if {[regexp {tcl.tk//DSL tcltest//EN//} $test]} { return 1 }
+    # no usable marker
     return 0
 }
 
 proc ::kettle::path::bench-file {path} {
     set test [cathead $path 1024 -translation binary]
-    if {[regexp {tcl.tk//DSL tclbench//EN//} $test]} {
-	return 1
-    } 
+    # marker
+    if {[regexp {tcl.tk//DSL tclbench//EN//} $test]} { return 1 }
+    # no usable marker
     return 0
 }
 
@@ -224,6 +227,35 @@ proc ::kettle::path::foreach-file {path pv script} {
 	}
     }
     return
+}
+
+proc ::kettle::path::scan {label root predicate} {
+
+    set nroot [sourcedir $root]
+
+    io trace {}
+    io trace {SCAN $label @ $root/}
+
+    if {![file exists $nroot]} {
+	io trace {  NOT FOUND}
+	return -code return
+    }
+
+    set result {}
+    foreach-file $nroot path {
+	set spath [strip $path $nroot]
+	try {
+	    if {![uplevel 1 [list {*}$predicate $path]]} continue
+	    io trace {    Accepted: $spath}
+	    lappend result $spath
+	} on error {e o} {
+	    io err { io puts "    Skipped: $path @ $e" }
+	}
+    }
+
+    if {![llength $result]} { return -code return }
+
+    return [list $nroot $result]
 }
 
 proc ::kettle::path::tmpfile {{prefix kettle_util_}} {
