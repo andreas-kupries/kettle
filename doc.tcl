@@ -1,26 +1,13 @@
-## doc.tcl --
+# -*- tcl -*- Copyright (c) 2012 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
-#
-#	'kettle doc' command
-#
-# Copyright (c) 2012 Andreas Kupries
+## Handle tcllib/doctools documentation files
 
-# # ## ### ##### ######## ############# #####################
-## Requisites
+namespace eval ::kettle { namespace export doc }
 
-package require Tcl 8.5
-package require kettle ; # core
-package require kettle::util
-
-# # ## ### ##### ######## ############# #####################
-## State, Initialization
-
-namespace eval ::kettle::doc {}
+kettle option set --doc-destination embedded
 
 # # ## ### ##### ######## ############# #####################
 ## API.
-
-option: --doc-destination embedded
 
 proc ::kettle::doc-destination {dstdir} {
     # NOTE: Both absolute paths and paths outside of the source
@@ -33,7 +20,7 @@ proc ::kettle::doc-destination {dstdir} {
     # (2) The user may wish to redirect the generated documenation
     # somewhere else.
 
-    option: --doc-destination $dstdir
+    option set --doc-destination $dstdir
     return
 }
 
@@ -41,20 +28,19 @@ proc ::kettle::doc {{docsrcdir doc}} {
     # Overwrite self, we run only once for effect.
     proc ::kettle::doc args {}
 
-    set ndocsrcdir [norm $docsrcdir]
-    set n [llength [file split $ndocsrcdir]]
-
     # Heuristic search for figures
-    kettle figures $docsrcdir/figures
+    figures $docsrcdir/figures
 
-    log {}
-    log {SCAN tcllib/doctools @ $docsrcdir/}
+    set root [path sourcedir $docsrcdir]
+
+    io trace {}
+    io trace {SCAN tcllib/doctools @ $docsrcdir/}
 
     # Heuristic search for documentation files.
     set manpages {}
-    util foreach-file $ndocsrcdir path {
+    path foreach-file $root path {
 	if {[catch {
-	    util docfile $path
+	    path doctools-file $path
 	} adoc]} {
 	    set path [file join {*}[lrange [file split $path] $n end]] 
 	    err { puts "    Skipped: $docsrcdir/$path @ $adoc" }
@@ -62,31 +48,28 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	}
 	if {!$adoc} continue
 
-	set path [file join {*}[lrange [file split $path] $n end]] 
+	set spath [path strip $path $root]
 
-	log {    Accepted: $docsrcdir/$path}
-	lappend manpages $path
+	io trace {    Accepted: $docsrcdir/$spath}
+	lappend manpages $spath
     }
 
     if {![llength $manpages]} return
-    doc::Setup $ndocsrcdir $manpages
-    return
-}
 
-proc ::kettle::doc::Dest {} {
-    return [kettle option-get --doc-destination]
-}
+    set dd      [path sourcedir [option get --doc-destination]]
+    set mansrc  $dd/man/files
+    set htmlsrc $dd/www
 
-proc ::kettle::doc::Setup {docsrcdir manpages} {
+    set mandst  [path mandir  mann]
+    set htmldst [path htmldir [file tail [path sourcedir]]]
 
-    kettle::Def doc {
+    recipe define doc {
 	(Re)generate the documentation embedded in the repository.
-    } [list apply {{docsrcdir} {
+    } {root dst} {
 
 	set here [pwd]
-	set dst  [sources [doc::Dest]]
 
-	cd $docsrcdir
+	cd $root
 
 	puts "Removing old documentation..."
 	file delete -force $dst
@@ -112,63 +95,52 @@ proc ::kettle::doc::Setup {docsrcdir manpages} {
 	cd  ../www   ; file delete -force .idxdoc .tocdoc
 
 	cd $here
-    } ::kettle} $docsrcdir]
+    } $root $dd
 
-    kettle::Def install-doc-manpages {
+    recipe define install-doc-manpages {
 	Install manpages
-    } {
-	set src [sources [doc::Dest]/man/files]
-	set dst [mandir]/mann
-
-	util install-file-set "manpages" \
+    } {src dst} {
+	path install-file-set \
+	    "manpages" \
 	    $dst {*}[glob -directory $src *.n]
 	return
-    }
+    } $mansrc $mandst
 
-    kettle::Def install-doc-html {
+    recipe define install-doc-html {
 	Install HTML documentation
-    } {
-	set src [sources [doc::Dest]/www]
-	set dst [htmldir]/[file tail [sources]]
-
-	util install-file-group "HTML documentation" \
+    } {src dst} {
+	path install-file-group \
+	    "HTML documentation" \
 	    $dst {*}[glob -directory $src *]
 	return
-    }
+    } $htmlsrc $htmldst
 
-    kettle::Def drop-doc-manpages {
+    recipe define drop-doc-manpages {
 	Uninstall manpages
-    } {
-	set src [sources [doc::Dest]/man/files]
-	set dst [mandir]/mann
-
-	util uninstall-file-set "manpages" \
+    } {src dst} {
+	path uninstall-file-set \
+	    "manpages" \
 	    $dst {*}[glob -directory $src -tails *.n]
 	return
-    }
+    } $mansrc $mandst
 
-    kettle::Def drop-doc-html {
+    recipe define drop-doc-html {
 	Uninstall HTML documentation
-    } {
-	set dst [htmldir]/[file tail [sources]]
-	util uninstall-file-group "HTML documentation" $dst
-	return
-    }
+    } {dst} {
+	path uninstall-file-group \
+	    "HTML documentation" \
+	    $dst
+    } $htmldst
 
-    kettle::SetParent install-doc-html     install-doc
-    kettle::SetParent install-doc-manpages install-doc
-    kettle::SetParent install-doc install
+    recipe parent install-doc-html     install-doc
+    recipe parent install-doc-manpages install-doc
+    recipe parent install-doc install
 
-    kettle::SetParent drop-doc-html     drop-doc
-    kettle::SetParent drop-doc-manpages drop-doc
-    kettle::SetParent drop-doc drop
+    recipe parent drop-doc-html     drop-doc
+    recipe parent drop-doc-manpages drop-doc
+    recipe parent drop-doc drop
     return
 }
 
 # # ## ### ##### ######## ############# #####################
-## Ready
-
-package provide kettle::doc 0
 return
-
-# # ## ### ##### ######## ############# #####################

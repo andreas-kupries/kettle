@@ -1,70 +1,50 @@
-## tclapp.tcl --
+# -*- tcl -*- Copyright (c) 2012 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
-#
-#	'kettle tclapp' declaration.
-#
-# Copyright (c) 2012 Andreas Kupries
+## Handle tklib/diagram figures (documentation)
 
-# # ## ### ##### ######## ############# #####################
-## Requisites
-
-package require Tcl 8.5
-package require kettle ; # core
-package require kettle::util
+namespace eval ::kettle { namespace export tclapp }
 
 # # ## ### ##### ######## ############# #####################
-## State, Initialization
-
-namespace eval ::kettle {}
-
-# # ## ### ##### ######## ############# #####################
-## 
+## API.
 
 proc ::kettle::tclapp {fname} {
     ## Recipe: Pure Tcl application installation.
 
-    log {}
-    log {DECLARE tcl application $fname @ [sources]}
+    io trace {}
+    io trace {DECLARE tcl application $fname @ [path sourcedir]}
 
-    set src [kettle sources $fname]
+    set src [path sourcedir $fname]
 
     if {![file exists $src]} {
-	log {    NOT FOUND}
+	io trace {    NOT FOUND}
 	return
     }
 
-    log {    Accepted: $fname}
+    io trace {    Accepted: $fname}
 
-    kettle::Def install-app-$fname "Install application $fname" \
-	[list apply {{src} {
-	    util install-script \
-		$src [bindir] \
-		[info nameofexecutable]
-	} ::kettle} $src]
+    recipe define install-app-$fname "Install application $fname" {src} {
+	path install-script \
+	    $src [path bindir] \
+	    [info nameofexecutable]
+    } $src
 
-    kettle::Def drop-app-$fname "Uninstall application $fname" \
-	[list apply {{src} {
-	    util uninstall-application \
-		$src [bindir]
-	} ::kettle} $src]
+    recipe define drop-app-$fname "Uninstall application $fname" {src} {
+	path uninstall-application \
+	    $src [path bindir]
+    } $src
 
     # Hook the application specific recipes into a hierarchy of more
     # general recipes.
 
-    kettle::SetParent install-app-$fname       install-tcl-applications
-    kettle::SetParent install-tcl-applications install-applications
-    kettle::SetParent install-applications     install
+    recipe parent install-app-$fname       install-tcl-applications
+    recipe parent install-tcl-applications install-applications
+    recipe parent install-applications     install
 
-    kettle::SetParent drop-app-$fname       drop-tcl-applications
-    kettle::SetParent drop-tcl-applications drop-applications
-    kettle::SetParent drop-applications     drop
+    recipe parent drop-app-$fname       drop-tcl-applications
+    recipe parent drop-tcl-applications drop-applications
+    recipe parent drop-applications     drop
     return
 }
 
 # # ## ### ##### ######## ############# #####################
-## Ready
-
-package provide kettle::tclapp 0
 return
-
-# # ## ### ##### ######## ############# #####################
