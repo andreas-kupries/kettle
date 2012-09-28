@@ -71,35 +71,29 @@ proc ::kettle::doc {{docsrcdir doc}} {
     recipe define doc {
 	(Re)generate the documentation embedded in the repository.
     } {root dst} {
+	path in $root {
+	    io puts "Removing old documentation..."
+	    file delete -force $dst
 
-	set here [pwd]
+	    file mkdir $dst/man
+	    file mkdir $dst/www
 
-	cd $root
+	    io puts "Generating man pages..."
+	    path exec dtplite -ext n -o $dst/man nroff .
 
-	puts "Removing old documentation..."
-	file delete -force $dst
+	    # Note: Might be better to run them separately.
+	    # Note @: Or we shuffle the results a bit more in the post processing stage.
 
-	file mkdir $dst/man
-	file mkdir $dst/www
+	    io puts "Generating HTML... Pass 1, draft..."
+	    path exec dtplite -merge -o $dst/www html .
 
-	## TODO ## Put the exec calls into a utility command which
-	## ---- ## ensures proper output to the gui as well.
+	    io puts "Generating HTML... Pass 2, resolving cross-references..."
+	    path exec dtplite -merge -o $dst/www html .
 
-	puts "Generating man pages..."
-	exec 2>@ stderr >@ stdout dtplite -ext n -o $dst/man nroff .
-	# Note: Might be better to run them separately.
-	# Note @: Or we shuffle the results a bit more in the post processing stage.
-
-	puts "Generating 1st html..."
-	exec 2>@ stderr >@ stdout dtplite -merge -o $dst/www html .
-	puts "Generating 2nd html, resolving cross-references..."
-	exec 2>@ stderr >@ stdout dtplite -merge -o $dst/www html .
-
-	# Remove some of the generated files, consider them transient.
-	cd  $dst/man ; file delete -force .idxdoc .tocdoc
-	cd  ../www   ; file delete -force .idxdoc .tocdoc
-
-	cd $here
+	    # Remove some of the generated files, consider them transient.
+	    cd  $dst/man ; file delete -force .idxdoc .tocdoc
+	    cd  ../www   ; file delete -force .idxdoc .tocdoc
+	}
     } $root $dd
 
     recipe define install-doc-manpages {
