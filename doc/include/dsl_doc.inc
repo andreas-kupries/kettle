@@ -57,8 +57,7 @@ destination directory in the package sources (see recipe "doc" above).
 	[list_end]
 
 	in their first 1024 characters. Possible documentation files
-	containing the [const "[lb]manpage_begin"] marker are rejected
-	should they contain any of the anti-markers
+	are rejected should they contain any of the anti-markers
 
 	[list_begin itemized]
 	[item] "[const "--- !doctools ---"]"
