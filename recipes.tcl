@@ -59,7 +59,7 @@ proc ::kettle::recipe::parent {name parent} {
 	dict lappend def parent $parent
     }
 
-    io trace {PARENTS $name = [dict get $recipe $name parent]}
+    #io trace {PARENTS $name = [dict get $recipe $name parent]}
     return
 }
 
