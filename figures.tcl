@@ -47,30 +47,19 @@ proc ::kettle::figures {{figsrcdir doc/figures}} {
     recipe define figures {
 	(Re)generate the documentation figures.
     } {figsrcdir figures} {
-
-	io puts "Generating (tklib) diagrams..."
-
-	set here [pwd]
-
-	# TODO # support code to pipe, or capture output for display.
-	cd $figsrcdir
-	exec 2>@ stderr >@ stdout dia convert -t -o . png {*}$figures
-
-	cd $here
-
+	path in $figsrcdir {
+	    io puts "Generating (tklib) diagrams..."
+	    path exec dia convert -t -o . png {*}$figures
+	}
     } $root $figures
 
     recipe define show-figures {
 	Show the documentation figures in a Tk GUI
     } {figsrcdir figures} {
-	io puts "Generating (tklib) diagrams..."
-
-	set here [pwd]
-
-	cd $figsrcdir
-	exec 2>@ stderr >@ stdout dia show -t {*}$figures
-
-	cd $here
+	path in $figsrcdir {
+	    io puts "Showing (tklib) diagrams..."
+	    path exec dia show -t {*}$figures
+	}
     } $root $figures
 
     return
