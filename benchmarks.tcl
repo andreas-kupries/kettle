@@ -7,40 +7,17 @@ namespace eval ::kettle { namespace export benchmarks }
 # # ## ### ##### ######## ############# #####################
 ## API.
 
-proc ::kettle::benchmarks {{benchsrcdir tests}} {
+proc ::kettle::benchmarks {{benchsrcdir bench}} {
     # Overwrite self, we run only once for effect.
     proc ::kettle::benchmarks args {}
 
-    set root [path sourcedir $benchsrcdir]
-
-    io trace {}
-    io trace {SCAN tclbench benchmarks @ $benchsrcdir/}
-
-    if {![file exists $root]} {
-	io trace {  NOT FOUND}
-	return
-    }
-
     # Heuristic search for benchmarks
-
-    set benchmarks {}
-    path foreach-file $root path {
-	set spath [path strip $path $root]
-
-	if {[catch {
-	    path tcltest-file $path
-	} abench]} {
-	    io err { io puts stderr "    Skipped: $benchsrcdir/$spath @ $adia" }
-	    continue
-	}
-	if {!$abench} continue
-
-	io trace {    Accepted: $benchsrcdir/$spath}
-
-	lappend benchmarks $spath
-    }
-
-    if {![llength $benchmarks]} return
+    # Aborts caller when nothing is found.
+   lassign [path scan \
+		{tclbench benchmarks} \
+		$benchsrcdir \
+		{path bench-file}] \
+	root benchmarks
 
     # Put the benchmarks into recipes.
 

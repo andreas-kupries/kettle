@@ -11,36 +11,13 @@ proc ::kettle::figures {{figsrcdir doc/figures}} {
     # Overwrite self, we run only once for effect.
     proc ::kettle::figures args {}
 
-    set root [path sourcedir $figsrcdir]
-
-    io trace {}
-    io trace {SCAN tklib/dia figures @ $figsrcdir/}
-
-    if {![file exists $root]} {
-	io trace {  NOT FOUND}
-	return
-    }
-
-    # Heuristic search for figures
-
-    set figures {}
-    path foreach-file $root path {
-	set spath [path strip $path $root]
-
-	if {[catch {
-	    path diagram-file $path
-	} adia]} {
-	    io err { io puts stderr "    Skipped: $figsrcdir/$spath @ $adia" }
-	    continue
-	}
-	if {!$adia} continue
-
-	io trace {    Accepted: $figsrcdir/$spath}
-
-	lappend figures $spath
-    }
-
-    if {![llength $figures]} return
+    # Heuristic search for documentation files.
+    # Aborts caller when nothing is found.
+   lassign [path scan \
+		tklib/diagram \
+		$figsrcdir \
+		{path diagram-file}] \
+	root figures
 
     # Put the figures into recipes.
 
