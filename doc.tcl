@@ -33,10 +33,10 @@ proc ::kettle::doc {{docsrcdir doc}} {
 
     # Heuristic search for documentation files.
     # Aborts caller when nothing is found.
-   lassign [path scan \
-		tcllib/doctools \
-		$docsrcdir \
-		{path doctools-file}] \
+    lassign [path scan \
+		 tcllib/doctools \
+		 $docsrcdir \
+		 {path doctools-file}] \
 	root manpages
 
     # Put the documentation into recipes.
