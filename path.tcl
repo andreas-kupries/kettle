@@ -1,45 +1,75 @@
-## util.tcl --
+# -*- tcl -*- Copyright (c) 2012 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
-#
-#	kettle utilities for recipes.
-#
-# Copyright (c) 2012 Andreas Kupries
+## Path utility commands.
 
-# # ## ### ##### ######## ############# #####################
-## Requisites
+namespace eval ::kettle::path {
+    namespace export {[a-z]*}
+    namespace ensemble create
 
-package require Tcl 8.5
-package require  kettle ; # core
-
-# # ## ### ##### ######## ############# #####################
-## State, Initialization
-
-namespace eval ::kettle::util {}
+    # unable to import kettle::option, circular dependency
+    namespace import ::kettle::io
+    namespace import ::kettle::status
+}
 
 # # ## ### ##### ######## ############# #####################
-## API.
+## API commands.
 
-proc ::kettle::util::set-executable {path} {
-    log {	!chmod ugo+x   $path}
-    catch { file attributes $path -permissions ugo+x }
+proc ::kettle::path::norm {path} {
+    # full path normalization
+    return [file dirname [file normalize $path/__]]
+}
+
+proc ::kettle::path::strip {path prefix} {
+    return [file join \
+		{*}[lrange \
+			[file split [norm $path]] \
+			[llength [file split [norm $prefix]]] \
+			end]]
+}
+
+proc ::kettle::path::sourcedir {{path {}}} {
+    return [file join [option get @srcdir] $path]
+}
+
+proc ::kettle::path::libdir {{path {}}} {
+    return [file join [kettle::option get --lib-dir] $path]
+}
+
+proc ::kettle::path::bindir {{path {}}} {
+    return [file join [kettle::option get --bin-dir] $path]
+}
+
+proc ::kettle::path::mandir {{path {}}} {
+    return [file join [kettle::option get --man-dir] $path]
+}
+
+proc ::kettle::path::htmldir {{path {}}} {
+    return [file join [kettle::option get --html-dir] $path]
+}
+
+proc ::kettle::path::set-executable {path} {
+    io trace {	!chmod ugo+x   $path}
+    catch {
+	file attributes $path -permissions ugo+x
+    }
     return
 }
 
-proc ::kettle::util::grep {pattern file} {
+proc ::kettle::path::grep {pattern file} {
     return [lsearch -all -inline -glob [split [cat $file] \n] $pattern]
 }
 
-proc ::kettle::util::fixhashbang {file shell} {
+proc ::kettle::path::fixhashbang {file shell} {
     set in [open $file r]
     gets $in line
     if {![string match "#!*tclsh*" $line]} {
 	return -code error "No tclsh #! in $file"
     }
 
-    log {	!fix hash-bang $shell}
+    io trace {	!fix hash-bang $shell}
 
     set   out [open ${file}.[pid] w]
-    puts $out "#!/usr/bin/env $shell"
+    io puts $out "#!/usr/bin/env $shell"
 
     fconfigure $in  -translation binary -encoding binary
     fconfigure $out -translation binary -encoding binary
@@ -51,7 +81,7 @@ proc ::kettle::util::fixhashbang {file shell} {
     return
 }
 
-proc ::kettle::util::provides {file} {
+proc ::kettle::path::provides {file} {
     set provisions [grep {*package provide*} $file] ; # (*)
     if {![llength $provisions]} {
 	return -code error {No package provided}
@@ -60,11 +90,11 @@ proc ::kettle::util::provides {file} {
     # grep pattern above (*) as result for this package itself.
     set pkgname [lindex $provisions end 2]
     set pkgver  [lindex $provisions end 3]
-    log {    package: $pkgname $pkgver @ $file}
+    io trace {    package: $pkgname $pkgver @ $file}
     return [list $pkgname $pkgver]
 }
 
-proc ::kettle::util::docfile {path} {
+proc ::kettle::path::docfile {path} {
     set test [cathead $path 1024 -translation binary]
     if {([regexp "\\\[manpage_begin " $test] &&
 	 !([regexp -- {--- !doctools ---} $test] || [regexp -- "!tcl\.tk//DSL doctools//EN//" $test])) ||
@@ -74,7 +104,7 @@ proc ::kettle::util::docfile {path} {
     return 0
 }
 
-proc ::kettle::util::diafile {path} {
+proc ::kettle::path::diafile {path} {
     set test [cathead $path 1024 -translation binary]
     if {[regexp {tcl.tk//DSL diagram//EN//1.0} $test]} {
 	return 1
@@ -82,8 +112,8 @@ proc ::kettle::util::diafile {path} {
     return 0
 }
 
-proc ::kettle::util::foreach-file {path pv script} {
-    ## TODO ## Exclusion patterns! Standard, and user.
+proc ::kettle::path::foreach-file {path pv script} {
+    ## TODO ## Exclusion patterns! user.
 
     upvar 1 $pv thepath
 
@@ -140,20 +170,12 @@ proc ::kettle::util::foreach-file {path pv script} {
     return
 }
 
-proc ::kettle::util::Ignore {patterns path} {
-    set path [file tail $path]
-    foreach p $patterns {
-	if {[string match $p $path]} { return 1 }
-    }
-    return 0
-}
-
-proc ::kettle::util::tmpfile {{prefix kettle_util_}} {
+proc ::kettle::path::tmpfile {{prefix kettle_util_}} {
     global tcl_platform
     return $prefix[pid]_[clock seconds]_[clock milliseconds]_[info hostname]_$tcl_platform(user)
 }
 
-proc ::kettle::util::cat {path args} {
+proc ::kettle::path::cat {path args} {
     set c [open $path r]
     if {[llength $args]} { fconfigure $c {*}$args }
     set contents [read $c]
@@ -161,7 +183,7 @@ proc ::kettle::util::cat {path args} {
     return $contents
 }
 
-proc ::kettle::util::cathead {path n args} {
+proc ::kettle::path::cathead {path n args} {
     set c [open $path r]
     if {[llength $args]} { fconfigure $c {*}$args }
     set contents [read $c]
@@ -169,7 +191,7 @@ proc ::kettle::util::cathead {path n args} {
     return $contents
 }
 
-proc ::kettle::util::write {path contents args} {
+proc ::kettle::path::write {path contents args} {
     set c [open $path w]
     if {[llength $args]} { fconfigure $c {*}$args }
     ::puts -nonewline $c $contents
@@ -177,27 +199,27 @@ proc ::kettle::util::write {path contents args} {
     return
 }
 
-proc ::kettle::util::copy-file {src dstdir} {
+proc ::kettle::path::copy-file {src dstdir} {
     # copy single file into destination _directory_
     # Fails on an existing file.
-    kettle status-check
+    status check
 
-    puts -nonewline "\tInstalling file [file tail $src]: "
+    io puts -nonewline "\tInstalling file [file tail $src]: "
     if {[catch {
 	if {![kettle option-get --dry]} {
 	    file copy $src $dstdir/[file tail $src]
 	}
     } msg]} {
-	err { puts "FAIL ($msg)" }
-	kettle status-fail
+	io err { io puts "FAIL ($msg)" }
+	status fail
 	return 0
     } else {
-	ok { puts OK }
+	io ok { io puts OK }
 	return 1
     }
 }
 
-proc ::kettle::util::copy-files {dstdir args} {
+proc ::kettle::path::copy-files {dstdir args} {
     # copy multiple files into a destination _directory_
     # Fails on an existing file.
     foreach src $args {
@@ -206,27 +228,27 @@ proc ::kettle::util::copy-files {dstdir args} {
     return 1
 }
 
-proc ::kettle::util::remove-path {path} {
+proc ::kettle::path::remove-path {path} {
     # General uninstallation of a file or directory.
 
-    kettle status-check
+    status check
 
-    puts -nonewline "\tUninstalling ${path}: "
+    io puts -nonewline "\tUninstalling ${path}: "
     if {[catch {
 	if {![kettle option-get --dry]} {
 	file delete -force $path
 	}
     } msg]} {
-	err { puts "FAIL ($msg)" }
-	kettle status-fail
+	io err { io puts "FAIL ($msg)" }
+	status fail
 	return 0
     } else {
-	ok { puts OK }
+	io ok { io puts OK }
 	return 1
     }
 }
 
-proc ::kettle::util::remove-paths {args} {
+proc ::kettle::path::remove-paths {args} {
     # General uninstallation of multiple files.
     foreach path $args {
 	if {![remove-path $path]} { return 0 }
@@ -234,15 +256,15 @@ proc ::kettle::util::remove-paths {args} {
     return 1
 }
 
-proc ::kettle::util::install-application {src dstdir} {
+proc ::kettle::path::install-application {src dstdir} {
     # install single-file application into destination _directory_.
     # a previously existing file is moved out of the way.
-    kettle status-check
+    status check
 
     set fname [file tail $src]
 
-    puts "Installing application \"$fname\""
-    puts "    Into $dstdir"
+    io puts "Installing application \"$fname\""
+    io puts "    Into $dstdir"
 
     if {![kettle option-get --dry]} {
 	# Save existing file, if any.
@@ -265,15 +287,15 @@ proc ::kettle::util::install-application {src dstdir} {
     return
 }
 
-proc ::kettle::util::install-script {src dstdir shell} {
+proc ::kettle::path::install-script {src dstdir shell} {
     # install single-file script application into destination _directory_.
     # a previously existing file is moved out of the way.
-    kettle status-check
+    status check
 
     set fname [file tail $src]
 
-    puts "Installing script \"$fname\""
-    puts "    Into $dstdir"
+    io puts "Installing script \"$fname\""
+    io puts "    Into $dstdir"
 
     # Save existing file, if any.
     if {![kettle option-get --dry]} {
@@ -297,14 +319,14 @@ proc ::kettle::util::install-script {src dstdir shell} {
     return
 }
 
-proc ::kettle::util::install-file-group {label dstdir args} {
+proc ::kettle::path::install-file-group {label dstdir args} {
     # Install multiple files into a destination directory.
     # The destination is created to hold the files. The files
     # are strongly coupled, i.e. belong together.
-    kettle status-check
+    status check
 
-    puts "Installing $label"
-    puts "    Into $dstdir"
+    io puts "Installing $label"
+    io puts "    Into $dstdir"
 
     set new ${dstdir}-new
     set old ${dstdir}-old
@@ -321,7 +343,7 @@ proc ::kettle::util::install-file-group {label dstdir args} {
     }
 
     # Now shuffle old and new things around to put the new into place.
-    puts -nonewline {    Commmit: }
+    io puts -nonewline {    Commmit: }
     if {[catch {
 	if {![kettle option-get --dry]} {
 	    file delete -force $old
@@ -330,23 +352,23 @@ proc ::kettle::util::install-file-group {label dstdir args} {
 	    file delete -force $old
 	}
     } msg]} {
-	err { puts "FAIL ($msg)" }
-	kettle status-fail
+	io err { io puts "FAIL ($msg)" }
+	status fail
     } else {
-	ok { puts OK }
+	io ok { io puts OK }
     }
     return
 }
 
-proc ::kettle::util::install-file-set {label dstdir args} {
+proc ::kettle::path::install-file-set {label dstdir args} {
     # Install multiple files into a destination directory.
     # The destination has to exist. The files in the set
     # are only loosely coupled. Example: manpages.
 
-    kettle status-check
+    status check
 
-    puts "Installing $label"
-    puts "    Into $dstdir"
+    io puts "Installing $label"
+    io puts "    Into $dstdir"
 
     ## Consider removal of existing files ...
     ## Except, for manpages we want to be informed of clashes.
@@ -356,37 +378,37 @@ proc ::kettle::util::install-file-set {label dstdir args} {
     return
 }
 
-proc ::kettle::util::uninstall-application {src dstdir} {
-    kettle status-check
+proc ::kettle::path::uninstall-application {src dstdir} {
+    status check
 
     set fname [file tail $src]
 
-    puts "Uninstall application \"$fname\""
-    puts "    From $dstdir"
+    io puts "Uninstall application \"$fname\""
+    io puts "    From $dstdir"
 
     remove-path $dstdir/$fname
     return
 }
 
-proc ::kettle::util::uninstall-file-group {label dstdir} {
-    kettle status-check
+proc ::kettle::path::uninstall-file-group {label dstdir} {
+    status check
 
-    puts "Uninstalling $label"
-    puts "    From $dstdir"
+    io puts "Uninstalling $label"
+    io puts "    From $dstdir"
 
     remove-path $dstdir
     return
 }
 
-proc ::kettle::util::uninstall-file-set {label dstdir args} {
+proc ::kettle::path::uninstall-file-set {label dstdir args} {
     # Install multiple files into a destination directory.
     # The destination has to exist. The files in the set
     # are only loosely coupled. Example: manpages.
 
-    kettle status-check
+    status check
 
-    puts "Uninstalling $label"
-    puts "    From $dstdir"
+    io puts "Uninstalling $label"
+    io puts "    From $dstdir"
 
     ## Consider removal of existing files ...
     ## Except, for manpages we want to be informed of clashes.
@@ -399,19 +421,15 @@ proc ::kettle::util::uninstall-file-set {label dstdir args} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Ready
+## Internal
 
-namespace eval ::kettle::util {
-    namespace import ::kettle::log
-    namespace import ::kettle::puts
-    namespace import ::kettle::ok
-    namespace import ::kettle::err
-
-    namespace export {[a-z]*}
-    namespace ensemble create
+proc ::kettle::path::Ignore {patterns path} {
+    set path [file tail $path]
+    foreach p $patterns {
+	if {[string match $p $path]} { return 1 }
+    }
+    return 0
 }
 
-package provide kettle::util 0
-return
-
 # # ## ### ##### ######## ############# #####################
+return
