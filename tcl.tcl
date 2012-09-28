@@ -11,8 +11,8 @@ proc ::kettle::tcl {} {
 
     # Heuristic search for documentation, testsuites, benchmarks.
     doc
-    #testsuites
-    #benchmarks
+    testsuite
+    benchmarks
 
     io trace {}
     io trace {SCAN tcl packages @ [path sourcedir]/}
