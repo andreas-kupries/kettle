@@ -1,5 +1,3 @@
- 
-package provide try 0
 
 # Do nothing if the try command exists already (8.6+).
 if {[llength [info commands try]]} return
