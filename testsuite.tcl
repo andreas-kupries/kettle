@@ -48,6 +48,8 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 	Run the testsuite
     } {testsrcdir testsuite} {
 
+	# Test dependencies - building them is not covered here!
+
 	# We are running each test file in a separate sub process, to
 	# catch crashes, etc. ... We assume that the test file is self
 	# contained in terms of loading all its dependencies, like
