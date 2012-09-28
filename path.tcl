@@ -476,6 +476,55 @@ proc ::kettle::path::uninstall-file-set {label dstdir args} {
     return
 }
 
+proc ::kettle::path::exec {args} {
+    pipe line {
+	io puts $line
+    } {*}$args
+    return
+}
+
+proc ::kettle::path::pipe {lv script args} {
+    upvar 1 $lv line
+    set stderr [tmpfile kpe_stderr_]
+
+    io trace {  PIPE: $args}
+
+    set pipe [open "|$args 2> $stderr" r]
+
+    while {![eof $pipe]} {
+	if {[gets $pipe line] < 0} continue
+	try {
+	    uplevel 1 $script
+	} on error {e o} {
+	    io err { io puts $e }
+	    break
+	}
+    }
+
+    try {
+	close $pipe
+    } on error {e o} {
+	io err { io puts $e }
+    }
+
+    set err [cat $stderr]
+    file delete $stderr
+
+    if {$err eq {}} return
+    io err { io puts $err }
+    return
+}
+
+proc ::kettle::path::in {path script} {
+    set here [pwd]
+    try {
+	cd $path
+	uplevel 1 $script
+    } finally {
+	cd $here
+    }
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Internal
 
