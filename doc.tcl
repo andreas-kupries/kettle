@@ -31,35 +31,15 @@ proc ::kettle::doc {{docsrcdir doc}} {
     # Heuristic search for figures
     figures $docsrcdir/figures
 
-    set root [path sourcedir $docsrcdir]
-
-    io trace {}
-    io trace {SCAN tcllib/doctools @ $docsrcdir/}
-
-    if {![file exists $root]} {
-	io trace {  NOT FOUND}
-	return
-    }
-
     # Heuristic search for documentation files.
-    set manpages {}
-    path foreach-file $root path {
-	if {[catch {
-	    path doctools-file $path
-	} adoc]} {
-	    set path [file join {*}[lrange [file split $path] $n end]] 
-	    err { puts "    Skipped: $docsrcdir/$path @ $adoc" }
-	    continue
-	}
-	if {!$adoc} continue
+    # Aborts caller when nothing is found.
+   lassign [path scan \
+		tcllib/doctools \
+		$docsrcdir \
+		{path doctools-file}] \
+	root manpages
 
-	set spath [path strip $path $root]
-
-	io trace {    Accepted: $docsrcdir/$spath}
-	lappend manpages $spath
-    }
-
-    if {![llength $manpages]} return
+    # Put the documentation into recipes.
 
     set dd      [path sourcedir [option get --doc-destination]]
     set mansrc  $dd/man/files
