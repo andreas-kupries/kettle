@@ -8,5 +8,5 @@ apply {{selfdir} {
 	# use the installed core.
 	package require kettle
     }
-    kettle::application
+    kettle::Application
 }} [file dirname [file dirname [file normalize [info script]/__]]]

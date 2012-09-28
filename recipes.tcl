@@ -140,7 +140,7 @@ proc ::kettle::recipe::Run {name} {
     }
 
     # Now run the recipe itself
-    log {RUN ($name) ...}
+    io trace {RUN ($name) ...}
     foreach cmd [dict get $recipe $name script] {
 	#io puts |$cmd|
 	eval $cmd
@@ -159,11 +159,11 @@ proc ::kettle::recipe::Children {name} {
     return $result
 }
 
-proc ::kettle::Reflow {help} {
+proc ::kettle::recipe::Reflow {help} {
     return [Indent [Undent [string trim $help]] {    }]
 }
 
-proc ::kettle::Indent {text prefix} {
+proc ::kettle::recipe::Indent {text prefix} {
     set text [string trimright $text]
     set res {}
     foreach line [split $text \n] {
@@ -176,7 +176,7 @@ proc ::kettle::Indent {text prefix} {
     return [join $res \n]
 }
 
-proc ::kettle::Undent {text} {
+proc ::kettle::recipe::Undent {text} {
     if {$text eq {}} { return {} }
 
     set lines [split $text \n]
@@ -205,7 +205,7 @@ proc ::kettle::Undent {text} {
     return [join $res \n]
 }
 
-proc ::kettle::LCP {list} {
+proc ::kettle::recipe::LCP {list} {
     if {[llength $list] <= 1} {
 	return [lindex $list 0]
     }

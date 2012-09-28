@@ -28,7 +28,7 @@ proc ::kettle::path::strip {path prefix} {
 }
 
 proc ::kettle::path::sourcedir {{path {}}} {
-    return [file join [option get @srcdir] $path]
+    return [file join [kettle::option get @srcdir] $path]
 }
 
 proc ::kettle::path::libdir {{path {}}} {
@@ -55,8 +55,12 @@ proc ::kettle::path::set-executable {path} {
     return
 }
 
-proc ::kettle::path::grep {pattern file} {
-    return [lsearch -all -inline -glob [split [cat $file] \n] $pattern]
+proc ::kettle::path::grep {pattern data} {
+    return [lsearch -all -inline -glob [split $data \n] $pattern]
+}
+
+proc ::kettle::path::rgrep {pattern data} {
+    return [lsearch -all -inline -regexp [split $data \n] $pattern]
 }
 
 proc ::kettle::path::fixhashbang {file shell} {
@@ -81,20 +85,48 @@ proc ::kettle::path::fixhashbang {file shell} {
     return
 }
 
-proc ::kettle::path::provides {file} {
-    set provisions [grep {*package provide*} $file] ; # (*)
+proc ::kettle::path::tcl-package-file {file pnv pvv} {
+    upvar 1 $pnv pkgname $pvv pkgver
+
+    set provisions [grep {*package provide *} [cat $file]]
     if {![llength $provisions]} {
-	return -code error {No package provided}
+	return 0
     }
-    # Note: Using index 'end' here ensures that we are not using the
-    # grep pattern above (*) as result for this package itself.
-    set pkgname [lindex $provisions end 2]
-    set pkgver  [lindex $provisions end 3]
-    io trace {    package: $pkgname $pkgver @ $file}
-    return [list $pkgname $pkgver]
+
+    io trace {    Testing: $file}
+
+    foreach line $provisions {
+	io trace {        Candidate |$line|}
+	if {[catch {
+	    lassign $line cmd method pn pv
+	}]} {
+	    io trace {        * Not a list}
+	    continue
+	}
+	if {$cmd ne "package"} {
+	    io trace {        * $cmd: Not a 'package' command}
+	    continue
+	}
+	if {$method ne "provide"} {
+	    io trace {        * $method: Not a 'package provide' command}
+	    continue
+	}
+	if {[catch {package vcompare $pv 0}]} {
+	    io trace {        * $pkgver: Not a version number}
+	    continue
+	}
+
+	io trace {    Accepted: $pn $pv @ $file}
+	set pkgname $pn
+	set pkgver  $pv
+	return 1
+    }
+
+    # No candidate satisfactory.
+    return 0
 }
 
-proc ::kettle::path::docfile {path} {
+proc ::kettle::path::doctools-file {path} {
     set test [cathead $path 1024 -translation binary]
     if {([regexp "\\\[manpage_begin " $test] &&
 	 !([regexp -- {--- !doctools ---} $test] || [regexp -- "!tcl\.tk//DSL doctools//EN//" $test])) ||
@@ -104,7 +136,7 @@ proc ::kettle::path::docfile {path} {
     return 0
 }
 
-proc ::kettle::path::diafile {path} {
+proc ::kettle::path::diagram-file {path} {
     set test [cathead $path 1024 -translation binary]
     if {[regexp {tcl.tk//DSL diagram//EN//1.0} $test]} {
 	return 1
@@ -117,7 +149,7 @@ proc ::kettle::path::foreach-file {path pv script} {
 
     upvar 1 $pv thepath
 
-    set ex [kettle option-get --ignore-glob]
+    set ex [kettle::option get --ignore-glob]
 
     set known {}
     lappend waiting $path
@@ -206,7 +238,7 @@ proc ::kettle::path::copy-file {src dstdir} {
 
     io puts -nonewline "\tInstalling file [file tail $src]: "
     if {[catch {
-	if {![kettle option-get --dry]} {
+	if {![kettle option get --dry]} {
 	    file copy $src $dstdir/[file tail $src]
 	}
     } msg]} {
@@ -235,7 +267,7 @@ proc ::kettle::path::remove-path {path} {
 
     io puts -nonewline "\tUninstalling ${path}: "
     if {[catch {
-	if {![kettle option-get --dry]} {
+	if {![kettle option get --dry]} {
 	file delete -force $path
 	}
     } msg]} {
@@ -266,7 +298,7 @@ proc ::kettle::path::install-application {src dstdir} {
     io puts "Installing application \"$fname\""
     io puts "    Into $dstdir"
 
-    if {![kettle option-get --dry]} {
+    if {![kettle option get --dry]} {
 	# Save existing file, if any.
 	file delete -force $dstdir/${fname}.old
 	catch {
@@ -281,7 +313,7 @@ proc ::kettle::path::install-application {src dstdir} {
 	}
     }
 
-    if {![kettle option-get --dry]} {
+    if {![kettle option get --dry]} {
 	set-executable $dstdir/$fname
     }
     return
@@ -298,7 +330,7 @@ proc ::kettle::path::install-script {src dstdir shell} {
     io puts "    Into $dstdir"
 
     # Save existing file, if any.
-    if {![kettle option-get --dry]} {
+    if {![kettle option get --dry]} {
 	file delete -force $dstdir/${fname}.old
 	catch {
 	    file rename $dstdir/${fname} $dstdir/${fname}.old
@@ -312,7 +344,7 @@ proc ::kettle::path::install-script {src dstdir shell} {
 	}
     }
 
-    if {![kettle option-get --dry]} {
+    if {![kettle option get --dry]} {
 	fixhashbang    $dstdir/$fname $shell
 	set-executable $dstdir/$fname
     }
@@ -331,7 +363,7 @@ proc ::kettle::path::install-file-group {label dstdir args} {
     set new ${dstdir}-new
     set old ${dstdir}-old
 
-    if {![kettle option-get --dry]} {
+    if {![kettle option get --dry]} {
 	# Clean temporary destination. Remove left-overs from previous runs.
 	file delete -force $new
 	file mkdir         $new
@@ -345,7 +377,7 @@ proc ::kettle::path::install-file-group {label dstdir args} {
     # Now shuffle old and new things around to put the new into place.
     io puts -nonewline {    Commmit: }
     if {[catch {
-	if {![kettle option-get --dry]} {
+	if {![kettle option get --dry]} {
 	    file delete -force $old
 	    catch { file rename $dstdir $old }
 	    file rename -force $new $dstdir

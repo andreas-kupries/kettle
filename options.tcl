@@ -18,7 +18,6 @@ namespace eval ::kettle::option {
 namespace eval ::kettle::option {
     # Dictionary, map option names to values.
     variable config {}
-
 }
 
 # # ## ### ##### ######## ############# #####################

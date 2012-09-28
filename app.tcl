@@ -7,7 +7,7 @@ namespace eval ::kettle {}
 # # ## ### ##### ######## ############# #####################
 ## API commands.
 
-proc ::kettle::application {} {
+proc ::kettle::Application {} {
     global argv
 
     # Process arguments: -f, -v, --* options, and goals
@@ -20,7 +20,7 @@ proc ::kettle::application {} {
 	set declfile [path norm build.tcl]
 
     } else {
-	io puts stderr "Build declaration file neither specified, nor found"
+	io err { io puts "Build declaration file neither specified, nor found" }
 	::exit 1
     }
 
@@ -53,7 +53,7 @@ proc ::kettle::application {} {
 	::source $declfile
     }]} {
 	# Report troubles in the declarations and abort.
-	io puts stderr $::errorInfo
+	io err { io puts $::errorInfo }
 	::exit 1
     }
 

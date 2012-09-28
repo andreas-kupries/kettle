@@ -3,7 +3,6 @@
 ## Handle tcllib/doctools documentation files
 
 namespace eval ::kettle { namespace export doc }
-namespace eval ::kettle::doc {}
 
 kettle option set --doc-destination embedded
 
@@ -41,7 +40,7 @@ proc ::kettle::doc {{docsrcdir doc}} {
     set manpages {}
     path foreach-file $root path {
 	if {[catch {
-	    path docfile $path
+	    path doctools-file $path
 	} adoc]} {
 	    set path [file join {*}[lrange [file split $path] $n end]] 
 	    err { puts "    Skipped: $docsrcdir/$path @ $adoc" }
@@ -144,9 +143,4 @@ proc ::kettle::doc {{docsrcdir doc}} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Ready
-
-package provide kettle::doc 0
 return
-
-# # ## ### ##### ######## ############# #####################
