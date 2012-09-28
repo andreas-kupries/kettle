@@ -17,35 +17,39 @@ namespace eval ::kettle {
 }
 
 # # ## ### ##### ######## ############# #####################
-## @owns: io.tcl
-## @owns: status.tcl
-## @owns: recipes.tcl
-## @owns: path.tcl
-## @owns: options.tcl
-## @owns: gui.tcl
-## @owns: standard.tcl
-## @owns: tclapp.tcl
-## @owns: tcl.tcl
+## @owns: app.tcl
 ## @owns: doc.tcl
 ## @owns: figures.tcl
-## @owns: app.tcl
+## @owns: gui.tcl
+## @owns: io.tcl
+## @owns: lambda.tcl
+## @owns: options.tcl
+## @owns: path.tcl
+## @owns: recipes.tcl
+## @owns: standard.tcl
+## @owns: status.tcl
+## @owns: tcl.tcl
+## @owns: tclapp.tcl
+## @owns: try.tcl
 
 ::apply {{selfdir} {
     # # ## ### ##### ######## ############# ##################### Foundation
-    source $selfdir/io.tcl       ; # Message output support.
-    source $selfdir/status.tcl   ; # General goal status.
-    source $selfdir/recipes.tcl  ; # Recipe management.
-    source $selfdir/path.tcl     ; # General path utilities
-    source $selfdir/options.tcl  ; # Option management.
-    source $selfdir/gui.tcl      ; # GUI support.
-    source $selfdir/standard.tcl ; # Standard recipes.
+    source $selfdir/lambda.tcl    ; # Nicer way of writing apply
+    source $selfdir/try.tcl       ; # try/finally in Tcl, snarfed from 8.6
+    source $selfdir/io.tcl        ; # Message output support.
+    source $selfdir/status.tcl    ; # General goal status.
+    source $selfdir/recipes.tcl   ; # Recipe management.
+    source $selfdir/path.tcl      ; # General path utilities
+    source $selfdir/options.tcl   ; # Option management.
+    source $selfdir/gui.tcl       ; # GUI support.
+    source $selfdir/standard.tcl  ; # Standard recipes.
     # # ## ### ##### ######## ############# ##################### DSL
-    source $selfdir/tclapp.tcl   ; # tcl script applications
-    source $selfdir/tcl.tcl      ; # tcl packages
-    source $selfdir/doc.tcl      ; # documentation (doctools)
-    source $selfdir/figures.tcl  ; # figures       (diagram)
+    source $selfdir/tclapp.tcl    ; # tcl script applications
+    source $selfdir/tcl.tcl       ; # tcl packages
+    source $selfdir/doc.tcl       ; # documentation (doctools)
+    source $selfdir/figures.tcl   ; # figures       (diagram)
     # # ## ### ##### ######## ############# ##################### Application
-    source $selfdir/app.tcl      ; # Application core.
+    source $selfdir/app.tcl       ; # Application core.
     # # ## ### ##### ######## ############# #####################
 }} [file dirname [file normalize [info script]]]
 
