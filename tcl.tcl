@@ -21,20 +21,16 @@ proc ::kettle::tcl {} {
     set packages {}
     path foreach-file [path sourcedir] path {
 	if {[catch {
-	    path tcl-package-file $path pn pv
+	    path tcl-package-file $path pn pv files
 	} apkg]} {
 	    err { puts "    Skipped: $apkg" }
 	    continue
 	}
 	if {!$apkg} continue
-	lappend packages $path $pn $pv
+	lappend packages $files $pn $pv
     }
 
-    foreach {primary pn pv} $packages {
-	set     files {}
-	lappend files $primary
-
-	# TODO: Look for files referenced by the primary.
+    foreach {files pn pv} $packages {
 	TclSetup $files $pn $pv
     }
     return

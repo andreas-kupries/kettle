@@ -85,10 +85,11 @@ proc ::kettle::path::fixhashbang {file shell} {
     return
 }
 
-proc ::kettle::path::tcl-package-file {file pnv pvv} {
-    upvar 1 $pnv pkgname $pvv pkgver
+proc ::kettle::path::tcl-package-file {file pnv pvv fv} {
+    upvar 1 $pnv pkgname $pvv pkgver $fv files
 
-    set provisions [grep {*package provide *} [cat $file]]
+    set contents   [cat $file]
+    set provisions [grep {*package provide *} $contents]
     if {![llength $provisions]} {
 	return 0
     }
@@ -119,6 +120,15 @@ proc ::kettle::path::tcl-package-file {file pnv pvv} {
 	io trace {    Accepted: $pn $pv @ $file}
 	set pkgname $pn
 	set pkgver  $pv
+
+	lappend files $file
+
+	# Look for referenced dependent files.
+	foreach line [grep {* @owns: *} $contents] {
+	    if {![regexp {#\s+@owns:\s+(.*)$} $line -> path]} continue
+	    lappend files $path
+	}
+
 	return 1
     }
 
