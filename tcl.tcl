@@ -33,20 +33,23 @@ proc ::kettle::TclSetup {root files pn pv} {
 
     recipe define install-package-$pn "Install package $pn $pv" {pkgdir root files pn pv} {
 	path in $root {
-	    set tmpdir [path tmpfile]
-	    file mkdir  $tmpdir
-	    set tmpfile $tmpdir/pkgIndex.tcl
+	    try {
+		set tmpdir [path tmpfile]
+		file mkdir  $tmpdir
+		set tmpfile $tmpdir/pkgIndex.tcl
 
-	    set primary [lindex $files 0]
-	    path write $tmpfile \
-		"package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
+		set primary [lindex $files 0]
+		path write $tmpfile \
+		    "package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
 
-	    path install-file-group \
-		"package $pn $pv" \
-		$pkgdir {*}$files $tmpfile
+		path install-file-group \
+		    "package $pn $pv" \
+		    $pkgdir {*}$files $tmpfile
 
-	    file delete $tmpfile
-	    file delete $tmpdir
+	    } finally {
+		file delete $tmpfile
+		file delete $tmpdir
+	    }
 	}
     } $pkgdir $root $files $pn $pv
 
