@@ -28,23 +28,23 @@ proc ::kettle::path::strip {path prefix} {
 }
 
 proc ::kettle::path::sourcedir {{path {}}} {
-    return [file join [kettle option get @srcdir] $path]
+    return [norm [file join [kettle option get @srcdir] $path]]
 }
 
 proc ::kettle::path::libdir {{path {}}} {
-    return [file join [kettle option get --lib-dir] $path]
+    return [norm [file join [kettle option get --lib-dir] $path]]
 }
 
 proc ::kettle::path::bindir {{path {}}} {
-    return [file join [kettle option get --bin-dir] $path]
+    return [norm [file join [kettle option get --bin-dir] $path]]
 }
 
 proc ::kettle::path::mandir {{path {}}} {
-    return [file join [kettle option get --man-dir] $path]
+    return [norm [file join [kettle option get --man-dir] $path]]
 }
 
 proc ::kettle::path::htmldir {{path {}}} {
-    return [file join [kettle option get --html-dir] $path]
+    return [norm [file join [kettle option get --html-dir] $path]]
 }
 
 proc ::kettle::path::set-executable {path} {
@@ -264,7 +264,7 @@ proc ::kettle::path::scan {label root predicate} {
     return [list $nroot $result]
 }
 
-proc ::kettle::path::tmpfile {{prefix kettle_util_}} {
+proc ::kettle::path::tmpfile {{prefix kettle_path_}} {
     global tcl_platform
     return $prefix[pid]_[clock seconds]_[clock milliseconds]_[info hostname]_$tcl_platform(user)
 }
