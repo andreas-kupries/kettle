@@ -2,7 +2,7 @@
 # # ## ### ##### ######## ############# #####################
 ## Handle tcllib/doctools documentation files
 
-namespace eval ::kettle { namespace export doc }
+namespace eval ::kettle { namespace export doc doc-destination }
 
 kettle option set --doc-destination embedded
 
