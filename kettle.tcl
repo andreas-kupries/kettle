@@ -32,6 +32,7 @@ namespace eval ::kettle {
 ## @owns: tcl.tcl
 ## @owns: tclapp.tcl
 ## @owns: testsuite.tcl
+## @owns: tool.tcl
 ## @owns: try.tcl
 
 ::apply {{selfdir} {
@@ -43,6 +44,7 @@ namespace eval ::kettle {
     source $selfdir/recipes.tcl    ; # Recipe management.
     source $selfdir/path.tcl       ; # General path utilities
     source $selfdir/options.tcl    ; # Option management.
+    source $selfdir/tool.tcl       ; # Manage tool requirements.
     source $selfdir/gui.tcl        ; # GUI support.
     source $selfdir/standard.tcl   ; # Standard recipes.
     # # ## ### ##### ######## ############# ##################### DSL
