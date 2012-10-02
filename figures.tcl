@@ -4,7 +4,9 @@
 
 namespace eval ::kettle { namespace export figures }
 
-kettle tool declare dia
+kettle tool declare {
+    dia dia.kit dia.tcl dia.exe
+}
 
 # # ## ### ##### ######## ############# #####################
 ## API.
