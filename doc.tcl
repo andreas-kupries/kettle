@@ -7,7 +7,9 @@ namespace eval ::kettle { namespace export doc doc-destination }
 kettle option define --doc-destination {} {}
 kettle option setd   --doc-destination embedded
 
-kettle tool declare dtplite
+kettle tool declare {
+    dtplite dtplite.kit dtplite.tcl dtplite.exe
+}
 
 # # ## ### ##### ######## ############# #####################
 ## API.
