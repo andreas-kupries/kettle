@@ -4,7 +4,8 @@
 
 namespace eval ::kettle { namespace export doc doc-destination }
 
-kettle option set --doc-destination embedded
+kettle option define --doc-destination {} {}
+kettle option setd   --doc-destination embedded
 
 # # ## ### ##### ######## ############# #####################
 ## API.
