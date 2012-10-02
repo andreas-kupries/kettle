@@ -10,6 +10,7 @@ namespace eval ::kettle::option {
     namespace ensemble create
 
     namespace import ::kettle::path
+    namespace import ::kettle::io
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -23,15 +24,76 @@ namespace eval ::kettle::option {
 # # ## ### ##### ######## ############# #####################
 ## API
 
+proc ::kettle::option::define {o arguments script args} {
+    variable config
+
+    io trace {DEF'option $o}
+
+    if {[dict exists $config $o]} {
+	return -code error "Illegal redefinition of option $o."
+    }
+
+    lappend arguments option old new
+
+    dict set config $o value {}
+    dict set config $o user  0
+    dict set config $o setter \
+	[lambda@ ::kettle::option $arguments $script {*}$args]
+    return
+}
+
 proc ::kettle::option::exists {o} {
     variable config
     return [dict exists $config $o]
 }
 
-proc ::kettle::option::set {o {v {}}} {
+proc ::kettle::option::names {} {
     variable config
-    dict set config $o $v
-    return $v
+    return [dict keys $config --*]
+}
+
+# set value, user choice
+proc ::kettle::option::set {o value} {
+    variable config
+
+    if {[dict exists $config $o] && [dict exists $config $o value]} {
+	::set old [dict get $config $o value]
+    } else {
+	::set old {}
+    }  
+
+    dict set config $o value $value
+    dict set config $o user 1
+
+    # Propagate choice, if possible
+    if {![dict exists $config $o setter]} return
+    {*}[dict get $config $o setter] $o $old $value
+    return
+}
+
+# set value, system choice, new default. ignored if a user has chosen
+# a value for the option.
+proc ::kettle::option::setd {o value} {
+    variable config
+
+    if {![dict exists $config $o]} {
+	return -code error "Unable to set default of undefined option $o."
+    }
+
+    if {[dict get $config $o user]} return
+
+    ::set old [dict get $config $o value]
+    dict set config $o value $value
+    # Propagate new default.
+    {*}[dict get $config $o setter] $o $old $value
+    return
+}
+
+# set value, override anything, no propagation
+proc ::kettle::option::set! {o v} {
+    variable config
+    dict set config $o value $v
+    return
 }
 
 proc ::kettle::option::unset {o} {
@@ -42,7 +104,12 @@ proc ::kettle::option::unset {o} {
 
 proc ::kettle::option::get {o} {
     variable config
-    return [dict get $config $o]
+
+    if {![dict exists $config $o]} {
+	return -code error "Unable to retrieve unknown option $o."
+    }
+
+    return [dict get $config $o value]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -52,29 +119,47 @@ apply {{} {
     global tcl_platform
     variable config
 
-    dict set config --exec-prefix [file dirname [file dirname [info library]]]
-    dict set config --prefix      [dict get $config --exec-prefix]
+    define --exec-prefix {} {
+	# Implied arguments: option old new
+	setd --prefix  $new
+	setd --bin-dir $new/bin
+	setd --lib-dir $new/lib
+    }
 
-    dict set config --bin-dir     [file dirname [path norm [info nameofexecutable]]]
-    dict set config --lib-dir     [info library]
+    define --bin-dir {} {}
+    define --lib-dir {} {}
 
-    dict set config --man-dir     [dict get $config --prefix]/man
-    dict set config --html-dir    [dict get $config --prefix]/html
+    define --prefix {} {
+	# Implied arguments: option old new
+	setd --man-dir  $new/man
+	setd --html-dir $new/html
+    }
 
-    dict set config --ignore-glob {
+    define --man-dir  {} {}
+    define --html-dir {} {}
+
+    setd --exec-prefix [file dirname [file dirname [info library]]]
+    # -> bin, lib, prefix -> man, html
+
+    setd --bin-dir [file dirname [path norm [info nameofexecutable]]]
+    setd --lib-dir [info library]
+
+    define --ignore-glob {} {}
+    setd --ignore-glob {
 	*~ _FOSSIL_ .fslckout .fos .git .svn CVS .hg RCS SCCS
 	*.bak *.bzr *.cdv *.pc _MTN _build _darcs _sgbak blib
 	autom4te.cache cover_db ~.dep ~.dot ~.nib ~.plst
     }
 
     # Default file action: Do
-    dict set config --dry 0
+    define --dry {} {}
+    setd   --dry 0
 
     # Default goals
     if {$tcl_platform(platform) eq "windows"} {
-	dict set config @goals gui
+	set @goals gui
     } else {
-	dict set config @goals ghelp
+	set @goals help
     }
 } ::kettle::option}
 

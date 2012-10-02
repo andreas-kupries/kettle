@@ -17,7 +17,33 @@ kettle recipe define null {
 kettle recipe define recipes {
     List all available recipes, without details.
 } {} {
-    puts [lsort -dict [recipe names]]
+    io puts [lsort -dict [recipe names]]
+}
+
+# # ## ### ##### ######## ############# #####################
+
+kettle recipe define options {
+    List all available options, without details.
+} {} {
+    io puts [lsort -dict [option names]]
+}
+
+kettle recipe define show-options {
+    Show the state of the option database.
+} {} {
+    set maxl 0
+    set names [lsort -dict [option names]]
+
+    foreach name $names {
+        if {[string length $name] > $maxl} {
+            set maxl [string length $name]
+        }
+    }
+
+    set maxl [expr {$maxl + 2}]
+    foreach name $names {
+        io puts [format "%-*s = %s" $maxl $name [option get $name]]
+    }
 }
 
 # # ## ### ##### ######## ############# #####################
