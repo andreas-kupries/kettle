@@ -47,9 +47,9 @@ proc ::kettle::option::exists {o} {
     return [dict exists $config $o]
 }
 
-proc ::kettle::option::names {} {
+proc ::kettle::option::names {{pattern --*}} {
     variable config
-    return [dict keys $config --*]
+    return [dict keys $config $pattern]
 }
 
 # set value, user choice
@@ -92,6 +92,7 @@ proc ::kettle::option::setd {o value} {
 # set value, override anything, no propagation
 proc ::kettle::option::set! {o v} {
     variable config
+    #io trace {  SET! $o $v}
     dict set config $o value $v
     return
 }
@@ -121,22 +122,28 @@ apply {{} {
 
     define --exec-prefix {} {
 	# Implied arguments: option old new
-	setd --prefix  $new
-	setd --bin-dir $new/bin
-	setd --lib-dir $new/lib
+	::set new [path norm $new]
+	set! --exec-prefix $new
+	setd --prefix      $new
+	setd --bin-dir     $new/bin
+	setd --lib-dir     $new/lib
     }
 
-    define --bin-dir {} {}
-    define --lib-dir {} {}
+    define --bin-dir {} { set! --bin-dir [path norm $new] }
+    define --lib-dir {} { set! --lib-dir [path norm $new] }
 
     define --prefix {} {
 	# Implied arguments: option old new
-	setd --man-dir  $new/man
-	setd --html-dir $new/html
+	::set new [path norm $new]
+	set! --prefix      $new
+	setd --man-dir     $new/man
+	setd --html-dir    $new/html
+	setd --include-dir $new/include
     }
 
-    define --man-dir  {} {}
-    define --html-dir {} {}
+    define --man-dir     {} { set! --man-dir     [path norm $new] }
+    define --html-dir    {} { set! --html-dir    [path norm $new] }
+    define --include-dir {} { set! --include-dir [path norm $new] }
 
     setd --exec-prefix [file dirname [file dirname [info library]]]
     # -> bin, lib, prefix -> man, html

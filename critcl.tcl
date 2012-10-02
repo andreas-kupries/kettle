@@ -1,75 +1,187 @@
+# -*- tcl -*- Copyright (c) 2012 Andreas Kupries
+# # ## ### ##### ######## ############# #####################
+## Handle critcl based packages.
 
-install
-dst/target-config
+namespace eval ::kettle { namespace export critcl3 }
 
-	if {$config ne {}} {
-	    RunCritcl -target $config -cache [pwd]/BUILD.$p -libdir $ldir -includedir $idir -pkg $src
-	} else {
-	    RunCritcl -cache [pwd]/BUILD.$p -libdir $ldir -includedir $idir -pkg $src
-	}
+kettle option define --target {} {}
+kettle option setd   --target {}
 
-	if {![file exists $ldir/$p]} {
-	    set ::NOTE {warn {DONE, with FAILURES}}
-	    break
-	}
+# # ## ### ##### ######## ############# #####################
+## Locate a suitable critcl package or application (3+),
+## and prepare system for its use.
 
+if {![catch {
+    package require critcl::app 3
+}]} {
+    kettle option set @critcl internal
+} else {
+    kettle option set @critcl external
 
-
-debug
-
-	if {$config ne {}} {
-	    RunCritcl -keep -debug all -target $config -cache [pwd]/BUILD.$p -libdir $ldir -includedir $idir -pkg $src
-	} else {
-	    RunCritcl -keep -debug all -cache [pwd]/BUILD.$p -libdir $ldir -includedir $idir -pkg $src
-	}
-
-	if {![file exists $ldir/$p]} {
-	    set ::NOTE {warn {DONE, with FAILURES}}
-	    break
-	}
-
-
-
-proc RunCritcl {args} {
-    #puts [info level 0]
-    if {![catch {
-	package require critcl::app 3.1
-    }]} {
-	#puts "......... [package ifneeded critcl::app [package present critcl::app]]"
-	critcl::app::main $args
-	return
-    } else {
-	foreach cmd {
+    kettle tool declare {
 	    critcl3 critcl3.kit critcl3.tcl critcl3.exe
 	    critcl critcl.kit critcl.tcl critcl.exe
-	} {
-	    # Locate the candidate.
-	    set cmd [auto_execok $cmd]
+    } {
+	# Implied argument: cmd
 
-	    # Ignore applications which were not found.
-	    if {![llength $cmd]} continue
+	# Proper native path needed, especially on windows. On windows
+	# this also works (best) with a starpack for critcl, instead
+	# of a starkit.
+	set cmd [file nativename [lindex $cmd 0]]
 
-	    # Proper native path needed, especially on windows. On
-	    # windows this also works (best) with a starpack for
-	    # critcl, instead of a starkit.
+	# Ignore applications which are too old to support
+	# -v|--version, or are too old as per their returned
+	# version.
+	if {[catch {
+	    set v [eval [list exec $cmd --version]]
+	}]} { return 0 }
+	if {[package vcompare $v 3] < 0} { return 0 }
+	return 1
+    }
+}
 
-	    set cmd [file nativename [lindex [auto_execok $cmd] 0]]
+# # ## ### ##### ######## ############# #####################
+## API.
 
-	    # Ignore applications which are too old to support
-	    # -v|--version, or are too old as per their returned
-	    # version.
-	    if {[catch {
-		set v [eval [list exec $cmd --version]]
-	    }] || ([package vcompare $v 3.1] < 0)} continue
+proc ::kettle::critcl3 {} {
 
-	    # Perform the requested action.
-	    set cmd [list exec 2>@ stderr >@ stdout $cmd {*}$args]
-	    #puts "......... $cmd"
-	    eval $cmd
-	    return
+    # Heuristic search for documentation, testsuites, benchmarks.
+    doc
+    testsuite
+    benchmarks
+
+    # Heuristic search for critcl packages to install, collect names,
+    # versions, and files.  Aborts caller when nothing is found.
+    lassign [path scan \
+		 {critcl 3 packages}\
+		 [path sourcedir] \
+		 {path critcl3-package-file}] \
+	root packages
+
+    foreach {file pn pv} $packages {
+	CritclSetup $root $file $pn $pv
+    }
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+## Helper commands.
+
+proc ::kettle::CritclSetup {root file pn pv} {
+
+    set pkgdir [path libdir [string map {:: _} $pn]$pv]
+
+    recipe define install-package-$pn "Install package $pn $pv" {pkgdir root file pn pv} {
+	set cache [path norm BUILD-$pn$pv]
+	set tmp   [path norm TMP-$pn$pv/lib]
+	set pnc   [string map {:: {}} $pn]
+
+	path in $root {
+	    set t [option get --target]
+	    if {$t ne {}} { lappend cmd -target $t }
+
+	    lappend cmd -cache      $cache
+	    lappend cmd -libdir     $tmp
+	    lappend cmd -includedir [path incdir]
+	    lappend cmd -pkg $file
+
+	    CritclDo $cmd $tmp $pn $pv $pnc $pkgdir
 	}
+    } $pkgdir $root $file $pn $pv
+
+    recipe define debug-package-$pn "Install debug-built package $pn $pv" {pkgdir root file pn pv} {
+	set cache [path norm BUILD-$pn$pv]
+	set tmp   [path norm TMP-$pn$pv/lib]
+	set pnc   [string map {:: {}} $pn]
+
+	path in $root {
+	    set t [option get --target]
+	    if {$t ne {}} { lappend cmd -target $t }
+
+	    lappend cmd -debug      all
+	    lappend cmd -cache      $cache
+	    lappend cmd -libdir     $tmp
+	    lappend cmd -includedir [path incdir]
+	    lappend cmd -pkg $file
+
+	    CritclDo $cmd $tmp $pn $pv $pnc $pkgdir
+	}
+    } $pkgdir $root $file $pn $pv
+
+    recipe define drop-package-$pn "Uninstall package $pn $pv" {pkgdir pn pv} {
+	path uninstall-file-group "package $pn $pv" $pkgdir
+    } $pkgdir $pn $pv
+
+    recipe parent install-package-$pn     install-binary-packages
+    recipe parent install-binary-packages install-packages
+    recipe parent install-packages        install
+
+    recipe parent debug-package-$pn     debug-binary-packages
+    recipe parent debug-binary-packages debug-packages
+    recipe parent debug-packages        debug
+
+    recipe parent drop-package-$pn     drop-binary-packages
+    recipe parent drop-binary-packages drop-packages
+    recipe parent drop-packages        drop
+
+    # critcl specific target - Wrap the critcl package into a regular
+    # TEA-based buildsystem.
+
+    recipe define wrap4tea-$pn "Wrap TEA around package $pn $pv" {pkgdir root file pn pv} {
+	set cache [path norm BUILD-$pn$pv]
+	set dst   [path libdir]
+
+	path in $root {
+	    lappend cmd -cache      $cache
+	    lappend cmd -libdir     $dst
+	    lappend cmd -tea $file
+
+	    # TODO: try/finally ?
+	    CritclRun {*}$cmd
+	    file delete -force $dst/$p$version
+	    file rename        $dst/$p $pkgdir
+
+	    if {![file exists $pkgdir]} {
+		status fail
+	    }
+	}
+    } $pkgdir $root $file $pn $pv
+
+    recipe parent wrap4tea-$pn wrap4tea
+    return
+}
+
+proc ::kettle::CritclDo {cmd tmp pn pv pnc pkgdir} {
+    try {
+	CritclRun {*}$cmd
+    } on ok {e o} {
+	if {![option get --dry]} {
+	    if {![file exists $tmp/$pnc]} {
+		status fail
+	    } else {
+		path install-file-group "package $pn $pv" \
+		    $pkgdir \
+		    {*}[glob -directory $tmp/$pnc *]
+	    }
+	}
+    } finally {
+	file delete -force [file dirname $tmp]
+    }
+    return
+}
+
+proc ::kettle::CritclRun {args} {
+    if {[option get @critcl] eq "internal"} {
+	io trace {  INTERNAL: critcl $args}
+	if {[option get --dry]} return
+
+	critcl::app::main $args
+	return
     }
 
-    puts "Unable to find a usable critcl 3.1 application (package). Stop."
-    ::exit 1
+    path exec {*}[tool get critcl3] {*}$args
+    return
 }
+
+# # ## ### ##### ######## ############# #####################
+return
