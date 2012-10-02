@@ -4,6 +4,8 @@
 
 namespace eval ::kettle { namespace export figures }
 
+kettle tool declare dia
+
 # # ## ### ##### ######## ############# #####################
 ## API.
 
@@ -26,7 +28,7 @@ proc ::kettle::figures {{figsrcdir doc/figures}} {
     } {figsrcdir figures} {
 	path in $figsrcdir {
 	    io puts "Generating (tklib) diagrams..."
-	    path exec dia convert -t -o . png {*}$figures
+	    path exec {*}[tool get dia] convert -t -o . png {*}$figures
 	}
     } $root $figures
 
@@ -35,7 +37,7 @@ proc ::kettle::figures {{figsrcdir doc/figures}} {
     } {figsrcdir figures} {
 	path in $figsrcdir {
 	    io puts "Showing (tklib) diagrams..."
-	    path exec dia show -t {*}$figures
+	    path exec {*}[tool get dia] show -t {*}$figures
 	}
     } $root $figures
 

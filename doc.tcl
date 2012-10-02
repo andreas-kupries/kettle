@@ -7,6 +7,8 @@ namespace eval ::kettle { namespace export doc doc-destination }
 kettle option define --doc-destination {} {}
 kettle option setd   --doc-destination embedded
 
+kettle tool declare dtplite
+
 # # ## ### ##### ######## ############# #####################
 ## API.
 
@@ -53,6 +55,9 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	(Re)generate the documentation embedded in the repository.
     } {root dst} {
 	path in $root {
+	    # Validate tool presence before actually doing anything
+	    tool get dtplite
+
 	    io puts "Removing old documentation..."
 	    file delete -force $dst
 
@@ -60,16 +65,16 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	    file mkdir $dst/www
 
 	    io puts "Generating man pages..."
-	    path exec dtplite -ext n -o $dst/man nroff .
+	    path exec {*}[tool get dtplite] -ext n -o $dst/man nroff .
 
 	    # Note: Might be better to run them separately.
 	    # Note @: Or we shuffle the results a bit more in the post processing stage.
 
 	    io puts "Generating HTML... Pass 1, draft..."
-	    path exec dtplite -merge -o $dst/www html .
+	    path exec {*}[tool get dtplite] -merge -o $dst/www html .
 
 	    io puts "Generating HTML... Pass 2, resolving cross-references..."
-	    path exec dtplite -merge -o $dst/www html .
+	    path exec {*}[tool get dtplite] -merge -o $dst/www html .
 
 	    # Remove some of the generated files, consider them transient.
 	    cd  $dst/man ; file delete -force .idxdoc .tocdoc
