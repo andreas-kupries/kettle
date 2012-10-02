@@ -148,8 +148,10 @@ proc ::kettle::io::Hilit {t chars} {
     variable textw
     variable tag $t
     if {$textw ne {}} return
-    ## TODO ## check for non-tty/win to disable.
-    ## Requires TclX however (fstat stdout tty)
+    # Disable colorization if not talking to a proper terminal
+    if {![catch {
+	package require Tclx
+    }] && ![fstat stdout tty]} return
     ::puts -nonewline $chars
     return
 }
