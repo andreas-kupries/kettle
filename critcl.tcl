@@ -72,9 +72,9 @@ proc ::kettle::CritclSetup {root file pn pv} {
     set pkgdir [path libdir [string map {:: _} $pn]$pv]
 
     recipe define install-package-$pn "Install package $pn $pv" {pkgdir root file pn pv} {
-	set cache [path norm BUILD-$pn$pv]
-	set tmp   [path norm TMP-$pn$pv/lib]
 	set pnc   [string map {:: {}} $pn]
+	set cache [path norm BUILD-$pnc$pv]
+	set tmp   [path norm TMP-$pnc$pv/lib]
 
 	path in $root {
 	    set t [option get --target]
@@ -90,9 +90,9 @@ proc ::kettle::CritclSetup {root file pn pv} {
     } $pkgdir $root $file $pn $pv
 
     recipe define debug-package-$pn "Install debug-built package $pn $pv" {pkgdir root file pn pv} {
-	set cache [path norm BUILD-$pn$pv]
-	set tmp   [path norm TMP-$pn$pv/lib]
 	set pnc   [string map {:: {}} $pn]
+	set cache [path norm BUILD-$pnc$pv]
+	set tmp   [path norm TMP-$pnc$pv/lib]
 
 	path in $root {
 	    set t [option get --target]
@@ -128,22 +128,15 @@ proc ::kettle::CritclSetup {root file pn pv} {
     # TEA-based buildsystem.
 
     recipe define wrap4tea-$pn "Wrap TEA around package $pn $pv" {pkgdir root file pn pv} {
-	set cache [path norm BUILD-$pn$pv]
-	set dst   [path libdir]
+	set pnc  [string map {:: {}} $pn]
+	set tmp  [path norm TMP-$pnc$pv/lib]
+	set dst  [path norm $pnc$pv-tea]
 
 	path in $root {
-	    lappend cmd -cache      $cache
-	    lappend cmd -libdir     $dst
+	    lappend cmd -libdir $tmp
 	    lappend cmd -tea $file
 
-	    # TODO: try/finally ?
-	    CritclRun {*}$cmd
-	    file delete -force $dst/$p$version
-	    file rename        $dst/$p $pkgdir
-
-	    if {![file exists $pkgdir]} {
-		status fail
-	    }
+	    CritclDo $cmd $tmp $pn $pv $pnc $dst
 	}
     } $pkgdir $root $file $pn $pv
 
