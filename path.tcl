@@ -393,6 +393,7 @@ proc ::kettle::path::install-script {src dstdir shell} {
 
     # Save existing file, if any.
     if {![kettle option get --dry]} {
+	file mkdir $dstdir
 	file delete -force $dstdir/${fname}.old
 	catch {
 	    file rename $dstdir/${fname} $dstdir/${fname}.old
