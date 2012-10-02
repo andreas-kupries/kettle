@@ -33,7 +33,7 @@ if {![catch {
 	# -v|--version, or are too old as per their returned
 	# version.
 	if {[catch {
-	    set v [eval [list exec $cmd --version]]
+	    set v [exec {*}$cmd --version]
 	}]} { return 0 }
 	if {[package vcompare $v 3] < 0} { return 0 }
 	return 1
@@ -72,40 +72,24 @@ proc ::kettle::CritclSetup {root file pn pv} {
     set pkgdir [path libdir [string map {:: _} $pn]$pv]
 
     recipe define install-package-$pn "Install package $pn $pv" {pkgdir root file pn pv} {
-	set pnc   [string map {:: {}} $pn]
-	set cache [path norm BUILD-$pnc$pv]
-	set tmp   [path norm TMP-$pnc$pv/lib]
+	set t [option get --target]
+	if {$t ne {}} { lappend cmd -target $t }
 
-	path in $root {
-	    set t [option get --target]
-	    if {$t ne {}} { lappend cmd -target $t }
+	lappend cmd -includedir [path incdir]
+	lappend cmd -pkg $file
 
-	    lappend cmd -cache      $cache
-	    lappend cmd -libdir     $tmp
-	    lappend cmd -includedir [path incdir]
-	    lappend cmd -pkg $file
-
-	    CritclDo $cmd $tmp $pn $pv $pnc $pkgdir
-	}
+	CritclDo $pkgdir $root $pn $pv {*}$cmd
     } $pkgdir $root $file $pn $pv
 
     recipe define debug-package-$pn "Install debug-built package $pn $pv" {pkgdir root file pn pv} {
-	set pnc   [string map {:: {}} $pn]
-	set cache [path norm BUILD-$pnc$pv]
-	set tmp   [path norm TMP-$pnc$pv/lib]
+	set t [option get --target]
+	if {$t ne {}} { lappend cmd -target $t }
 
-	path in $root {
-	    set t [option get --target]
-	    if {$t ne {}} { lappend cmd -target $t }
+	lappend cmd -debug      all
+	lappend cmd -includedir [path incdir]
+	lappend cmd -pkg $file
 
-	    lappend cmd -debug      all
-	    lappend cmd -cache      $cache
-	    lappend cmd -libdir     $tmp
-	    lappend cmd -includedir [path incdir]
-	    lappend cmd -pkg $file
-
-	    CritclDo $cmd $tmp $pn $pv $pnc $pkgdir
-	}
+	CritclDo $pkgdir $root $pn $pv {*}$cmd
     } $pkgdir $root $file $pn $pv
 
     recipe define drop-package-$pn "Uninstall package $pn $pv" {pkgdir pn pv} {
@@ -124,55 +108,59 @@ proc ::kettle::CritclSetup {root file pn pv} {
     recipe parent drop-binary-packages drop-packages
     recipe parent drop-packages        drop
 
-    # critcl specific target - Wrap the critcl package into a regular
-    # TEA-based buildsystem.
+    # critcl specific target
+    # - Wrap the critcl package into a regular TEA-based buildsystem.
+
+    set pkgdir [path norm [string map {:: _} $pn]$pv-tea]
 
     recipe define wrap4tea-$pn "Wrap TEA around package $pn $pv" {pkgdir root file pn pv} {
-	set pnc  [string map {:: {}} $pn]
-	set tmp  [path norm TMP-$pnc$pv/lib]
-	set dst  [path norm $pnc$pv-tea]
-
-	path in $root {
-	    lappend cmd -libdir $tmp
-	    lappend cmd -tea $file
-
-	    CritclDo $cmd $tmp $pn $pv $pnc $dst
-	}
+	CritclDo $pkgdir $root $pn $pv -tea $file
     } $pkgdir $root $file $pn $pv
 
     recipe parent wrap4tea-$pn wrap4tea
     return
 }
 
-proc ::kettle::CritclDo {cmd tmp pn pv pnc pkgdir} {
-    try {
-	CritclRun {*}$cmd
-    } on ok {e o} {
-	if {![option get --dry]} {
-	    if {![file exists $tmp/$pnc]} {
-		status fail
-	    } else {
-		path install-file-group "package $pn $pv" \
-		    $pkgdir \
-		    {*}[glob -directory $tmp/$pnc *]
+proc ::kettle::CritclDo {pkgdir root pn pv args} {
+    set pnc   [string map {:: {}} $pn]
+    set cache [path norm BUILD-$pnc$pv]
+    set tmp   [path norm TMP-$pnc$pv/lib]
+
+    file delete -force $cache
+    set args [list -cache $cache -libdir $tmp {*}$args]
+
+    path in $root {
+	try {
+	    CritclRun $args
+	} on ok {e o} {
+	    if {![option get --dry]} {
+		if {![file exists $tmp/$pnc]} {
+		    status fail
+		} else {
+		    path install-file-group "package $pn $pv" \
+			$pkgdir \
+			{*}[glob -directory $tmp/$pnc *]
+		}
+	    }
+	} finally {
+	    if {![option get --dry]} {
+		file delete -force [file dirname $tmp]
 	    }
 	}
-    } finally {
-	file delete -force [file dirname $tmp]
     }
     return
 }
 
-proc ::kettle::CritclRun {args} {
+proc ::kettle::CritclRun {cmd} {
     if {[option get @critcl] eq "internal"} {
-	io trace {  INTERNAL: critcl $args}
+	io trace {  INTERNAL: critcl $cmd}
 	if {[option get --dry]} return
 
-	critcl::app::main $args
+	critcl::app::main $cmd
 	return
     }
 
-    path exec {*}[tool get critcl3] {*}$args
+    path exec {*}[tool get critcl3] {*}$cmd
     return
 }
 
