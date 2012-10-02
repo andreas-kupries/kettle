@@ -39,6 +39,10 @@ proc ::kettle::path::bindir {{path {}}} {
     return [norm [file join [kettle option get --bin-dir] $path]]
 }
 
+proc ::kettle::path::incdir {{path {}}} {
+    return [norm [file join [kettle option get --include-dir] $path]]
+}
+
 proc ::kettle::path::mandir {{path {}}} {
     return [norm [file join [kettle option get --man-dir] $path]]
 }
@@ -126,6 +130,54 @@ proc ::kettle::path::tcl-package-file {file} {
 
 	# For 'scan'.
 	kettle option set @predicate [list $files $pn $pv]
+	return 1
+    }
+
+    # No candidate satisfactory.
+    return 0
+}
+
+proc ::kettle::path::critcl3-package-file {file} {
+    set contents   [cat $file]
+    set provisions [grep {*package provide *} $contents]
+    if {![llength $provisions]} {
+	return 0
+    }
+
+    io trace {    Testing: $file}
+
+    foreach line $provisions {
+	io trace {        Candidate |$line|}
+	if {[catch {
+	    lassign $line cmd method pn pv
+	}]} {
+	    io trace {        * Not a list}
+	    continue
+	}
+	if {$cmd ne "package"} {
+	    io trace {        * $cmd: Not a 'package' command}
+	    continue
+	}
+	if {$method ne "provide"} {
+	    io trace {        * $method: Not a 'package provide' command}
+	    continue
+	}
+	if {[catch {package vcompare $pv 0}]} {
+	    io trace {        * $pkgver: Not a version number}
+	    continue
+	}
+
+	# Nearly accepted. Now check if this file asks for critcl.
+
+	if {![llength [rgrep {package\s+require\s+critcl\s+3} $contents]]} {
+	    io trace {        * critcl 3: Not required}
+	    continue
+	}
+
+	io trace {    Accepted: $pn $pv @ $file}
+
+	# For 'scan'.
+	kettle option set @predicate [list $file $pn $pv]
 	return 1
     }
 
@@ -527,6 +579,8 @@ proc ::kettle::path::pipe {lv script args} {
     set stderr [tmpfile kpe_stderr_]
 
     io trace {  PIPE: $args}
+
+    if {[kettle option get --dry]} return
 
     set pipe [open "|$args 2> $stderr" r]
 

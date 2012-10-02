@@ -46,6 +46,24 @@ kettle recipe define show-options {
     }
 }
 
+kettle recipe define show-state {
+    Show the state
+} {} {
+    set maxl 0
+    set names [lsort -dict [option names @*]]
+
+    foreach name $names {
+        if {[string length $name] > $maxl} {
+            set maxl [string length $name]
+        }
+    }
+
+    set maxl [expr {$maxl + 2}]
+    foreach name $names {
+        io puts [format "%-*s = %s" $maxl $name [option get $name]]
+    }
+}
+
 # # ## ### ##### ######## ############# #####################
 
 kettle recipe define help {

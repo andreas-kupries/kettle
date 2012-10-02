@@ -1,6 +1,6 @@
 # -*- tcl -*- Copyright (c) 2012 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
-## Handle tklib/diagram figures (documentation)
+## Handle pure tcl packages.
 
 namespace eval ::kettle { namespace export tcl }
 

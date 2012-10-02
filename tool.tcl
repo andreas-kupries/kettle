@@ -16,9 +16,21 @@ namespace eval ::kettle::tool {
 # # ## ### ##### ######## ############# #####################
 ## API.
 
-proc ::kettle::tool::declare {name} {
-    option define --with-$name {} {}
-    option setd   --with-$name [auto_execok $name]
+proc ::kettle::tool::declare {names {validator {}}} {
+    set primary [lindex $names 0]
+    option define --with-$primary {} {}
+
+    foreach name $names {
+	set cmd [auto_execok $name]
+	option setd --with-$primary $cmd
+
+	# Do not try to validate applications which were not found.
+	if {![llength $cmd]} continue
+	if {$validator eq ""} break
+	if {[apply [list {cmd} $validator] $cmd]} break
+
+	option setd --with-$primary {}
+    }
     return
 }
 

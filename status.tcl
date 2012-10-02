@@ -49,6 +49,13 @@ proc ::kettle::status::show {} {
 	    io puts $message
 	}
     }
+    io interm {
+	if {$status ne "ok"} {
+	    io $status {
+		io puts $message
+	    }
+	}
+    }
     return
 }
 
