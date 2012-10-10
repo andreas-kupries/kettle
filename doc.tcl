@@ -84,6 +84,13 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	}
     } $root $dd
 
+    recipe define validate-doc {
+	Validate the documentation.
+    } {root} {
+	io puts "Validate documentation"
+	path exec dtplite validate .
+    } $root
+
     recipe define install-doc-manpages {
 	Install manpages
     } {src dst} {
@@ -126,6 +133,8 @@ proc ::kettle::doc {{docsrcdir doc}} {
     recipe parent drop-doc-html     drop-doc
     recipe parent drop-doc-manpages drop-doc
     recipe parent drop-doc drop
+
+    recipe parent validate-doc validate
     return
 }
 
