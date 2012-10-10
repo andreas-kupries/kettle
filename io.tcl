@@ -124,7 +124,7 @@ proc ::kettle::io::puts {args} {
 proc ::kettle::io::trace {text} {
     variable trace
     if {!$trace} return
-    debug { puts [uplevel 1 [list subst $text]] }
+    debug { puts [pid]:\t[uplevel 1 [list subst $text]] }
     return
 }
 
@@ -149,9 +149,7 @@ proc ::kettle::io::Hilit {t chars} {
     variable tag $t
     if {$textw ne {}} return
     # Disable colorization if not talking to a proper terminal
-    if {![catch {
-	package require Tclx
-    }] && ![fstat stdout tty]} return
+    if {![kettle option get --color]} return
     ::puts -nonewline $chars
     return
 }
