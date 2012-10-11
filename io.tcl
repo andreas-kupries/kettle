@@ -22,8 +22,19 @@ namespace eval ::kettle::io {
     # gui is active <==> this is a non-empty string.
     variable textw {}
 
-    # Tag information for output. Only relevant in gui mode.
-    variable tag {}
+    # Map to detect and separate escape sequences from regular text.
+    # Plus the actions to take per escape sequence.
+    variable emap    {}
+    variable eaction {}
+
+    # Partial escape sequence from the end of the last puts processed.
+    variable buffer {}
+
+    # Currently active tag, per channel going into the text widget.
+    variable active {
+	stdout {}
+	stderr red
+    }
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -32,24 +43,20 @@ namespace eval ::kettle::io {
 proc ::kettle::io::setwidget {t} {
     variable textw $t
 
-    # Match to the hilit definitions below.
+    # Match to the escape definitions at the end, and the mapping in
+    # 'puts'.
 
     # semantic tags
     $t tag configure stdout                       ;# -font {Helvetica 8}
     $t tag configure stderr -background red       ;# -font {Helvetica 12}
-    $t tag configure err    -background red       ;# -font {Helvetica 12}
-    $t tag configure ok     -background green     ;# -font {Helvetica 8}
-    $t tag configure warn   -background yellow    ;# -font {Helvetica 12}
-    $t tag configure note   -background lightblue ;# -font {Helvetica 8}
-    $t tag configure debug  -background cyan      ;# -font {Helvetica 12}
 
     # color tags
-    $t tag configure red    -background red    ;# -font {Helvetica 8}
-    $t tag configure green  -background green  ;# -font {Helvetica 8}
-    $t tag configure blue   -background blue   ;# -font {Helvetica 8}
-    $t tag configure white  -background white  ;# -font {Helvetica 8}
-    $t tag configure yellow -background yellow ;# -font {Helvetica 8}
-    $t tag configure cyan   -background cyan   ;# -font {Helvetica 8}
+    $t tag configure red    -background red       ;# -font {Helvetica 8}
+    $t tag configure green  -background green     ;# -font {Helvetica 8}
+    $t tag configure blue   -background lightblue ;# -font {Helvetica 8}
+    $t tag configure white  -background white     ;# -font {Helvetica 8}
+    $t tag configure yellow -background yellow    ;# -font {Helvetica 8}
+    $t tag configure cyan   -background cyan      ;# -font {Helvetica 8}
     return
 }
 
@@ -67,6 +74,10 @@ proc ::kettle::io::interm {script} {
 
 proc ::kettle::io::puts {args} {
     variable textw
+    variable emap
+    variable eaction
+    variable buffer
+    variable active
 
     if {$textw eq {}} {
 	# Terminal mode.
@@ -74,9 +85,8 @@ proc ::kettle::io::puts {args} {
 	return
     }
 
-    # GUI mode.
+    # GUI mode. We scan the input for escape sequences.
 
-    variable tag
     set newline 1
     if {[lindex $args 0] eq "-nonewline"} {
 	set newline 0
@@ -95,26 +105,63 @@ proc ::kettle::io::puts {args} {
 	set chan stdout
     }
 
-    # chan <=> tag, if not overriden
-    ## TODO 'Files left' ?!
-    ## maybe hooks finto 'path exec' to match lines for colorization!
-
-    if {[string match {Files left*} $text]} {
-	set tag warn
-	set text \n$text
-    }
-
-    if {$tag eq {}} { set tag $chan }
-    #::puts $tag/$text
-
     # Quick handling of \r, convert to newlines.
-    set text [string map [list \r \n] $text]
+    # Get the buffer also.
+    set text ${buffer}[string map [list \r \n] $text]
+    set buffer ""
+    if {$newline} { append text \n }
 
-    $textw insert end-1c $text $tag
-    if {$newline} { 
-	$textw insert end-1c \n
+    # Scan for escape sequences, mark them, and break the input apart
+    # at their borders. Then iterate over the fragments, map to and
+    # execute associated actions.
+
+    foreach piece [split [string map $emap $text] \0] {
+	if {[dict exists $eaction $piece]} {
+	    # Escape sequence, or partial, modify tag state
+	    {*}[dict get $eaction $piece]
+	} elseif {$piece ne {}} {
+	    # Plain text, extend display
+	    # Note: We split along lines, and leave the line-endings
+	    # untagged!
+
+	    foreach line [lreverse \
+			      [lassign \
+				   [lreverse \
+					[split $piece \n]] \
+				   last]] {
+		$textw insert end-1c $line [Tag] \n {}
+	    }
+	    $textw insert end-1c $last [Tag]
+	}
     }
     update
+    return
+}
+
+proc ::kettle::io::Tag {} {
+    variable active
+    upvar 1 chan chan
+    dict get $active $chan
+}
+
+proc ::kettle::io::Tag! {tag} {
+    variable active
+    upvar 1 chan chan
+    if {$tag eq "reset"} {
+	# Switch to base state as per the channel.
+	if {$chan eq "stdout"} {
+	    set tag {}
+	} else {
+	    set tag red
+	}
+    }
+    dict set active $chan $tag
+    return
+}
+
+proc ::kettle::io::Buffer {text} {
+    variable buffer
+    append buffer $text
     return
 }
 
@@ -144,13 +191,10 @@ proc ::kettle::io::Color {t {script {}}} {
     }
 }
 
-proc ::kettle::io::Hilit {t chars} {
-    variable textw
-    variable tag $t
-    if {$textw ne {}} return
-    # Disable colorization if not talking to a proper terminal
+proc ::kettle::io::Escape {chars} {
+    # Colorization is system and user choice.
     if {![kettle option get --color]} return
-    ::puts -nonewline $chars
+    puts -nonewline \033\[${chars}m
     return
 }
 
@@ -158,31 +202,49 @@ proc ::kettle::io::Hilit {t chars} {
 ## Initialization
 
 apply {{} {
-    foreach tag {
-	ok    warn   err   note    
-	debug red    green blue    
-	white yellow cyan  magenta 
-    } {
-	interp alias {} ::kettle::io::$tag {} ::kettle::io::Color $tag
-    }
+    variable emap    {}
+    variable eaction {}
 
-    foreach {tag chars note} {
-	ok      \033\[32m { = green   }
-	warn    \033\[33m { = yellow  }
-	err     \033\[31m { = red     }
-	note    \033\[34m { = blue    }
-	debug   \033\[35m { = magenta }
-	red     \033\[31m {}
-	green   \033\[32m {}
-	yellow  \033\[33m {}
-	blue    \033\[34m {}
-	magenta \033\[35m {}
-	cyan    \033\[36m {}
-	white   \033\[37m {}
-	reset   \033\[0m  {}
+    # Full color escape sequences. These modify the widget state.
+    foreach {c t} {
+	31 red		32 green	33 yellow	34 blue
+	35 magenta	36 cyan		37 white	0  reset
     } {
-	set t $tag ; if {$tag eq "reset"} { set t {} }
-	interp alias {} ::kettle::io::H$tag {} ::kettle::io::Hilit $t $chars
+	lappend emap    \033\[${c}m \0\033\[${c}m\0
+	lappend eaction \033\[${c}m [list Tag! $t]
+    }
+    # Partial escape sequences. These are buffered for the next puts
+    # to complete them.
+    foreach c {
+	\033\[31	\033\[32	\033\[33	\033\[34
+	\033\[35	\033\[36	\033\[37	\033\[3
+	\033\[0		\033\[		\033
+    } {
+	lappend emap    $c \0${c}\0
+	lappend eaction $c [list Buffer $c]
+    }
+} ::kettle::io}
+
+apply {{} {
+    # User visible commands to select color, direct or semantically.
+    foreach {tag chars note} {
+	ok      32 { = green   }
+	warn    33 { = yellow  }
+	err     31 { = red     }
+	note    34 { = blue    }
+	debug   35 { = magenta }
+	red     31 {}
+	green   32 {}
+	yellow  33 {}
+	blue    34 {}
+	magenta 35 {}
+	cyan    36 {}
+	white   37 {}
+	reset    0 {}
+    } {
+	interp alias {} ::kettle::io::H$tag {} ::kettle::io::Escape $chars
+	if {$tag eq "reset"} continue
+	interp alias {} ::kettle::io::$tag {} ::kettle::io::Color $tag
     }
 }}
 

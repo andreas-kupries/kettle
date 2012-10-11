@@ -162,6 +162,26 @@ apply {{} {
     define --dry {} {}
     setd   --dry 0
 
+    # Default tracing: Off
+    define --verbose {} {
+	if {$new} { io trace-on }
+    }
+    setd --verbose 0
+
+    # Default colorization: Platform dependent.
+    define --color {} {}
+    if {$tcl_platform(platform) eq "windows"} {
+	setd --color 0
+    } else {
+	if {[catch {
+	    package require Tclx
+	}] || ![fstat stdout tty]} {
+	    setd --color 0
+	} else {
+	    setd --color 1
+	}
+    }
+
     # Default goals
     if {$tcl_platform(platform) eq "windows"} {
 	set @goals gui
