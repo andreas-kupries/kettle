@@ -138,6 +138,11 @@ proc ::kettle::recipe::Run {name} {
     # Determine the recipe's children and run them first.
     foreach c [Children $name] {
 	Run $c
+	if {[status is $c] ne "ok"} {
+	    io trace {RUN ($name) ... FAIL (inherited)}
+	    catch { status fail "Sub-goal \"$c\" failed" }
+	    return
+	}
     }
 
     # Now run the recipe itself
