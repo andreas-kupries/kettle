@@ -1,6 +1,7 @@
 #!/usr/bin/env tclsh
 # -*- tcl -*-
-apply {{selfdir} {
+apply {{self} {
+    set selfdir [file dirname $self]
     if {[file exists $selfdir/kettle.tcl]} {
 	# Look for a local copy first, for when we install ourselves.
 	source $selfdir/kettle.tcl
@@ -8,5 +9,6 @@ apply {{selfdir} {
 	# use the installed core.
 	package require kettle
     }
+    kettle::option::set @kettle $self
     kettle::Application
-}} [file dirname [file dirname [file normalize [info script]/__]]]
+}} [file dirname [file normalize [info script]/__]]

@@ -64,6 +64,7 @@ proc ::kettle::invoke {other args} {
     # options, these we do not filter. This is a small two-state
     # state-machine.
 
+    set goals {}
     set keep {}
     set skip 0
     foreach g $args {
@@ -84,6 +85,7 @@ proc ::kettle::invoke {other args} {
 	}
 	# goal, not done, keep
 	lappend keep $g
+	lappend goals $g
     }
 
     # Ignore call if no goals to run are left.
@@ -98,9 +100,16 @@ proc ::kettle::invoke {other args} {
     # the sub-process has completed, on account of the sub-process
     # extending it.
 
+    # Notes:
+    # - We use our tclsh to run the child.
+    # - We use our kettle interpreter to run the child.
+
     set tmp [status save]
     try {
-	path exec $buildscript \
+	path exec \
+	    [info nameofexecutable] \
+	    [option get @kettle] \
+	    -f $buildscript \
 	    {*}[option cget] --state $tmp {*}$keep
 
 	status load $tmp
@@ -109,8 +118,15 @@ proc ::kettle::invoke {other args} {
     }
 
     # ok/fail is based on the work database we got back.
-    set state [status is $goal $other]
+    # All goals must be ok.
 
-    io trace {enter result = $state}
-    return [expr {$state  eq "ok"}]
+    set ok 1
+    foreach goal $goals {
+	set state [status is $goal $other]
+	io trace {enter result $goal = $state}
+	if {$state eq "ok"} continue
+	set ok 0
+    }
+
+    return $ok
 }
