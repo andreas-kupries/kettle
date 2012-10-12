@@ -25,6 +25,11 @@ namespace eval ::kettle::status {
 
 # # ## ### ##### ######## ############# #####################
 ## API.
+##
+## Note: The database keys contain the source-dir (normalized absolute
+## path) to make the data shareable across multiple kettle instances
+## calling on each other. This, the location in the key, makes the
+## goals properly distinguishable.
 
 proc ::kettle::status::begin {goal} {
     variable current
@@ -105,6 +110,29 @@ proc ::kettle::status::show {goal} {
 	}
     }
     return
+}
+
+proc ::kettle::status::is {goal {src {}}} {
+    variable work
+    # possible results: unknown|ok|fail|work
+
+    if {$src eq {}} { set src [kettle path sourcedir] }
+    set key $src|$goal
+
+    if {![dict exists $work $key state]} {
+	return unknown
+    }
+
+    return [dict get $work $key state]
+}
+
+proc ::kettle::status::save {} {
+    variable work
+    set data ""
+    dict for {k v} $work {
+	append data @[list $k $v]\n
+    }
+    return $data
 }
 
 # # ## ### ##### ######## ############# #####################
