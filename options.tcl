@@ -138,10 +138,12 @@ proc ::kettle::option::veto {msg} {
 
 proc ::kettle::option::cget {} {
     variable config
+    #io trace {option cget config = ($config)}
 
-    set serial [dict filter $config key --*]
+    ::set serial [dict filter $config key --*]
     dict unset serial --state
 
+    #io trace {option cget serial = ($serial)}
     return $serial
 }
 
