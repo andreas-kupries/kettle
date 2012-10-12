@@ -152,15 +152,14 @@ proc ::kettle::CritclDo {pkgdir root pn pv args} {
 }
 
 proc ::kettle::CritclRun {cmd} {
+    io trace {  critcl $cmd}
+    if {[option get --dry]} return
+
     if {[option get @critcl] eq "internal"} {
-	io trace {  INTERNAL: critcl $cmd}
-	if {[option get --dry]} return
-
 	critcl::app::main $cmd
-	return
+    } else {
+	path exec {*}[tool get critcl3] {*}$cmd
     }
-
-    path exec {*}[tool get critcl3] {*}$cmd
     return
 }
 
