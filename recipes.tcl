@@ -153,6 +153,7 @@ proc ::kettle::recipe::Run {name} {
     }
 
     foreach cmd $commands {
+	io note { io puts -nonewline "\n${name}: " }
 	try {
 	    eval $cmd
 	    status ok
