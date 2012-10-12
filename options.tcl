@@ -135,6 +135,25 @@ proc ::kettle::option::veto {msg} {
     return -code error -errorcode {KETTLE OPTION VETO} $msg
 }
 
+proc ::kettle::option::save {} {
+    variable config
+    set tmp [path tmpfile .k_state_]
+
+    # Save options...
+    set data ""
+    dict for {k v} $config {
+	if {![string match --* $k]} continue
+	if {"--state"       eq $k} continue
+	append data [list $k $v]\n
+    }
+
+    # Save goal status...
+    append data [status save]
+
+    path write $tmp $data
+    return $tmp
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Initialization
 
