@@ -576,26 +576,33 @@ proc ::kettle::path::pipe {lv script args} {
 
     if {[kettle option get --dry]} return
 
+    set err {}
     set pipe [open "|$args 2> $stderr" r]
 
-    while {![eof $pipe]} {
-	if {[gets $pipe line] < 0} continue
+    try {
+	while {![eof $pipe]} {
+	    if {[gets $pipe line] < 0} continue
+	    try {
+		uplevel 1 $script
+	    } trap {KETTLE} {e o} {
+		# Rethrow internal signals.
+		# No report, not a true error.
+		return {*}$o $e
+	    } on error {e o} {
+		io err { io puts $e }
+		break
+	    }
+	}
+    } finally {
 	try {
-	    uplevel 1 $script
+	    close $pipe
 	} on error {e o} {
 	    io err { io puts $e }
-	    break
 	}
-    }
 
-    try {
-	close $pipe
-    } on error {e o} {
-	io err { io puts $e }
+	set err [cat $stderr]
+	file delete $stderr
     }
-
-    set err [cat $stderr]
-    file delete $stderr
 
     if {$err eq {}} return
     io err { io puts $err }
