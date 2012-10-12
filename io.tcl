@@ -228,6 +228,7 @@ apply {{} {
 apply {{} {
     # User visible commands to select color, direct or semantically.
     foreach {tag chars note} {
+	fail    33 { = yellow  }
 	ok      32 { = green   }
 	warn    33 { = yellow  }
 	err     31 { = red     }

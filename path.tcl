@@ -352,7 +352,6 @@ proc ::kettle::path::write {path contents args} {
 proc ::kettle::path::copy-file {src dstdir} {
     # copy single file into destination _directory_
     # Fails on an existing file.
-    status check
 
     io puts -nonewline "\tInstalling file [file tail $src]: "
     if {[catch {
@@ -381,8 +380,6 @@ proc ::kettle::path::copy-files {dstdir args} {
 proc ::kettle::path::remove-path {path} {
     # General uninstallation of a file or directory.
 
-    status check
-
     io puts -nonewline "\tUninstalling ${path}: "
     if {[catch {
 	if {![kettle option get --dry]} {
@@ -409,7 +406,6 @@ proc ::kettle::path::remove-paths {args} {
 proc ::kettle::path::install-application {src dstdir} {
     # install single-file application into destination _directory_.
     # a previously existing file is moved out of the way.
-    status check
 
     set fname [file tail $src]
 
@@ -440,7 +436,6 @@ proc ::kettle::path::install-application {src dstdir} {
 proc ::kettle::path::install-script {src dstdir shell} {
     # install single-file script application into destination _directory_.
     # a previously existing file is moved out of the way.
-    status check
 
     set fname [file tail $src]
 
@@ -474,7 +469,6 @@ proc ::kettle::path::install-file-group {label dstdir args} {
     # Install multiple files into a destination directory.
     # The destination is created to hold the files. The files
     # are strongly coupled, i.e. belong together.
-    status check
 
     io puts "Installing $label"
     io puts "    Into $dstdir"
@@ -516,8 +510,6 @@ proc ::kettle::path::install-file-set {label dstdir args} {
     # The destination has to exist. The files in the set
     # are only loosely coupled. Example: manpages.
 
-    status check
-
     io puts "Installing $label"
     io puts "    Into $dstdir"
 
@@ -530,8 +522,6 @@ proc ::kettle::path::install-file-set {label dstdir args} {
 }
 
 proc ::kettle::path::uninstall-application {src dstdir} {
-    status check
-
     set fname [file tail $src]
 
     io puts "Uninstall application \"$fname\""
@@ -542,8 +532,6 @@ proc ::kettle::path::uninstall-application {src dstdir} {
 }
 
 proc ::kettle::path::uninstall-file-group {label dstdir} {
-    status check
-
     io puts "Uninstalling $label"
     io puts "    From $dstdir"
 
@@ -555,8 +543,6 @@ proc ::kettle::path::uninstall-file-set {label dstdir args} {
     # Install multiple files into a destination directory.
     # The destination has to exist. The files in the set
     # are only loosely coupled. Example: manpages.
-
-    status check
 
     io puts "Uninstalling $label"
     io puts "    From $dstdir"

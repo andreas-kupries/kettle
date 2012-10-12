@@ -98,18 +98,14 @@ proc ::kettle::recipe::help {prefix} {
 
 proc ::kettle::recipe::run {args} {
     io trace {}
-
-    set done {}
-    status ok
-
-    if {[catch {
-	foreach goal $args {
+    foreach goal $args {
+	try {
 	    Run $goal
-	    status show
+	} finally {
+	    status show $goal
 	}
-    }]} {
-	io err { io puts $::errorInfo }
     }
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -130,13 +126,14 @@ proc ::kettle::recipe::Run {name} {
     variable recipe
     upvar 1 done done
 
-    if {![dict exists $recipe $name]} {
-	return -code error "No definition for \"$name\""
-    }
+    status begin $name
 
-    # Ignore goals already executed.
-    if {[dict exists $done $name]} return
-    dict set done $name .
+    if {![dict exists $recipe $name]} {
+	status fail
+	return -code error \
+	    -errorcode {KETTLE RECIPE UNKNOWN} \
+	    "No definition for recipe \"$name\""
+    }
 
     # Determine the recipe's children and run them first.
     foreach c [Children $name] {
@@ -144,10 +141,26 @@ proc ::kettle::recipe::Run {name} {
     }
 
     # Now run the recipe itself
-    io trace {RUN ($name) ...}
-    foreach cmd [dict get $recipe $name script] {
-	#io puts |$cmd|
-	eval $cmd
+    io trace {RUN ($name) ... BEGIN}
+
+    set commands [dict get $recipe $name script]
+    if {![llength $commands]} {
+	io trace {RUN ($name) ... OK (nothing)}
+	catch { status ok }
+	return
+    }
+
+    foreach cmd $commands {
+	try {
+	    eval $cmd
+	    status ok
+	} trap {KETTLE STATUS OK}   {e o} {
+	    io trace {RUN ($name) ... OK}
+	    # nothing - implied continue
+	} trap {KETTLE STATUS FAIL} {e o} {
+	    io trace {RUN ($name) ... FAIL}
+	    break
+	}
     }
     return
 }
