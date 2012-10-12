@@ -11,6 +11,7 @@ namespace eval ::kettle::option {
 
     namespace import ::kettle::path
     namespace import ::kettle::io
+    namespace import ::kettle::status
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -135,23 +136,13 @@ proc ::kettle::option::veto {msg} {
     return -code error -errorcode {KETTLE OPTION VETO} $msg
 }
 
-proc ::kettle::option::save {} {
+proc ::kettle::option::cget {} {
     variable config
-    set tmp [path tmpfile .k_state_]
 
-    # Save options...
-    set data ""
-    dict for {k v} $config {
-	if {![string match --* $k]} continue
-	if {"--state"       eq $k} continue
-	append data [list $k $v]\n
-    }
+    set serial [dict filter $config key --*]
+    dict unset serial --state
 
-    # Save goal status...
-    append data [status save]
-
-    path write $tmp $data
-    return $tmp
+    return $serial
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -159,8 +150,8 @@ proc ::kettle::option::save {} {
 
 apply {{} {
     global tcl_platform
-    variable config
 
+    # - -- --- ----- -------- -------------
     define --exec-prefix {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
@@ -199,14 +190,18 @@ apply {{} {
 	autom4te.cache cover_db ~.dep ~.dot ~.nib ~.plst
     }
 
-    # Default file action: Do
+    # - -- --- ----- -------- -------------
+    # File action. Default on.
+
     define --dry {} {
 	if {[string is boolean -strict $new]} return
 	veto "Expected boolean, but got \"$new\""
     }
     setd --dry 0
 
-    # Default tracing: Off
+    # - -- --- ----- -------- -------------
+    # Tracing of internals. Default off.
+
     define --verbose {} {
 	if {[string is boolean -strict $new]} {
 	    if {$new} { io trace-on }
@@ -216,7 +211,9 @@ apply {{} {
     }
     setd --verbose 0
 
-    # Default colorization: Platform dependent.
+    # - -- --- ----- -------- -------------
+    # Output colorization. Default platform dependent.
+
     define --color {} {
 	if {[string is boolean -strict $new]} return
 	veto "Expected boolean, but got \"$new\""
@@ -233,12 +230,26 @@ apply {{} {
 	}
     }
 
-    # Default goals
+    # - -- --- ----- -------- -------------
+    # State handling for sub-processes. Default none.
+
+    define --state {} {
+	if {$new eq {}} return
+	status load $new
+    }
+    setd --state {}
+
+    # - -- --- ----- -------- -------------
+    # Default goals to use when invoked with none.
+    # Platform dependent.
+
     if {$tcl_platform(platform) eq "windows"} {
 	set @goals gui
     } else {
 	set @goals help
     }
+
+    # - -- --- ----- -------- -------------
 } ::kettle::option}
 
 # # ## ### ##### ######## ############# #####################

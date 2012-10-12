@@ -126,13 +126,18 @@ proc ::kettle::status::is {goal {src {}}} {
     return [dict get $work $key state]
 }
 
-proc ::kettle::status::save {} {
+proc ::kettle::status::save {{path {}}} {
     variable work
-    set data ""
-    dict for {k v} $work {
-	append data @[list $k $v]\n
+    if {$path eq {}} {
+	set path [kettle path tmpfile .kettle_state_]
     }
-    return $data
+    path write $path $work
+    return $path
+}
+
+proc ::kettle::status::load {file} {
+    variable work [kettle path cat $file]
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
