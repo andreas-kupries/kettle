@@ -17,8 +17,11 @@ namespace eval ::kettle::option {
 ## State
 
 namespace eval ::kettle::option {
-    # Dictionary, map option names to values.
+    # Dictionaries for option configuration and definition.
+    # The first maps option names to values, the other to the
+    # definition, including state information about values.
     variable config {}
+    variable def    {}
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -26,6 +29,7 @@ namespace eval ::kettle::option {
 
 proc ::kettle::option::define {o arguments script args} {
     variable config
+    variable def
 
     io trace {DEF'option $o}
 
@@ -35,9 +39,9 @@ proc ::kettle::option::define {o arguments script args} {
 
     lappend arguments option old new
 
-    dict set config $o value {}
-    dict set config $o user  0
-    dict set config $o setter \
+    dict set config $o {}
+    dict set def    $o user  0
+    dict set def    $o setter \
 	[lambda@ ::kettle::option $arguments $script {*}$args]
     return
 }
@@ -55,19 +59,31 @@ proc ::kettle::option::names {{pattern --*}} {
 # set value, user choice
 proc ::kettle::option::set {o value} {
     variable config
+    variable def
 
-    if {[dict exists $config $o] && [dict exists $config $o value]} {
-	::set old [dict get $config $o value]
+    if {[dict exists $config $o]} {
+	::set has 1
+	::set old [dict get $config $o]
     } else {
+	::set has 0
 	::set old {}
     }  
 
-    dict set config $o value $value
-    dict set config $o user 1
+    dict set config $o $value
+    dict set def    $o user 1
 
     # Propagate choice, if possible
-    if {![dict exists $config $o setter]} return
-    {*}[dict get $config $o setter] $o $old $value
+    if {![dict exists $def $o setter]} return
+    if {[catch {
+	{*}[dict get $config $o setter] $o $old $value
+    }]} {
+	# Error from the setter is a veto. Restore old value.
+	if {$has} {
+	    dict set config $o $old
+	} else {
+	    dict unset config $o
+	}
+    }
     return
 }
 
@@ -75,17 +91,18 @@ proc ::kettle::option::set {o value} {
 # a value for the option.
 proc ::kettle::option::setd {o value} {
     variable config
+    variable def
 
-    if {![dict exists $config $o]} {
+    if {![dict exists $def $o]} {
 	return -code error "Unable to set default of undefined option $o."
     }
 
     if {[dict get $config $o user]} return
 
-    ::set old [dict get $config $o value]
-    dict set config $o value $value
+    ::set old [dict get $config $o]
+    dict set config $o $value
     # Propagate new default.
-    {*}[dict get $config $o setter] $o $old $value
+    {*}[dict get $def $o setter] $o $old $value
     return
 }
 
@@ -93,7 +110,7 @@ proc ::kettle::option::setd {o value} {
 proc ::kettle::option::set! {o v} {
     variable config
     #io trace {  SET! $o $v}
-    dict set config $o value $v
+    dict set config $o $v
     return
 }
 
@@ -110,7 +127,7 @@ proc ::kettle::option::get {o} {
 	return -code error "Unable to retrieve unknown option $o."
     }
 
-    return [dict get $config $o value]
+    return [dict get $config $o]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -159,17 +176,28 @@ apply {{} {
     }
 
     # Default file action: Do
-    define --dry {} {}
-    setd   --dry 0
+    define --dry {} {
+	if {![string is boolean -strict $new]} {
+	    return -code error "Expected boolean, but got \"$new\""
+	}
+    }
+    setd --dry 0
 
     # Default tracing: Off
     define --verbose {} {
+	if {![string is boolean -strict $new]} {
+	    return -code error "Expected boolean, but got \"$new\""
+	}
 	if {$new} { io trace-on }
     }
     setd --verbose 0
 
     # Default colorization: Platform dependent.
-    define --color {} {}
+    define --color {} {
+	if {![string is boolean -strict $new]} {
+	    return -code error "Expected boolean, but got \"$new\""
+	}
+    }
     if {$tcl_platform(platform) eq "windows"} {
 	setd --color 0
     } else {
