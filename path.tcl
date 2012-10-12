@@ -81,7 +81,7 @@ proc ::kettle::path::fixhashbang {file shell} {
     io trace {	!fix hash-bang $shell}
 
     set   out [open ${file}.[pid] w]
-    io puts $out "#!/usr/bin/env $shell"
+    io puts $out "#!/usr/bin/env [norm $shell]"
 
     fconfigure $in  -translation binary -encoding binary
     fconfigure $out -translation binary -encoding binary
