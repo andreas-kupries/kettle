@@ -73,17 +73,7 @@ proc ::kettle::option::set {o value} {
     dict set def    $o user 1
 
     # Propagate choice, if possible
-    if {![dict exists $def $o setter]} return
-    if {[catch {
-	{*}[dict get $config $o setter] $o $old $value
-    }]} {
-	# Error from the setter is a veto. Restore old value.
-	if {$has} {
-	    dict set config $o $old
-	} else {
-	    dict unset config $o
-	}
-    }
+    reportchange $o $old $value
     return
 }
 
@@ -97,12 +87,12 @@ proc ::kettle::option::setd {o value} {
 	return -code error "Unable to set default of undefined option $o."
     }
 
-    if {[dict get $config $o user]} return
+    if {[dict get $def $o user]} return
 
     ::set old [dict get $config $o]
     dict set config $o $value
     # Propagate new default.
-    {*}[dict get $def $o setter] $o $old $value
+    reportchange $o $old $value
     return
 }
 
@@ -128,6 +118,21 @@ proc ::kettle::option::get {o} {
     }
 
     return [dict get $config $o]
+}
+
+proc ::kettle::option::reportchange {o old new} {
+    variable def
+    if {![dict exists $def $o setter]} return
+    try {
+	{*}[dict get $def $o setter] $o $old $new
+    } trap {KETTLE OPTION VETO} {e opts} {
+	return {*}${opts} "Bad option $o: $e"
+    }
+    return
+}
+
+proc ::kettle::option::veto {msg} {
+    return -code error -errorcode {KETTLE OPTION VETO} $msg
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -177,26 +182,25 @@ apply {{} {
 
     # Default file action: Do
     define --dry {} {
-	if {![string is boolean -strict $new]} {
-	    return -code error "Expected boolean, but got \"$new\""
-	}
+	if {[string is boolean -strict $new]} return
+	veto "Expected boolean, but got \"$new\""
     }
     setd --dry 0
 
     # Default tracing: Off
     define --verbose {} {
-	if {![string is boolean -strict $new]} {
-	    return -code error "Expected boolean, but got \"$new\""
+	if {[string is boolean -strict $new]} {
+	    if {$new} { io trace-on }
+	    return
 	}
-	if {$new} { io trace-on }
+	veto "Expected boolean, but got \"$new\""
     }
     setd --verbose 0
 
     # Default colorization: Platform dependent.
     define --color {} {
-	if {![string is boolean -strict $new]} {
-	    return -code error "Expected boolean, but got \"$new\""
-	}
+	if {[string is boolean -strict $new]} return
+	veto "Expected boolean, but got \"$new\""
     }
     if {$tcl_platform(platform) eq "windows"} {
 	setd --color 0
