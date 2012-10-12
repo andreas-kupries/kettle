@@ -129,10 +129,7 @@ proc ::kettle::recipe::Run {name} {
     status begin $name
 
     if {![dict exists $recipe $name]} {
-	status fail
-	return -code error \
-	    -errorcode {KETTLE RECIPE UNKNOWN} \
-	    "No definition for recipe \"$name\""
+	status fail "No definition for recipe \"$name\""
     }
 
     # Determine the recipe's children and run them first.
