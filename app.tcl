@@ -58,6 +58,14 @@ proc ::kettle::Application {} {
 	# And execute the chosen goals
 
 	recipe run {*}[option get @goals]
+
+	# Were we invoked as sub-process? If yes, save the work state
+	# back for the caller to pick up.
+	set state [option get --state]
+	if {$state ne {}} {
+	    status save $state
+	}
+
 	::exit 0
 
     } trap {KETTLE OPTION VETO} {e o} {
