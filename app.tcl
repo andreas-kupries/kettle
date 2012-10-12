@@ -68,7 +68,7 @@ proc ::kettle::Application {} {
 
 	::exit 0
 
-    } trap {KETTLE OPTION VETO} {e o} {
+    } trap {KETTLE} {e o} {
 	io err { io puts $e }
 	::exit 1
     } on error {e o} {
