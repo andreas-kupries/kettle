@@ -31,6 +31,10 @@ proc ::kettle::path::sourcedir {{path {}}} {
     return [norm [file join [kettle option get @srcdir] $path]]
 }
 
+proc ::kettle::path::script {} {
+    return [norm [kettle option get @srcscript]]
+}
+
 proc ::kettle::path::libdir {{path {}}} {
     return [norm [file join [kettle option get --lib-dir] $path]]
 }

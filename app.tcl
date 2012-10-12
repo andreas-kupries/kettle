@@ -11,7 +11,6 @@ proc ::kettle::Application {} {
     global argv
 
     try {
-
 	# Process arguments: -f, -v, --* options, and goals
 
 	if {[lindex $argv 0] eq {-f}} {
@@ -51,7 +50,8 @@ proc ::kettle::Application {} {
 
 	# Process the user's build declarations for the sources (-f)
 
-	option set @srcdir [file dirname $declfile]
+	option set @srcscript $declfile
+	option set @srcdir    [file dirname $declfile]
 
 	::source $declfile
 
