@@ -41,8 +41,9 @@ kettle recipe define show-options {
     }
 
     set maxl [expr {$maxl + 2}]
+    io puts {}
     foreach name $names {
-        io puts [format "%-*s = %s" $maxl $name [option get $name]]
+        io puts \t[format "%-*s = %s" $maxl $name [option get $name]]
     }
 }
 
