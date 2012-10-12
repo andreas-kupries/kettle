@@ -23,6 +23,7 @@ namespace eval ::kettle {
 ## @owns: doc.tcl
 ## @owns: figures.tcl
 ## @owns: gui.tcl
+## @owns: invoke.tcl
 ## @owns: io.tcl
 ## @owns: lambda.tcl
 ## @owns: options.tcl
@@ -45,6 +46,7 @@ namespace eval ::kettle {
     source $selfdir/recipes.tcl    ; # Recipe management.
     source $selfdir/path.tcl       ; # General path utilities
     source $selfdir/options.tcl    ; # Option management.
+    source $selfdir/invoke.tcl     ; # Goal recursion via sub-processes.
     source $selfdir/tool.tcl       ; # Manage tool requirements.
     source $selfdir/gui.tcl        ; # GUI support.
     source $selfdir/standard.tcl   ; # Standard recipes.
