@@ -78,7 +78,9 @@ proc ::kettle::CritclSetup {root file pn pv} {
 	lappend cmd -includedir [path incdir]
 	lappend cmd -pkg $file
 
-	CritclDo $pkgdir $root $pn $pv {*}$cmd
+	set pnc [file rootname [file tail $file]]
+
+	CritclDo $pkgdir $root $pnc $pn $pv {*}$cmd
     } $pkgdir $root $file $pn $pv
 
     recipe define debug-package-$pn "Install debug-built package $pn $pv" {pkgdir root file pn pv} {
@@ -89,7 +91,9 @@ proc ::kettle::CritclSetup {root file pn pv} {
 	lappend cmd -includedir [path incdir]
 	lappend cmd -pkg $file
 
-	CritclDo $pkgdir $root $pn $pv {*}$cmd
+	set pnc [file rootname [file tail $file]]
+
+	CritclDo $pkgdir $root $pnc $pn $pv {*}$cmd
     } $pkgdir $root $file $pn $pv
 
     recipe define drop-package-$pn "Uninstall package $pn $pv" {pkgdir pn pv} {
@@ -114,15 +118,16 @@ proc ::kettle::CritclSetup {root file pn pv} {
     set pkgdir [path norm [string map {:: _} $pn]$pv-tea]
 
     recipe define wrap4tea-$pn "Wrap TEA around package $pn $pv" {pkgdir root file pn pv} {
-	CritclDo $pkgdir $root $pn $pv -tea $file
+	set pnc [file rootname [file tail $file]]
+
+	CritclDo $pkgdir $root $pnc $pn $pv -tea $file
     } $pkgdir $root $file $pn $pv
 
     recipe parent wrap4tea-$pn wrap4tea
     return
 }
 
-proc ::kettle::CritclDo {pkgdir root pn pv args} {
-    set pnc   [string map {:: {}} $pn]
+proc ::kettle::CritclDo {pkgdir root pnc pn pv args} {
     set cache [path norm BUILD-$pnc$pv]
     set tmp   [path norm TMP-$pnc$pv/lib]
 
@@ -155,6 +160,7 @@ proc ::kettle::CritclRun {cmd} {
     io trace {  critcl $cmd}
     if {[option get --dry]} return
 
+    io puts {}
     if {[option get @critcl] eq "internal"} {
 	critcl::app::main $cmd
     } else {
