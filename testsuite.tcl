@@ -30,7 +30,7 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 	# working directory). We try to install a debug variant first,
 	# and if that fails a regular one. This is important for
 
-	set tmp .kettle_test_install ;#[path tmpfile .kettle_test_install_]
+	set tmp [path norm [path tmpfile .kettle_test_install_]]
 	try {
 	    if {![invoke self debug   --prefix $tmp] &&
 		![invoke self install --prefix $tmp]
@@ -43,7 +43,7 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 	    # suite, somehow. Otherwise we can hardwire the directory
 	    # into the test support code, or document it that way.
 
-	    TestRun $testsrcdir $testsuite
+	    TestRun $testsrcdir $testsuite $tmp
 	} finally {
 	    file delete -force $tmp
 	}
@@ -55,7 +55,7 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 # # ## ### ##### ######## ############# #####################
 ## Support code for the recipe.
 
-proc ::kettle::TestRun {srcdir testfiles} {
+proc ::kettle::TestRun {srcdir testfiles localprefix} {
 
     # We are running each test file in a separate sub process, to
     # catch crashes, etc. ... We assume that the test file is self
@@ -81,13 +81,16 @@ proc ::kettle::TestRun {srcdir testfiles} {
     set cfailed  0  ; #
     set status   ok ; # May change to 'fail' in TestProcessLine.
 
+    set main [path norm [option get @kettledir]/testmain.tcl]
+
     path in $srcdir {
 	foreach test $testfiles {
 	    io note { io puts ${test}... }
 
 	    path pipe line {
+		io trace {TEST: $line}
 		TestProcessLine $line
-	    } [info nameofexecutable] $test -verbose bpstenl
+	    } [info nameofexecutable] $main $localprefix $test
 	}
     }
 
