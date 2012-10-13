@@ -20,6 +20,7 @@ namespace eval ::kettle {
 ## @owns: app.tcl
 ## @owns: benchmarks.tcl
 ## @owns: critcl.tcl
+## @owns: depend.tcl
 ## @owns: doc.tcl
 ## @owns: figures.tcl
 ## @owns: gui.tcl
@@ -62,6 +63,7 @@ namespace eval ::kettle {
     source $selfdir/gui.tcl        ; # GUI support.
     source $selfdir/standard.tcl   ; # Standard recipes.
     # # ## ### ##### ######## ############# ##################### DSL
+    source $selfdir/depend.tcl     ; # dependency setup.
     source $selfdir/tclapp.tcl     ; # tcl script applications
     source $selfdir/tcl.tcl        ; # tcl packages
     source $selfdir/critcl.tcl     ; # critcl v3 packages
