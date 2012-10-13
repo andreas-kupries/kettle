@@ -136,15 +136,23 @@ proc ::kettle::option::veto {msg} {
     return -code error -errorcode {KETTLE OPTION VETO} $msg
 }
 
-proc ::kettle::option::cget {} {
+proc ::kettle::option::save {} {
     variable config
-    #io trace {option cget config = ($config)}
 
+    ::set path   [kettle path tmpfile .kettle_config_]
     ::set serial [dict filter $config key --*]
-    dict unset serial --state
 
-    #io trace {option cget serial = ($serial)}
-    return $serial
+    dict unset serial --state
+    dict unset serial --config
+
+    kettle path write $path $serial
+    return $path
+}
+
+proc ::kettle::option::load {file} {
+    variable config
+    ::set config [dict merge $config [kettle path cat $file]]
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -158,7 +166,6 @@ apply {{} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
 	set! --exec-prefix $new
-	setd --prefix      $new
 	setd --bin-dir     $new/bin
 	setd --lib-dir     $new/lib
     }
@@ -170,6 +177,7 @@ apply {{} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
 	set! --prefix      $new
+	setd --exec-prefix $new
 	setd --man-dir     $new/man
 	setd --html-dir    $new/html
 	setd --include-dir $new/include
@@ -179,8 +187,8 @@ apply {{} {
     define --html-dir    {} { set! --html-dir    [path norm $new] }
     define --include-dir {} { set! --include-dir [path norm $new] }
 
-    setd --exec-prefix [file dirname [file dirname [info library]]]
-    # -> bin, lib, prefix -> man, html
+    setd --prefix [file dirname [file dirname [info library]]]
+    # -> man, html, exec-prefix -> bin, lib
 
     setd --bin-dir [file dirname [path norm [info nameofexecutable]]]
     setd --lib-dir [info library]
@@ -233,13 +241,19 @@ apply {{} {
     }
 
     # - -- --- ----- -------- -------------
-    # State handling for sub-processes. Default none.
+    # State and configuration handling for sub-processes. Default none.
 
     define --state {} {
 	if {$new eq {}} return
 	status load $new
     }
     setd --state {}
+
+    define --config {} {
+	if {$new eq {}} return
+	load $new
+    }
+    setd --config {}
 
     # - -- --- ----- -------- -------------
     # Default goals to use when invoked with none.
