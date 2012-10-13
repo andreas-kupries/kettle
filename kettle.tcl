@@ -37,6 +37,17 @@ namespace eval ::kettle {
 ## @owns: tool.tcl
 ## @owns: try.tcl
 
+## These two files are not sourced as part of the kettle application.
+##
+# The first is the main entry point for the 'test' recipe, i.e. the
+# application running a specific .test file. It is used to communicate
+# build configuration data into the test environment.
+##
+# The other provides lots of utilities to make writing tests easier.
+
+## @owns: testmain.tcl
+## @owns: testutilities.tcl
+
 ::apply {{selfdir} {
     # # ## ### ##### ######## ############# ##################### Foundation
     source $selfdir/lambda.tcl     ; # Nicer way of writing apply
@@ -61,6 +72,7 @@ namespace eval ::kettle {
     # # ## ### ##### ######## ############# ##################### Application
     source $selfdir/app.tcl        ; # Application core.
     # # ## ### ##### ######## ############# #####################
+    kettle::option::set @kettledir $selfdir
 }} [file dirname [file normalize [info script]]]
 
 # # ## ### ##### ######## ############# #####################
