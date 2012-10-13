@@ -27,8 +27,9 @@ set argv0 $kt::testfile
 # Force full verbosity.
 lappend argv -verbose bpstenl
 
-package require    tcltest
-namespace import ::tcltest::*
+package require tcltest
+# We can assume tcltest 2 or higher, due to our assumption of Tcl 8.5
+# or higher.
 
 # The next command enables the execution of 'tk' constrained tests, if
 # Tk is present (for example when this code is run run by 'wish').
@@ -61,6 +62,7 @@ puts stdout ""
 kt::Note Host       [info hostname]
 kt::Note Platform   $tcl_platform(os)-$tcl_platform(osVersion)-$tcl_platform(machine)
 kt::Note TestDir    $::tcltest::testsDirectory
+kt::Note LocalDir   $::kt::localprefix
 kt::Note TestCWD    [pwd]
 kt::Note Shell      [info nameofexecutable]
 kt::Note Tcl        [info patchlevel]
@@ -76,9 +78,12 @@ if {[llength $::tcltest::matchFiles]} {kt::Note MatchFiles $::tcltest::matchFile
 
 # # ## ### ##### ######## ############# #####################
 ## Import kettle provided utility commands (kt:: namespace)
-## the testsuite can use.
+## the testsuite can use. And a try/finally for ourselves.
 
+source [file dirname [file normalize [info script]]]/try.tcl
 source [file dirname [file normalize [info script]]]/testutilities.tcl
+
+namespace import ::tcltest::*
 
 # # ## ### ##### ######## ############# #####################
 ## Run the testsuite.
