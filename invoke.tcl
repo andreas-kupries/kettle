@@ -35,7 +35,7 @@ proc ::kettle::invoke {other args} {
 	set buildscript [path script]
 	set other       [path sourcedir]
     } else {
-	set other [path norm $other]
+	set other [path sourcedir $other]
 
 	if {[file isfile $other]} {
 	    # Assume that the provided file is the build script.
