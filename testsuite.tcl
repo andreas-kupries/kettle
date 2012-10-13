@@ -24,11 +24,10 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
     recipe define test {
 	Run the testsuite
     } {testsrcdir testsuite} {
-
 	# Note: We build and install the package under test (and its
-	# dependencies (TODO)) into a local directory (in the current
-	# working directory). We try to install a debug variant first,
-	# and if that fails a regular one. This is important for
+	# dependencies) into a local directory (in the current working
+	# directory). We try to install a debug variant first, and if
+	# that fails a regular one. This is important for
 
 	set tmp [path norm [path tmpfile .kettle_test_install_]]
 	try {
@@ -37,11 +36,6 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 	    } {
 		status fail "Unable to generate local test installation"
 	    }
-
-	    # NOTE/TODO If we use a dynamically named test directory
-	    # we will have to inject this information into the test
-	    # suite, somehow. Otherwise we can hardwire the directory
-	    # into the test support code, or document it that way.
 
 	    TestRun $testsrcdir $testsuite $tmp
 	} finally {
@@ -118,8 +112,8 @@ proc ::kettle::TestProcessLine {line} {
     # with the sak.tcl testsuite support found in
     # tcllib/tklib.
 
-    # TODO ## test --log option ?
-    #io puts $log $line ; # Full log.
+    # TODO ## tests: --log option ?
+    #io puts $line ; # Full log.
 
     if {[string match "++++*"      $line] ||
 	[string match "----*start" $line]} {
