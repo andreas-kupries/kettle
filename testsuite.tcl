@@ -29,7 +29,7 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 	# directory). We try to install a debug variant first, and if
 	# that fails a regular one. This is important for
 
-	set tmp [path norm [path tmpfile .kettle_test_install_]]
+	set tmp [path norm [path tmpfile test_install_]]
 	try {
 	    if {![invoke self debug   --prefix $tmp] &&
 		![invoke self install --prefix $tmp]
