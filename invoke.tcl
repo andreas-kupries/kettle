@@ -104,17 +104,19 @@ proc ::kettle::invoke {other args} {
     # - We use our tclsh to run the child.
     # - We use our kettle interpreter to run the child.
 
-    set tmp [status save]
+    set work   [status save]
+    set config [option save]
     try {
 	path exec \
 	    [info nameofexecutable] \
 	    [option get @kettle] \
 	    -f $buildscript \
-	    {*}[option cget] --state $tmp {*}$keep
+	    --config $config --state $work {*}$keep
 
-	status load $tmp
+	status load $work
     } finally {
-	file delete $tmp
+	file delete $work
+	file delete $config
     }
 
     # ok/fail is based on the work database we got back.
