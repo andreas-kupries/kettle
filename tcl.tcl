@@ -38,7 +38,7 @@ proc ::kettle::TclSetup {root files pn pv} {
 
 	path in $root {
 	    try {
-		set tmpdir [path tmpfile]
+		set tmpdir [path tmpfile tclindex_]
 		file mkdir  $tmpdir
 		set tmpfile $tmpdir/pkgIndex.tcl
 

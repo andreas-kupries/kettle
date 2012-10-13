@@ -139,7 +139,7 @@ proc ::kettle::option::veto {msg} {
 proc ::kettle::option::save {} {
     variable config
 
-    ::set path   [kettle path tmpfile .kettle_config_]
+    ::set path   [kettle path tmpfile config_]
     ::set serial [dict filter $config key --*]
 
     dict unset serial --state

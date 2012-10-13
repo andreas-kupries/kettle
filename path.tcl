@@ -324,9 +324,9 @@ proc ::kettle::path::scan {label root predicate} {
     return [list $nroot $result]
 }
 
-proc ::kettle::path::tmpfile {{prefix kettle_path_}} {
+proc ::kettle::path::tmpfile {{prefix tmp_}} {
     global tcl_platform
-    return $prefix[pid]_[clock seconds]_[clock milliseconds]_[info hostname]_$tcl_platform(user)
+    return .kettle_$prefix[pid]_[clock seconds]_[clock milliseconds]_[info hostname]_$tcl_platform(user)
 }
 
 proc ::kettle::path::cat {path args} {
@@ -570,7 +570,7 @@ proc ::kettle::path::exec {args} {
 
 proc ::kettle::path::pipe {lv script args} {
     upvar 1 $lv line
-    set stderr [tmpfile kpe_stderr_]
+    set stderr [tmpfile pipe_stderr_]
 
     io trace {  PIPE: $args}
 

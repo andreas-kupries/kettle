@@ -129,7 +129,7 @@ proc ::kettle::status::is {goal {src {}}} {
 proc ::kettle::status::save {{path {}}} {
     variable work
     if {$path eq {}} {
-	set path [kettle path tmpfile .kettle_state_]
+	set path [kettle path tmpfile state_]
     }
     kettle path write $path $work
     return $path
