@@ -32,6 +32,10 @@ proc ::kettle::TclSetup {root files pn pv} {
     set pkgdir [path libdir [string map {:: _} $pn]$pv]
 
     recipe define install-package-$pn "Install package $pn $pv" {pkgdir root files pn pv} {
+	if {[option exists @dependencies]} {
+	    invoke @dependencies install
+	}
+
 	path in $root {
 	    try {
 		set tmpdir [path tmpfile]

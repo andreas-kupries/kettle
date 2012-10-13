@@ -72,6 +72,11 @@ proc ::kettle::CritclSetup {root file pn pv} {
     set pkgdir [path libdir [string map {:: _} $pn]$pv]
 
     recipe define install-package-$pn "Install package $pn $pv" {pkgdir root file pn pv} {
+
+	if {[option exists @dependencies]} {
+	    invoke @dependencies install
+	}
+
 	set t [option get --target]
 	if {$t ne {}} { lappend cmd -target $t }
 
@@ -84,6 +89,10 @@ proc ::kettle::CritclSetup {root file pn pv} {
     } $pkgdir $root $file $pn $pv
 
     recipe define debug-package-$pn "Install debug-built package $pn $pv" {pkgdir root file pn pv} {
+	if {[option exists @dependencies]} {
+	    invoke @dependencies debug
+	}
+
 	set t [option get --target]
 	if {$t ne {}} { lappend cmd -target $t }
 
