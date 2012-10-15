@@ -230,6 +230,13 @@ proc ::kettle::path::bench-file {path} {
     return 0
 }
 
+proc ::kettle::path::kettle-build-file {path} {
+    set test [cathead $path 100 -translation binary]
+    # marker (no anti-markers)
+    if {[regexp {kettle -f} $test]} { return 1 }
+    return 0
+}
+
 proc ::kettle::path::foreach-file {path pv script} {
     upvar 1 $pv thepath
 
