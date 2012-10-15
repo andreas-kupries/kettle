@@ -7,8 +7,42 @@ namespace eval ::kettle { namespace export invoke }
 # # ## ### ##### ######## ############# #####################
 ## API.
 
-proc ::kettle::invoke {other args} {
+proc ::kettle::recurse {} {
+    # application replacement. looks for kettle build scripts in all
+    # sub directories and invokes them with the current configuration
+    # and goals.
+    #
+    # Note: By keeping the goals we are trying to run main recipes
+    # also.
 
+    lassign [path scan \
+		 {kettle build scripts} \
+		 [path sourcedir] \
+		 {path kettle-build-file}] \
+	root subbuilders
+
+    set tmp {}
+
+    set self [option get @srcscript]
+
+    io trace {self = $self}
+
+    foreach s $subbuilders {
+	io trace {s... = $s}
+	if {[path norm $s] eq $self} continue
+	lappend tmp $s
+    }
+
+    option set   @recurse $tmp
+    invoke       @recurse {*}[option get @goals]
+    option unset @recurse
+
+    io note { io puts "Main..." }
+    return
+}
+
+
+proc ::kettle::invoke {other args} {
     # Special syntax. Access to named lists of other packages in the
     # option database. Recurse call on each entry.
     if {[string match @* $other]} {
@@ -91,7 +125,8 @@ proc ::kettle::invoke {other args} {
     # Ignore call if no goals to run are left.
     if {![llength $keep]} return
 
-    io trace {enter $other $keep}
+    io trace {entering $other $keep}
+    io cyan { io puts "enter $other $goals..." }
 
     # The current configuration (options) is directly specified on the
     # command line, which then might be overridden by the goal's
@@ -130,5 +165,6 @@ proc ::kettle::invoke {other args} {
 	set ok 0
     }
 
+    io cyan { io puts "exiting $other $goals: $state" }
     return $ok
 }
