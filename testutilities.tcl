@@ -11,8 +11,8 @@ namespace eval ::kt {
 ## API. Use of files relative to the test directory.
 
 proc ::kt::source {path} {
-    variable tcltest::testsDirectory
-    ::source [file join $testsDirectory $path]
+    variable ::tcltest::testsDirectory
+    uplevel 1 [list ::source [file join $testsDirectory $path]]
 }
 
 proc kt::find {pattern} {
