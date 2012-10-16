@@ -146,12 +146,22 @@ proc ::kettle::option::save {} {
     dict unset serial --config
 
     kettle path write $path $serial
+    io trace {options saved to    $path}
     return $path
 }
 
 proc ::kettle::option::load {file} {
+    io trace {options loaded from $file}
     variable config
+
+    # Note: See how this bypasses all the setters. The configuration
+    # is loaded as is. With setters active the state may change
+    # from what we loaded, depending on order of options. Bad.
     ::set config [dict merge $config [kettle path cat $file]]
+
+    # Special handling of --verbose, i.e. activate, as if the setter
+    # had been run.
+    if {[get --verbose]} { io trace-on }
     return
 }
 
@@ -164,16 +174,14 @@ proc ::kettle::option::config {args} {
 
     ::set saved $config
     foreach {o v} $args { set $o $v }
-    ::set   serial [dict filter $config key --*]
+    ::set   serial [dict filter [dict filter $config key --*] script {o v} {
+	expr {($o ne "--state") && ($o ne "--config") && ![string match --with-* $o]}
+    }]
     ::set   config $saved
 
-    # Now we have the modified configuration the a child process will
-    # compute for itself given the --config and overrides as
-    # options. This we can convert into a canonical key part for the
-    # work database.
-
-    dict unset serial --state
-    dict unset serial --config
+    # Now we have the modified configuration a child process will
+    # compute for itself given the --config and overrides as options
+    # as key part for the work database.
 
     return [DictSort $serial]
 }
