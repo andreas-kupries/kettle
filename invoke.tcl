@@ -39,7 +39,7 @@ proc ::kettle::recurse {} {
     }
     option unset @recurse
 
-    io note { io puts "Main..." }
+    io cyan { io puts "Main..." }
     return
 }
 
@@ -147,7 +147,7 @@ proc ::kettle::invoke {other args} {
     if {![llength $goals]} return
 
     io trace {entering $other $goals $overrides}
-    io cyan { io puts "enter $other $goals..." }
+    io cyan { io puts "Enter $other: $goals ..." }
 
     # The current configuration (options) is directly specified on the
     # command line, which then might be overridden by the goal's
@@ -169,7 +169,6 @@ proc ::kettle::invoke {other args} {
 	    -f $buildscript \
 	    --config $config --state $work {*}$overrides \
 	    {*}$goals
-
 	status load $work
     } finally {
 	file delete $work
@@ -186,7 +185,6 @@ proc ::kettle::invoke {other args} {
 	if {$state eq "ok"} continue
 	set ok 0
     }
-
-    io cyan { io puts "exiting $other $goals: $state" }
+    io cyan { io puts "Exiting $other ($goals): $state\n" }
     return $ok
 }

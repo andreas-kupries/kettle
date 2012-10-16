@@ -569,7 +569,8 @@ proc ::kettle::path::uninstall-file-set {label dstdir args} {
 
 proc ::kettle::path::exec {args} {
     pipe line {
-	io puts $line
+	# line ends in \n, except possibly at eof.
+	io puts -nonewline $line
     } {*}$args
     return
 }
@@ -588,6 +589,9 @@ proc ::kettle::path::pipe {lv script args} {
     try {
 	while {![eof $pipe]} {
 	    if {[gets $pipe line] < 0} continue
+	    if {![eof $pipe]} {
+		append line \n
+	    }
 	    try {
 		uplevel 1 $script
 	    } trap {KETTLE} {e o} {
