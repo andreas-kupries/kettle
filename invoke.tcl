@@ -99,34 +99,47 @@ proc ::kettle::invoke {other args} {
     # state-machine.
 
     set goals {}
-    set keep {}
+    set overrides {}
     set skip 0
     foreach g $args {
 	if {$skip} {
 	    # option argument, keep, prepare for regular again
 	    set skip 0
-	    lappend keep $g
+	    lappend overrides $g
 	    continue
 	} elseif {[string match --* $g]} {
 	    # option, keep, and prepare to keep next argument, the
 	    # option value
 	    set skip 1
-	    lappend keep $g
+	    lappend overrides $g
 	    continue
-	} elseif {[status is $g $other] ne "unknown"} {
+	}
+	# goal
+	lappend goals $g
+    }
+
+    # Step 2, filter goals, use the overrides as additional config
+    # information...  Issue: This will not work as is, right now ... A
+    # highlevel config change will here not do all the changes we see
+    # from the command line, this the configs will not match properly
+    # ... So, basic idea is ok, details buggy...
+
+    set keep {}
+    foreach g $goals {
+	if {[status is $g $other {*}$overrides] ne "unknown"} {
 	    # goal, already done, ignore (= filtered out)
 	    continue
 	}
 	# goal, not done, keep
 	lappend keep $g
-	lappend goals $g
     }
+
 
     # Ignore call if no goals to run are left.
     if {![llength $keep]} return
 
-    io trace {entering $other $keep}
-    io cyan { io puts "enter $other $goals..." }
+    io trace {entering $other $keep $overrides}
+    io cyan { io puts "enter $other $keep..." }
 
     # The current configuration (options) is directly specified on the
     # command line, which then might be overridden by the goal's
@@ -146,7 +159,8 @@ proc ::kettle::invoke {other args} {
 	    [info nameofexecutable] \
 	    [option get @kettle] \
 	    -f $buildscript \
-	    --config $config --state $work {*}$keep
+	    --config $config --state $work {*}$overrides \
+	    {*}$keep
 
 	status load $work
     } finally {
@@ -158,13 +172,13 @@ proc ::kettle::invoke {other args} {
     # All goals must be ok.
 
     set ok 1
-    foreach goal $goals {
-	set state [status is $goal $other]
+    foreach goal $keep {
+	set state [status is $goal $other {*}$overrides]
 	io trace {enter result $goal = $state}
 	if {$state eq "ok"} continue
 	set ok 0
     }
 
-    io cyan { io puts "exiting $other $goals: $state" }
+    io cyan { io puts "exiting $other $keep: $state" }
     return $ok
 }
