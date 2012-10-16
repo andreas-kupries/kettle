@@ -155,6 +155,28 @@ proc ::kettle::option::load {file} {
     return
 }
 
+proc ::kettle::option::config {args} {
+    variable config
+
+    ::set   serial $config
+    lappend serial {*}$args
+    dict unset serial --state
+    dict unset serial --config
+
+    ::set serial [DictSort [dict filter $serial key --*]]
+
+    return $serial
+}
+
+proc ::kettle::option::DictSort {dict} {
+    array set a $dict
+    set out [list]
+    foreach key [lsort -dict [array names a]] {
+	lappend out $key $a($key)
+    }
+    return $out
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Initialization
 

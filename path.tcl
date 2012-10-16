@@ -293,7 +293,7 @@ proc ::kettle::path::foreach-file {path pv script} {
     return
 }
 
-proc ::kettle::path::scan {label root predicate} {
+proc ::kettle::path::scan {label root predicate {mode stop}} {
 
     set nroot [sourcedir $root]
 
