@@ -346,7 +346,7 @@ proc ::kettle::path::cat {path args} {
 proc ::kettle::path::cathead {path n args} {
     set c [open $path r]
     if {[llength $args]} { fconfigure $c {*}$args }
-    set contents [read $c]
+    set contents [read $c $n]
     close $c
     return $contents
 }
