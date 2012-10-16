@@ -182,7 +182,7 @@ proc ::kettle::invoke {other args} {
     set ok 1
     foreach goal $goals {
 	set state [status is $goal $other {*}$overrides]
-	io trace {enter result $goal = $state}
+	io trace {entry result $other $goal = $state}
 	if {$state eq "ok"} continue
 	set ok 0
     }

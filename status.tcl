@@ -67,8 +67,14 @@ proc ::kettle::status::ok {} {
     variable current
     variable work
 
+    io trace {status ok :[lindex $current end]}
+
     set key     [list [kettle path sourcedir] [lindex $current end] [kettle option config]]
     set current [lreplace $current end end]
+
+    #io trace {.... [lindex $key 0]}
+    #io trace {.... [lindex $key 1]}
+    #io trace {.... [lindex $key 2]}
 
     dict set work $key state ok
     dict set work $key msg   OK
@@ -79,6 +85,8 @@ proc ::kettle::status::ok {} {
 proc ::kettle::status::fail {{msg FAIL}} {
     variable current
     variable work
+
+    io trace {status fail :[lindex $current end] $msg}
 
     set key     [list [kettle path sourcedir] [lindex $current end] [kettle option config]]
     set current [lreplace $current end end]
@@ -116,8 +124,16 @@ proc ::kettle::status::is {goal {src {}} args} {
     variable work
     # possible results: unknown|ok|fail|work
 
+    #io trace {status is :$goal ($args)}
+    #io trace {          @$src}
+    #io trace {          %$args}
+
     if {$src eq {}} { set src [kettle path sourcedir] }
     set key [list $src $goal [kettle option config {*}$args]]
+
+    #io trace {.... [lindex $key 0]}
+    #io trace {.... [lindex $key 1]}
+    #io trace {.... [lindex $key 2]}
 
     if {![dict exists $work $key state]} {
 	return unknown
@@ -132,10 +148,13 @@ proc ::kettle::status::save {{path {}}} {
 	set path [kettle path tmpfile state_]
     }
     kettle path write $path $work
+
+    io trace {status saved to    $path}
     return $path
 }
 
 proc ::kettle::status::load {file} {
+    io trace {status loaded from $file}
     variable work [kettle path cat $file]
     return
 }

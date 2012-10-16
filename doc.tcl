@@ -4,8 +4,8 @@
 
 namespace eval ::kettle { namespace export doc doc-destination }
 
-kettle option define --doc-destination {} {}
-kettle option setd   --doc-destination embedded
+kettle option define --with-doc-destination {} {}
+kettle option setd   --with-doc-destination embedded
 
 kettle tool declare {
     dtplite dtplite.kit dtplite.tcl dtplite.exe
@@ -25,7 +25,7 @@ proc ::kettle::doc-destination {dstdir} {
     # (2) The user may wish to redirect the generated documenation
     # somewhere else.
 
-    option set --doc-destination $dstdir
+    option set --with-doc-destination $dstdir
     return
 }
 
@@ -46,7 +46,7 @@ proc ::kettle::doc {{docsrcdir doc}} {
 
     # Put the documentation into recipes.
 
-    set dd      [path sourcedir [option get --doc-destination]]
+    set dd      [path sourcedir [option get --with-doc-destination]]
     set mansrc  $dd/man/files
     set htmlsrc $dd/www
 
