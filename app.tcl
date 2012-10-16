@@ -68,6 +68,10 @@ proc ::kettle::Application {} {
 
 	::exit 0
 
+    } trap {KETTLE STATUS FAIL} {e o} {
+	::exit 1
+    } trap {KETTLE STATUS OK} {e o} {
+	::exit 0
     } trap {KETTLE} {e o} {
 	io err { io puts $e }
 	::exit 1
