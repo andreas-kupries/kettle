@@ -33,8 +33,10 @@ proc ::kettle::recurse {} {
 	lappend tmp $s
     }
 
-    option set   @recurse $tmp
-    invoke       @recurse {*}[option get @goals]
+    option set @recurse $tmp
+    foreach goal [option get @goals] {
+	invoke @recurse $goal
+    }
     option unset @recurse
 
     io note { io puts "Main..." }
