@@ -101,8 +101,6 @@ proc ::kettle::recipe::run {args} {
     foreach goal $args {
 	try {
 	    Run $goal
-	} finally {
-	    status show $goal
 	}
     }
     return

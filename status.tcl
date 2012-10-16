@@ -79,6 +79,7 @@ proc ::kettle::status::ok {} {
     dict set work $key state ok
     dict set work $key msg   OK
 
+    Show $key
     return -errorcode {KETTLE STATUS OK} -code error ""
 }
 
@@ -94,26 +95,20 @@ proc ::kettle::status::fail {{msg FAIL}} {
     dict set work $key state fail
     dict set work $key msg $msg
 
+    Show $key
     return -errorcode {KETTLE STATUS FAIL} -code error ""
 }
 
-proc ::kettle::status::show {goal} {
+proc ::kettle::status::Show {key} {
     variable work
 
-    set key   [list [kettle path sourcedir] $goal [kettle option config]]
     set state [dict get $work $key state]
     set msg   [dict get $work $key msg]
 
-    # Do nothing if the goal is in the works.
-    # This means some internal error bubbled past us
-    # and we have no reliable status
-    if {$state ni {ok fail}} return
-
-    io ingui {
+    if {$state ne "ok"} {
 	io $state { io puts $msg }
-    }
-    io interm {
-	if {$state ne "ok"} {
+    } else {
+	io ingui {
 	    io $state { io puts $msg }
 	}
     }
