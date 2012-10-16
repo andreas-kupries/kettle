@@ -79,24 +79,30 @@ proc ::kettle::invoke {other args} {
 	    set other       [file dirname $other]
 
 	} elseif {[file isdirectory $other]} {
+	    # Search for a build script in the specified directory.
+	    # Not using path scan as sub directories are not relevant,
+	    # and we do our own check and stop.
 
+	    set buildscript {}
+	    foreach f [lsort -unique [lsort -dict [glob -nocomplain -type f -directory $other * .*]]] {
+		if {![path kettle-build-file $f]} continue
+		set buildscript $f
+		break
+	    }
 
-
-
-
-	    # Use default name to look for the build file.
-	    # FUTURE: Search...
-
-	    set buildscript $other/build.tcl
+	    if {$buildscript eq {}} {
+		status fail "No build script found in $other"
+	    }
 	} else {
-	    return -code error "Path is neither file, nor directory"
+	    return -code error "Expected file or directory, got [file type $other] \"$other\""
 	}
     }
 
     # Filter goals against the global knowledge of those already
     # done. This is a bit more complex as the arguments may contain
     # options, these we do not filter. This is a small two-state
-    # state-machine.
+    # state-machine to separate options from goals. We need the
+    # options first as they influence the search in the work database.
 
     set goals {}
     set overrides {}
@@ -133,13 +139,13 @@ proc ::kettle::invoke {other args} {
 	# goal, not done, keep
 	lappend keep $g
     }
-
+    set goals $keep
 
     # Ignore call if no goals to run are left.
-    if {![llength $keep]} return
+    if {![llength $goals]} return
 
-    io trace {entering $other $keep $overrides}
-    io cyan { io puts "enter $other $keep..." }
+    io trace {entering $other $goals $overrides}
+    io cyan { io puts "enter $other $goals..." }
 
     # The current configuration (options) is directly specified on the
     # command line, which then might be overridden by the goal's
@@ -160,7 +166,7 @@ proc ::kettle::invoke {other args} {
 	    [option get @kettle] \
 	    -f $buildscript \
 	    --config $config --state $work {*}$overrides \
-	    {*}$keep
+	    {*}$goals
 
 	status load $work
     } finally {
@@ -172,13 +178,13 @@ proc ::kettle::invoke {other args} {
     # All goals must be ok.
 
     set ok 1
-    foreach goal $keep {
+    foreach goal $goals {
 	set state [status is $goal $other {*}$overrides]
 	io trace {enter result $goal = $state}
 	if {$state eq "ok"} continue
 	set ok 0
     }
 
-    io cyan { io puts "exiting $other $keep: $state" }
+    io cyan { io puts "exiting $other $goals: $state" }
     return $ok
 }
