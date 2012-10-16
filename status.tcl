@@ -35,7 +35,7 @@ proc ::kettle::status::begin {goal} {
     variable current
     variable work
 
-    set key [kettle path sourcedir]|$goal
+    set key [list [kettle path sourcedir] $goal [kettle option config]]
 
     if {[dict exists $work $key]} {
 	set status [dict get $work $key]
@@ -67,7 +67,7 @@ proc ::kettle::status::ok {} {
     variable current
     variable work
 
-    set key     [kettle path sourcedir]|[lindex $current end]
+    set key     [list [kettle path sourcedir] [lindex $current end] [kettle option config]]
     set current [lreplace $current end end]
 
     dict set work $key state ok
@@ -80,7 +80,7 @@ proc ::kettle::status::fail {{msg FAIL}} {
     variable current
     variable work
 
-    set key     [kettle path sourcedir]|[lindex $current end]
+    set key     [list [kettle path sourcedir] [lindex $current end] [kettle option config]]
     set current [lreplace $current end end]
 
     dict set work $key state fail
@@ -92,7 +92,7 @@ proc ::kettle::status::fail {{msg FAIL}} {
 proc ::kettle::status::show {goal} {
     variable work
 
-    set key   [kettle path sourcedir]|$goal
+    set key   [list [kettle path sourcedir] $goal [kettle option config]]
     set state [dict get $work $key state]
     set msg   [dict get $work $key msg]
 
@@ -112,12 +112,12 @@ proc ::kettle::status::show {goal} {
     return
 }
 
-proc ::kettle::status::is {goal {src {}}} {
+proc ::kettle::status::is {goal {src {}} args} {
     variable work
     # possible results: unknown|ok|fail|work
 
     if {$src eq {}} { set src [kettle path sourcedir] }
-    set key $src|$goal
+    set key [list $src $goal [kettle option config {*}$args]]
 
     if {![dict exists $work $key state]} {
 	return unknown

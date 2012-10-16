@@ -155,6 +155,38 @@ proc ::kettle::option::load {file} {
     return
 }
 
+proc ::kettle::option::config {args} {
+    variable config
+
+    # Apply the overrides. We use the regular set command to invoke
+    # all relevant setter hooks. Afterward we retrieve the modified
+    # configuration and restore the old state.
+
+    ::set saved $config
+    foreach {o v} $args { set $o $v }
+    ::set   serial [dict filter $config key --*]
+    ::set   config $saved
+
+    # Now we have the modified configuration the a child process will
+    # compute for itself given the --config and overrides as
+    # options. This we can convert into a canonical key part for the
+    # work database.
+
+    dict unset serial --state
+    dict unset serial --config
+
+    return [DictSort $serial]
+}
+
+proc ::kettle::option::DictSort {dict} {
+    array set a $dict
+    set out [list]
+    foreach key [lsort -dict [array names a]] {
+	lappend out $key $a($key)
+    }
+    return $out
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Initialization
 

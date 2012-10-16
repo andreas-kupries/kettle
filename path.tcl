@@ -294,7 +294,6 @@ proc ::kettle::path::foreach-file {path pv script} {
 }
 
 proc ::kettle::path::scan {label root predicate} {
-
     set nroot [sourcedir $root]
 
     io trace {}
