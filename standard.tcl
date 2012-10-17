@@ -9,7 +9,7 @@
 # # ## ### ##### ######## ############# #####################
 
 kettle recipe define null {
-    No operation. Debugging helper (use with -v).
+    No operation. Debugging helper (use with -trace).
 } {} {}
 
 # # ## ### ##### ######## ############# #####################
@@ -60,6 +60,7 @@ kettle recipe define show-state {
     }
 
     set maxl [expr {$maxl + 2}]
+    io puts {}
     foreach name $names {
         io puts [format "%-*s = %s" $maxl $name [option get $name]]
     }

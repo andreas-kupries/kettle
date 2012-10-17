@@ -11,7 +11,7 @@ proc ::kettle::Application {} {
     global argv
 
     try {
-	# Process arguments: -f, -v, --* options, and goals
+	# Process arguments: -f, -trace, --* options, and goals
 
 	if {[lindex $argv 0] eq {-f}} {
 	    set argv [lassign $argv __ path]
@@ -27,7 +27,7 @@ proc ::kettle::Application {} {
 	    ::exit 1
 	}
 
-	if {[lindex $argv 0] eq {-v}} {
+	if {[lindex $argv 0] eq {-trace}} {
 	    set argv [lrange $argv 1 end]
 	    option set --verbose on
 	}
