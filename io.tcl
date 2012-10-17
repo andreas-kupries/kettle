@@ -61,13 +61,13 @@ proc ::kettle::io::setwidget {t} {
     return
 }
 
-proc ::kettle::io::ingui {script} {
+proc ::kettle::io::for-gui {script} {
     variable textw
     if {$textw eq {}} return
     uplevel 1 $script
 }
 
-proc ::kettle::io::interm {script} {
+proc ::kettle::io::for-terminal {script} {
     variable textw
     if {$textw ne {}} return
     uplevel 1 $script

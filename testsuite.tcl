@@ -119,11 +119,11 @@ proc ::kettle::TestProcessLine {line} {
     if {[string match "++++*"      $line] ||
 	[string match "----*start" $line]} {
 	# Flash report of activity...
-	io interm {
+	io for-terminal {
 	    io puts -nonewline "\r$line                                  "
 	    flush stdout
 	}
-	io ingui {
+	io for-gui {
 	    io puts $line
 	}
 	return
@@ -138,11 +138,11 @@ proc ::kettle::TestProcessLine {line} {
 	set line [string map {{error: test } {}} $line]
 
 	io err {
-	    io interm {
+	    io for-terminal {
 		io puts \r$line\t\t
 		flush stdout
 	    }
-	    io ingui {
+	    io for-gui {
 		io puts $line
 	    }
 	}

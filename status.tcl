@@ -108,7 +108,7 @@ proc ::kettle::status::Show {key} {
     if {$state ne "ok"} {
 	io $state { io puts $msg }
     } else {
-	io ingui {
+	io for-gui {
 	    io $state { io puts $msg }
 	}
     }
