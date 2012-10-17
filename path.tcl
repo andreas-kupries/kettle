@@ -27,6 +27,74 @@ proc ::kettle::path::strip {path prefix} {
 			end]]
 }
 
+proc ::kettle::path::relativecwd {dst} {
+    relative [pwd] $dst
+}
+
+proc ::kettle::path::relativesrc {dst} {
+    relative [sourcedir] $dst
+}
+
+proc ::kettle::path::relative {base dst} {
+    # Modified copy of ::fileutil::relative (tcllib)
+    # Adapted to 8.5 ({*}).
+    #
+    #	Taking two _directory_ paths, a base and a destination, computes the path
+    #	of the destination relative to the base.
+    #
+    # Arguments:
+    #	base	The path to make the destination relative to.
+    #	dst	The destination path
+    #
+    # Results:
+    #	The path of the destination, relative to the base.
+
+    # Ensure that the link to directory 'dst' is properly done relative to
+    # the directory 'base'.
+
+    if {[file pathtype $base] ne [file pathtype $dst]} {
+	return -code error "Unable to compute relation for paths of different pathtypes: [file pathtype $base] vs. [file pathtype $dst], ($base vs. $dst)"
+    }
+
+    set base [norm $base]
+    set dst  [norm $dst]
+
+    set save $dst
+    set base [file split $base]
+    set dst  [file split $dst]
+
+    while {[lindex $dst 0] eq [lindex $base 0]} {
+	set dst  [lrange $dst  1 end]
+	set base [lrange $base 1 end]
+	if {![llength $dst]} {break}
+    }
+
+    set dstlen  [llength $dst]
+    set baselen [llength $base]
+
+    if {($dstlen == 0) && ($baselen == 0)} {
+	# Cases:
+	# (a) base == dst
+
+	set dst .
+    } else {
+	# Cases:
+	# (b) base is: base/sub = sub
+	#     dst  is: base     = {}
+
+	# (c) base is: base     = {}
+	#     dst  is: base/sub = sub
+
+	while {$baselen > 0} {
+	    set dst [linsert $dst 0 ..]
+	    incr baselen -1
+	}
+	set dst [file join {*}$dst]
+    }
+
+    return $dst
+}
+
 proc ::kettle::path::sourcedir {{path {}}} {
     return [norm [file join [kettle option get @srcdir] $path]]
 }
@@ -100,7 +168,7 @@ proc ::kettle::path::tcl-package-file {file} {
 	return 0
     }
 
-    io trace {    Testing: $file}
+    io trace {    Testing: [relativesrc $file]}
 
     foreach line $provisions {
 	io trace {        Candidate |$line|}
@@ -127,7 +195,7 @@ proc ::kettle::path::tcl-package-file {file} {
 	    continue
 	}
 
-	io trace {    Accepted: $pn $pv @ $file}
+	io trace {    Accepted: $pn $pv @ [relativesrc $file]}
 
 	lappend files $file
 	# Look for referenced dependent files.
@@ -152,7 +220,7 @@ proc ::kettle::path::critcl3-package-file {file} {
 	return 0
     }
 
-    io trace {    Testing: $file}
+    io trace {    Testing: [relativesrc $file]}
 
     foreach line $provisions {
 	io trace {        Candidate |$line|}
@@ -182,7 +250,7 @@ proc ::kettle::path::critcl3-package-file {file} {
 	    continue
 	}
 
-	io trace {    Accepted: $pn $pv @ $file}
+	io trace {    Accepted: $pn $pv @ [relativesrc $file]}
 
 	# For 'scan'.
 	kettle option set @predicate [list $file $pn $pv]
@@ -297,7 +365,7 @@ proc ::kettle::path::scan {label root predicate} {
     set nroot [sourcedir $root]
 
     io trace {}
-    io trace {SCAN $label @ $root/}
+    io trace {SCAN $label @ [relativesrc $nroot]}
 
     if {![file exists $nroot]} {
 	io trace {  NOT FOUND}
@@ -319,7 +387,7 @@ proc ::kettle::path::scan {label root predicate} {
 		lappend result $spath
 	    }
 	} on error {e o} {
-	    io err { io puts "    Skipped: $path @ $e" }
+	    io err { io puts "    Skipped: [relativesrc $path] @ $e" }
 	} finally {
 	    kettle option unset @predicate
 	}
@@ -363,7 +431,7 @@ proc ::kettle::path::copy-file {src dstdir} {
     # copy single file into destination _directory_
     # Fails on an existing file.
 
-    io puts -nonewline "\tInstalling file [file tail $src]: "
+    io puts -nonewline "\tInstalling file \"[file tail $src]\": "
     if {[catch {
 	if {![kettle option get --dry]} {
 	    file copy $src $dstdir/[file tail $src]
@@ -387,10 +455,10 @@ proc ::kettle::path::copy-files {dstdir args} {
     return 1
 }
 
-proc ::kettle::path::remove-path {path} {
+proc ::kettle::path::remove-path {base path} {
     # General uninstallation of a file or directory.
 
-    io puts -nonewline "\tUninstalling ${path}: "
+    io puts -nonewline "\tUninstalling \"[relative $base ${path}]\": "
     if {[catch {
 	if {![kettle option get --dry]} {
 	file delete -force $path
@@ -405,10 +473,10 @@ proc ::kettle::path::remove-path {path} {
     }
 }
 
-proc ::kettle::path::remove-paths {args} {
+proc ::kettle::path::remove-paths {base args} {
     # General uninstallation of multiple files.
     foreach path $args {
-	if {![remove-path $path]} { return 0 }
+	if {![remove-path $base $path]} { return 0 }
     }
     return 1
 }
@@ -418,9 +486,8 @@ proc ::kettle::path::install-application {src dstdir} {
     # a previously existing file is moved out of the way.
 
     set fname [file tail $src]
-
     io puts "Installing application \"$fname\""
-    io puts "    Into $dstdir"
+    io puts "    Into [relativesrc $dstdir]"
 
     if {![kettle option get --dry]} {
 	# Save existing file, if any.
@@ -450,7 +517,7 @@ proc ::kettle::path::install-script {src dstdir shell} {
     set fname [file tail $src]
 
     io puts "Installing script \"$fname\""
-    io puts "    Into $dstdir"
+    io puts "    Into [relativesrc $dstdir]"
 
     # Save existing file, if any.
     if {![kettle option get --dry]} {
@@ -481,7 +548,7 @@ proc ::kettle::path::install-file-group {label dstdir args} {
     # are strongly coupled, i.e. belong together.
 
     io puts "Installing $label"
-    io puts "    Into $dstdir"
+    io puts "    Into [relativesrc $dstdir]"
 
     set new ${dstdir}-new
     set old ${dstdir}-old
@@ -521,7 +588,7 @@ proc ::kettle::path::install-file-set {label dstdir args} {
     # are only loosely coupled. Example: manpages.
 
     io puts "Installing $label"
-    io puts "    Into $dstdir"
+    io puts "    Into [relativesrc $dstdir]"
 
     ## Consider removal of existing files ...
     ## Except, for manpages we want to be informed of clashes.
@@ -535,17 +602,17 @@ proc ::kettle::path::uninstall-application {src dstdir} {
     set fname [file tail $src]
 
     io puts "Uninstall application \"$fname\""
-    io puts "    From $dstdir"
+    io puts "    From [relativesrc $dstdir]"
 
-    remove-path $dstdir/$fname
+    remove-path $dstdir $dstdir/$fname
     return
 }
 
 proc ::kettle::path::uninstall-file-group {label dstdir} {
     io puts "Uninstalling $label"
-    io puts "    From $dstdir"
+    io puts "    From [relativesrc [file dirname $dstdir]]"
 
-    remove-path $dstdir
+    remove-path [file dirname $dstdir] $dstdir
     return
 }
 
@@ -555,14 +622,14 @@ proc ::kettle::path::uninstall-file-set {label dstdir args} {
     # are only loosely coupled. Example: manpages.
 
     io puts "Uninstalling $label"
-    io puts "    From $dstdir"
+    io puts "    From [relativesrc $dstdir]"
 
     ## Consider removal of existing files ...
     ## Except, for manpages we want to be informed of clashes.
     ## for others it might make sense ...
 
     foreach f $args {
-	if {![remove-path $dstdir/$f]} return
+	if {![remove-path $dstdir $dstdir/$f]} return
     }
     return
 }
@@ -579,7 +646,7 @@ proc ::kettle::path::pipe {lv script args} {
     upvar 1 $lv line
     set stderr [tmpfile pipe_stderr_]
 
-    io trace {  PIPE: $args}
+    io trace {  PIPE: [T $args]}
 
     if {[kettle option get --dry]} return
 
@@ -631,6 +698,17 @@ proc ::kettle::path::in {path script} {
 
 # # ## ### ##### ######## ############# #####################
 ## Internal
+
+proc ::kettle::path::T {words} {
+    set r {}
+    foreach w $words {
+	if {[file exists $w]} {
+	    set w [relativecwd [norm $w]]
+	}
+	lappend r $w
+    }
+    return $r
+}
 
 proc ::kettle::path::Ignore {patterns path} {
     set path [file tail $path]

@@ -100,6 +100,8 @@ proc ::kettle::invoke {other args} {
 	}
     }
 
+    set rother [path relativesrc $other]
+
     # Filter goals against the global knowledge of those already
     # done. This is a bit more complex as the arguments may contain
     # options, these we do not filter. This is a small two-state
@@ -146,8 +148,8 @@ proc ::kettle::invoke {other args} {
     # Ignore call if no goals to run are left.
     if {![llength $goals]} return
 
-    io trace {entering $other $goals $overrides}
-    io cyan { io puts "Enter $other: $goals ..." }
+    io trace {entering $rother $goals $overrides}
+    io cyan { io puts "Enter \"$rother\": $goals ..." }
 
     # The current configuration (options) is directly specified on the
     # command line, which then might be overridden by the goal's
@@ -181,10 +183,10 @@ proc ::kettle::invoke {other args} {
     set ok 1
     foreach goal $goals {
 	set state [status is $goal $other {*}$overrides]
-	io trace {entry result $other $goal = $state}
+	io trace {entry result $rother $goal = $state}
 	if {$state eq "ok"} continue
 	set ok 0
     }
-    io cyan { io puts "Exiting $other ($goals): $state\n" }
+    io cyan { io puts "Exit  \"$rother\" ($goals): $state\n" }
     return $ok
 }
