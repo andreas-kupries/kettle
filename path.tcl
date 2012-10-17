@@ -652,6 +652,7 @@ proc ::kettle::path::pipe {lv script args} {
 
     set err {}
     set pipe [open "|$args 2> $stderr" r]
+    fconfigure $pipe -translation lf
 
     try {
 	while {![eof $pipe]} {
