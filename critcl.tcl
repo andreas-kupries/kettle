@@ -166,7 +166,7 @@ proc ::kettle::CritclDo {pkgdir root pnc pn pv args} {
 }
 
 proc ::kettle::CritclRun {cmd} {
-    io trace {  critcl $cmd}
+    io trace {  critcl [path::T $cmd]}
     if {[option get --dry]} return
 
     io puts {}
