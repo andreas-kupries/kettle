@@ -25,7 +25,6 @@ namespace eval ::kettle::gui {
 # # ## ### ##### ######## ############# #####################
 
 proc ::kettle::gui::make {} {
-    variable buttons
     variable INSTALLPATH
 
     # Dynamic adaptation to the config database contents, and
@@ -38,31 +37,18 @@ proc ::kettle::gui::make {} {
     label  .l -text {Install Path: }
     entry  .e -textvariable ::kettle::gui::INSTALLPATH
 
-    set rr 0
     foreach r {help show-options show-state} {
 	# treat a few recipes out of order to have them at the top.
-	lappend buttons [button .i$rr \
-			     -command [list ::kettle::gui::Run $r] \
-			     -text [Label $r] -anchor w]
-	grid   .i$rr -row $rr -column 2 -sticky new
-	grid rowconfigure . $rr -weight 0
-	incr rr
+	MakeGoalButton $r
     }
     foreach r [lsort -dict [recipe names]] {
 	# ignore the standard recipes which are nonsensical for the
 	# gui, and those which we treated out of order (see above).
 	if {$r in {gui null recipes options help show-options show-state}} continue
-
-	lappend buttons [button .i$rr \
-			     -command [list ::kettle::gui::Run $r] \
-			     -text [Label $r] -anchor w]
-	grid   .i$rr -row $rr -column 2 -sticky new
-	grid rowconfigure . $rr -weight 0
-	incr rr
+	MakeGoalButton $r
     }
 
-    lappend buttons [button .q -command ::_exit -text Exit -anchor w]
-    grid   .q -row $rr -column 2 -sticky new
+    MakeButton ::_exit Exit 1
 
     widget::scrolledwindow .st -borderwidth 1 -relief sunken
     text .t
@@ -70,9 +56,7 @@ proc ::kettle::gui::make {} {
 
     grid .l  -row 0 -column 0 -sticky new
     grid .e  -row 0 -column 1 -sticky new
-    grid .st -row 1 -column 0 -sticky swen -columnspan 2 -rowspan $rr
-
-    grid rowconfigure    . $rr -weight 1
+    grid .st -row 1 -column 0 -sticky swen -columnspan 2 -rowspan [NButtons]
 
     grid columnconfigure . 0 -weight 0
     grid columnconfigure . 1 -weight 1
@@ -104,6 +88,28 @@ proc ::kettle::gui::make {} {
 # # ## ### ##### ######## ############# #####################
 ## Internal help.
 
+proc ::kettle::gui::NButtons {} {
+    variable buttons
+    llength $buttons
+}
+
+proc ::kettle::gui::MakeGoalButton {goal} {
+    MakeButton [list ::kettle::gui::Run $goal] [Label $goal] 0
+}
+
+proc ::kettle::gui::MakeButton {cmd label weight} {
+    variable buttons
+    set row [llength $buttons]
+
+    # ttk::button -> no -anchor option, labels centered.
+    button .i$row -command $cmd -text $label -anchor w
+    grid .i$row -row $row -column 2 -sticky new
+    grid rowconfigure . $row -weight $weight
+
+    lappend buttons .i$row
+    return
+}
+
 proc ::kettle::gui::Label {goal} {
     set r {}
     foreach e [split $goal -] {
@@ -124,6 +130,8 @@ proc ::kettle::gui::Run {goal} {
 
     option set --lib-dir $INSTALLPATH
     recipe run $goal
+
+    # TODO: Clear work database. Allow multiple uses of each recipe.
 
     State normal
     return
