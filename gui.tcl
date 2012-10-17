@@ -39,13 +39,23 @@ proc ::kettle::gui::make {} {
     entry  .e -textvariable ::kettle::gui::INSTALLPATH
 
     set rr 0
+    foreach r {help show-options show-state} {
+	# treat a few recipes out of order to have them at the top.
+	lappend buttons [button .i$rr \
+			     -command [list ::kettle::gui::Run $r] \
+			     -text [Label $r] -anchor w]
+	grid   .i$rr -row $rr -column 2 -sticky new
+	grid rowconfigure . $rr -weight 0
+	incr rr
+    }
     foreach r [lsort -dict [recipe names]] {
-	# ignore the standard recipes which are nonsensical for the gui.
-	if {$r in {gui null recipes options}} continue
+	# ignore the standard recipes which are nonsensical for the
+	# gui, and those which we treated out of order (see above).
+	if {$r in {gui null recipes options help show-options show-state}} continue
 
 	lappend buttons [button .i$rr \
 			     -command [list ::kettle::gui::Run $r] \
-			     -text $r -anchor w]
+			     -text [Label $r] -anchor w]
 	grid   .i$rr -row $rr -column 2 -sticky new
 	grid rowconfigure . $rr -weight 0
 	incr rr
@@ -93,6 +103,14 @@ proc ::kettle::gui::make {} {
 
 # # ## ### ##### ######## ############# #####################
 ## Internal help.
+
+proc ::kettle::gui::Label {goal} {
+    set r {}
+    foreach e [split $goal -] {
+	lappend r [string totitle $e]
+    }
+    return [join $r { }]
+}
 
 proc ::kettle::gui::Run {goal} {
     variable INSTALLPATH

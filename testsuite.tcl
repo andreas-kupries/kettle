@@ -49,8 +49,9 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 # # ## ### ##### ######## ############# #####################
 ## Support code for the recipe.
 
-proc ::kettle::TestRun {srcdir testfiles localprefix} {
+namespace eval ::kettle::Test { }
 
+proc ::kettle::TestRun {srcdir testfiles localprefix} {
     # We are running each test file in a separate sub process, to
     # catch crashes, etc. ... We assume that the test file is self
     # contained in terms of loading all its dependencies, like
