@@ -5,6 +5,13 @@
 namespace eval ::kettle { namespace export testsuite }
 
 # # ## ### ##### ######## ############# #####################
+## Shell to run the tests with.
+## Irrelevant to work database keying.
+
+kettle option define --with-shell {} { set! --shell [path norm $new] }
+kettle option setd   --with-shell [info nameofexecutable]
+
+# # ## ### ##### ######## ############# #####################
 ## API.
 
 proc ::kettle::testsuite {{testsrcdir tests}} {
@@ -37,7 +44,7 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 		status fail "Unable to generate local test installation"
 	    }
 
-	    TestRun $testsrcdir $testsuite $tmp
+	    Test::Run $testsrcdir $testsuite $tmp
 	} finally {
 	    file delete -force $tmp
 	}
@@ -49,9 +56,14 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 # # ## ### ##### ######## ############# #####################
 ## Support code for the recipe.
 
-namespace eval ::kettle::Test { }
+namespace eval ::kettle::Test {
+    namespace import ::kettle::path
+    namespace import ::kettle::io
+    namespace import ::kettle::status
+    namespace import ::kettle::option
+}
 
-proc ::kettle::TestRun {srcdir testfiles localprefix} {
+proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     # We are running each test file in a separate sub process, to
     # catch crashes, etc. ... We assume that the test file is self
     # contained in terms of loading all its dependencies, like
@@ -71,10 +83,10 @@ proc ::kettle::TestRun {srcdir testfiles localprefix} {
     M add row {File Total Passed Skipped Failed}
 
     set ctotal   0  ; # These counteres are all updated in
-    set cpassed  0  ; # TestProcessLine.
+    set cpassed  0  ; # ProcessLine.
     set cskipped 0  ; #
     set cfailed  0  ; #
-    set status   ok ; # May change to 'fail' in TestProcessLine.
+    set status   ok ; # May change to 'fail' in ProcessLine.
 
     set main [path norm [option get @kettledir]/testmain.tcl]
 
@@ -84,8 +96,8 @@ proc ::kettle::TestRun {srcdir testfiles localprefix} {
 
 	    path pipe line {
 		io trace {TEST: $line}
-		TestProcessLine $line
-	    } [info nameofexecutable] $main $localprefix $test
+		ProcessLine $line
+	    } [option get --with-shell] $main $localprefix $test
 
 	    io for-terminal {
 		io puts "\r                                               "
@@ -105,7 +117,7 @@ proc ::kettle::TestRun {srcdir testfiles localprefix} {
     return
 }
 
-proc ::kettle::TestProcessLine {line} {
+proc ::kettle::Test::ProcessLine {line} {
     # Counters and other state in the calling environment.
     upvar 1 ctotal ctotal cpassed cpassed \
 	cskipped cskipped cfailed cfailed \
