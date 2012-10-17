@@ -51,12 +51,13 @@ proc ::kettle::io::setwidget {t} {
     $t tag configure stderr -background red       ;# -font {Helvetica 12}
 
     # color tags
-    $t tag configure red    -background red       ;# -font {Helvetica 8}
-    $t tag configure green  -background green     ;# -font {Helvetica 8}
-    $t tag configure blue   -background lightblue ;# -font {Helvetica 8}
-    $t tag configure white  -background white     ;# -font {Helvetica 8}
-    $t tag configure yellow -background yellow    ;# -font {Helvetica 8}
-    $t tag configure cyan   -background cyan      ;# -font {Helvetica 8}
+    $t tag configure red     -background red       ;# -font {Helvetica 8}
+    $t tag configure green   -background green     ;# -font {Helvetica 8}
+    $t tag configure blue    -background lightblue ;# -font {Helvetica 8}
+    $t tag configure white   -background white     ;# -font {Helvetica 8}
+    $t tag configure yellow  -background yellow    ;# -font {Helvetica 8}
+    $t tag configure cyan    -background cyan      ;# -font {Helvetica 8}
+    $t tag configure magenta -background magenta   ;# -font {Helvetica 8}
     return
 }
 
