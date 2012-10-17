@@ -86,6 +86,10 @@ proc ::kettle::TestRun {srcdir testfiles localprefix} {
 		io trace {TEST: $line}
 		TestProcessLine $line
 	    } [info nameofexecutable] $main $localprefix $test
+
+	    io for-terminal {
+		io puts "\r                                               "
+	    }
 	}
     }
 
@@ -120,7 +124,7 @@ proc ::kettle::TestProcessLine {line} {
 	[string match "----*start" $line]} {
 	# Flash report of activity...
 	io for-terminal {
-	    io puts -nonewline "\r$line                                  "
+	    io puts -nonewline "[string trimright $line \n]                                  \r"
 	    flush stdout
 	}
 	io for-gui {
