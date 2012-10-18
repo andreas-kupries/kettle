@@ -75,8 +75,13 @@ proc ::kettle::Application {} {
     } trap {KETTLE} {e o} {
 	io err { io puts $e }
 	::exit 1
+    } trap {POSIX EPIPE} {e o} {
+	# Broken pipe, try to report on stderr.
+	# May fail, as it may be using the same pipe.
+	catch { ::puts stderr $e }
+	::exit 1
     } on error {e o} {
-	# Report troubles in the declarations and abort.
+	# Report general troubles in the declarations and abort.
 	io err { io puts $::errorInfo }
 	::exit 1
     }
