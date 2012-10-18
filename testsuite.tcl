@@ -113,13 +113,8 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     M add columns 5
     M add row {File Total Passed Skipped Failed}
 
-    set ctotal   0  ; # These counters are all updated in
-    set cpassed  0  ; # ProcessLine.
-    set cskipped 0  ; #
-    set cfailed  0  ; #
-    set status   ok ; # May change to 'fail' in ProcessLine.
-
     set main [path norm [option get @kettledir]/testmain.tcl]
+    InitState
 
     path in $srcdir {
 	foreach test $testfiles {
@@ -140,12 +135,12 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 
 
 
-    M add row {File Total Passed Skipped Failed}
-    M add row [list {} $ctotal $cpassed $cskipped $cfailed]
+    #M add row {File Total Passed Skipped Failed}
+    #M add row [list {} $ctotal $cpassed $cskipped $cfailed]
 
-    io puts "\n"
-    io puts [M format 2string]
-    io puts ""
+    #io puts "\n"
+    #io puts [M format 2string]
+    #io puts ""
 
     LogDone
 
@@ -191,15 +186,13 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     }
 
     # Report ok/fail
-    status $status
+    status [dict get $state status]
     return
 }
 
 proc ::kettle::Test::ProcessLine {line} {
     # Counters and other state in the calling environment.
-    upvar 1 ctotal ctotal cpassed cpassed \
-	cskipped cskipped cfailed cfailed \
-	status status
+    upvar 1 state state
 
     set line [string trimright $line]
 
@@ -214,12 +207,8 @@ proc ::kettle::Test::ProcessLine {line} {
     # matchers are _not_ executed.
 
     Host;Platform;Cwd;Shell;Tcl
-    #Start
-    #End
-    #StartFile
-    #EndFile
-    #Testsuite
-    #NoTestsuite
+    Start;End
+    #Testsuite;NoTestsuite
     #Support;Testing;Other
     #Summary
     #CaptureFailureSync            ; # xcollect 1 => 2
@@ -320,6 +309,12 @@ proc ::kettle::Test::LogE {text} {
     return
 }
 
+proc ::kettle::Test::LogC {text} {
+    if {[option get --log-mode] ne "compact"} return
+    Log log $text
+    return
+}
+
 proc ::kettle::Test::Log {name text} {
     variable stream
     {*}[dict get $stream $name] $text
@@ -360,51 +355,78 @@ proc ::kettle::Test::LogNull {args} {}
 
 # # ## ### ##### ######## ############# #####################
 
+proc ::kettle::Test::InitState {} {
+    upvar 1 state state
+    # The counters are all updated in ProcessLine.
+    # The status may change to 'fail' in ProcessLine.
+    set state {
+	ctotal   0 
+	cpassed  0 
+	cskipped 0 
+	cfailed  0 
+	status   ok
+
+	host     {}
+	platform {}
+	cwd      {}
+	shell    {}
+	file     {}
+	test     {}
+	start    {}
+	times    {}
+
+	suite ok
+    }
+    return
+}
+
 proc ::kettle::Test::Host {} {
-    upvar 1 line line
-    if {![regexp "^@@ Host (.*)$" $line -> xhost]} return
-    # += $xhost
+    upvar 1 line line state state
+    if {![regexp "^@@ Host (.*)$" $line -> host]} return
+    # += $host
+    LogC "Host     $host"
+    dict set state host $host
     # FUTURE: Write tests results to a storage back end.
     #sak::registry::local set [list Tests Results $xhost]
-    io trace Host
     return -code return
 }
 
 proc ::kettle::Test::Platform {} {
-    upvar 1 line line
-    if {![regexp "^@@ Platform (.*)$" $line -> xplatform]} return
-    io trace Platform
+    upvar 1 line line state state
+    if {![regexp "^@@ Platform (.*)$" $line -> platform]} return
+    LogC "Platform $platform"
+    dict set state platform $platform
     # += ($xplatform)
-    #variable xhost
     #sak::registry::local set $xhost Platform $xplatform
     return -code return
 }
 
 proc ::kettle::Test::Cwd {} {
-    upvar 1 line line
-    if {![regexp "^@@ CWD (.*)$" $line -> xcwd]} return
-    io trace Cwd
-    #variable xhost
+    upvar 1 line line state state
+    if {![regexp "^@@ TestCWD (.*)$" $line -> cwd]} return
+    LogC "Cwd      [path relativecwd $cwd]"
+    dict set state cwd $cwd
     #set xcwd [linsert $xhost end $xcwd]
     #sak::registry::local set $xcwd
     return -code return
 }
 
 proc ::kettle::Test::Shell {} {
-    upvar 1 line line
-    if {![regexp "^@@ Shell (.*)$" $line -> xshell]} return
-    io trace Shell
-    # += [file tail $xshell]
-    #variable xcwd
+    upvar 1 line line state state
+    if {![regexp "^@@ Shell (.*)$" $line -> shell]} return
+    LogC "Shell    $shell"
+    dict set state shell $shell
+    # += [file tail $shell]
     #set xshell [linsert $xcwd end $xshell]
     #sak::registry::local set $xshell
     return -code return
 }
 
 proc ::kettle::Test::Tcl {} {
-    upvar 1 line line
-    if {![regexp "^@@ Tcl (.*)$" $line -> xtcl]} return
-    io trace Tcl
+    upvar 1 line line state state
+    if {![regexp "^@@ Tcl (.*)$" $line -> tcl]} return
+    LogC "Tcl      $tcl"
+    dict set state tcl $tcl
     #variable xshell
     #variable maxvl
     #+= \[$xtcl\][blank [expr {$maxvl - [string length $xtcl]}]]
@@ -413,7 +435,9 @@ proc ::kettle::Test::Tcl {} {
 }
 
 proc ::kettle::Test::Match||Skip||Sourced {} {
-    upvar 1 line line
+    upvar 1 line line state state
+    if {[string match "@@ TestDir*"               $line]} {return -code return}
+    if {[string match "@@ LocalDir*"              $line]} {return -code return}
     if {[string match "@@ Skip*"                  $line]} {return -code return}
     if {[string match "@@ Match*"                 $line]} {return -code return}
     if {[string match "Sourced * Test Files."     $line]} {return -code return}
@@ -424,94 +448,64 @@ proc ::kettle::Test::Match||Skip||Sourced {} {
 }
 
 proc ::kettle::Test::Start {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![regexp "^@@ Start (.*)$" $line -> start]} return
-    variable xshell
+    LogC "Start    [clock format $start]"
+    dict set state start $start
+    dict set state testnum 0
     #sak::registry::local set $xshell Start $start
     return -code return
 }
 
 proc ::kettle::Test::End {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![regexp "^@@ End (.*)$" $line -> end]} return
-    variable xshell
-    #sak::registry::local set $xshell End $end
-    return -code return
-}
 
-proc ::kettle::Test::StartFile {} {
-    upvar 1 line line
-    if {![regexp "^@@ StartFile (.*)$" $line -> start]} return
-    variable xstartfile $start
-    variable xtestnum 0
-    #sak::registry::local set $xshell Start $start
-    return -code return
-}
+    set start [dict get $state start]
+    LogC "Started  [clock format $start]"
+    LogC "End      [clock format $end]"
 
-proc ::kettle::Test::EndFile {} {
-    upvar 1 line line
-    if {![regexp "^@@ EndFile (.*)$" $line -> end]} return
-    variable xfile
-    variable xstartfile
-    variable xtimes
-    variable xtestnum
+    set k ? ; # dict get $state file
+    #set k [lreplace $xfile 0 3]
+    #set k [lreplace $k 2 2 [file tail [lindex $k 2]]]
 
-    set k [lreplace $xfile 0 3]
-    set k [lreplace $k 2 2 [file tail [lindex $k 2]]]
-    set delta [expr {$end - $xstartfile}]
+    set delta [expr {$end - $start}]
+    set num   [dict get $state testnum]
 
-    if {$xtestnum == 0} {
+    if {$num == 0} {
 	set score $delta
     } else {
-	# average number of microseconds per test.
-	set score [expr {int(($delta/double($xtestnum))*1000000)}]
-	#set score [expr {$delta/double($xtestnum)}]
+	# Get average number of microseconds per test.
+	set score [expr {int(($delta/double($num))*1000000)}]
     }
 
-    lappend xtimes $k [list $xtestnum $delta $score]
+    dict lappend times $k [list $num $delta $score]
 
-    variable alog
-    if {$alog} {
-	variable logtim
-	puts $logtim [linsert [linsert $k end $xtestnum $delta $score] 0 TIME]
-    }
-
+    Log timings [list TIME $k $num $delta $score]
+    #variable xshell
     #sak::registry::local set $xshell End $end
-    return -code return
-}
-
-proc ::kettle::Test::Module {} {
-    upvar 1 line line ; variable xmodule
-    if {![regexp "^@@ Module (.*)$" $line -> xmodule]} return
-    variable xshell
-    variable xstatus ok
-    variable maxml
-    += ${xmodule}[blank [expr {$maxml - [string length $xmodule]}]]
-    set xmodule [linsert $xshell end $xmodule]
-    #sak::registry::local set $xmodule
     return -code return
 }
 
 proc ::kettle::Test::Testsuite {} {
-    upvar 1 line line ; variable xfile
-    if {![regexp "^@@ Testsuite (.*)$" $line -> xfile]} return
-    = <[file tail $xfile]>
-    variable xmodule
-    set xfile [linsert $xmodule end $xfile]
+    upvar 1 line line state state ; variable xfile
+    if {![regexp "^@@ Testsuite (.*)$" $line -> file]} return
+    #= <[file tail $xfile]>
+    dict set state file $file
     #sak::registry::local set $xfile Aborted 0
     return -code return
 }
 
 proc ::kettle::Test::NoTestsuite {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![string match "Error:  No test files remain after*" $line]} return
-    variable xstatus none
+    dict set state suite none
     = {No tests}
     return -code return
 }
 
 proc ::kettle::Test::Support {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![regexp "^- (.*)$" $line -> package]} return
     #= "S $package"
     foreach {pn pv} $package break
@@ -521,7 +515,7 @@ proc ::kettle::Test::Support {} {
 }
 
 proc ::kettle::Test::Testing {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![regexp "^\\* (.*)$" $line -> package]} return
     #= "T $package"
     foreach {pn pv} $package break
@@ -531,13 +525,13 @@ proc ::kettle::Test::Testing {} {
 }
 
 proc ::kettle::Test::Other {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![string match ">*" $line]} return
     return -code return
 }
 
 proc ::kettle::Test::Summary {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![regexp "^all\\.tcl:(.*)$" $line -> line]} return
     variable xmodule
     variable xstatus
@@ -589,7 +583,7 @@ proc ::kettle::Test::Summary {} {
 }
 
 proc ::kettle::Test::TestStart {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![string match {---- * start} $line]} return
     set testname [string range $line 5 end-6]
     = "---- $testname"
@@ -601,7 +595,7 @@ proc ::kettle::Test::TestStart {} {
 }
 
 proc ::kettle::Test::TestSkipped {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![string match {++++ * SKIPPED:*} $line]} return
     regexp {^[^ ]* (.*)SKIPPED:.*$} $line -> testname
     set              testname [string trim $testname]
@@ -617,7 +611,7 @@ proc ::kettle::Test::TestSkipped {} {
 }
 
 proc ::kettle::Test::TestPassed {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![string match {++++ * PASSED} $line]} return
     set             testname [string range $line 5 end-7]
     variable xtest
@@ -632,7 +626,7 @@ proc ::kettle::Test::TestPassed {} {
 }
 
 proc ::kettle::Test::TestFailed {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![string match {==== * FAILED} $line]} return
     set        testname [lindex [split [string range $line 5 end-7]] 0]
     = "FAIL $testname"
@@ -659,7 +653,7 @@ proc ::kettle::Test::TestFailed {} {
 proc ::kettle::Test::CaptureFailureSync {} {
     variable xcollect
     if {$xcollect != 1} return
-    upvar 1 line line
+    upvar 1 line line state state
     if {![string match {==== Contents*} $line]} return
     set xcollect 2
     return -code return
@@ -750,7 +744,7 @@ proc ::kettle::Test::CaptureFailureCollectError {} {
 }
 
 proc ::kettle::Test::Aborted {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![string match {Aborting the tests found *} $line]} return
     variable xfile
     variable xstatus
@@ -763,7 +757,7 @@ proc ::kettle::Test::Aborted {} {
 }
 
 proc ::kettle::Test::AbortCause {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {
 	![string match {Requiring *} $line] &&
 	![string match {Error in *} $line]
@@ -775,7 +769,7 @@ proc ::kettle::Test::AbortCause {} {
 }
 
 proc ::kettle::Test::CaptureStackStart {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![string match {@+*} $line]} return
     variable xstackcollect 1
     variable xstack        {}
@@ -787,7 +781,7 @@ proc ::kettle::Test::CaptureStackStart {} {
 proc ::kettle::Test::CaptureStack {} {
     variable xstackcollect
     if {!$xstackcollect} return
-    upvar 1 line line
+    upvar 1 line line state state
     variable xstack
     if {![string match {@-*} $line]} {
 	append xstack [string range $line 2 end] \n
@@ -809,7 +803,7 @@ proc ::kettle::Test::CaptureStack {} {
 }
 
 proc ::kettle::Test::SetupError {} {
-    upvar 1 line line
+    upvar 1 line line state state
     if {![string match {SETUP Error*} $line]} return
     variable xstatus error
     = {Setup error}
@@ -870,17 +864,18 @@ namespace eval ::kettle::Test {
     variable xbody     {}
     variable xactual   {}
     variable xexpected {}
-    variable xhost     {}
-    variable xplatform {}
-    variable xcwd      {}
-    variable xshell    {}
-    variable xmodule   {}
-    variable xfile     {}
+    #variable xhost     {}
+    #variable xplatform {}
+    #variable xcwd      {}
+    #variable xshell    {}
+    #--removed--variable xmodule   {}
+    #variable xfile     {}
     variable xtest     {}
-    variable xstartfile {}
-    variable xtimes     {}
+    #variable xstartfile {}
+    #variable xtimes     {}
 
-    variable xstatus ok
+    variable xstatus ok ;# none, aborted, error, fail
+    # --> state suite
 
     # Animation prefix of test processing, and flag controlling the
     # nature of logging (raw vs animation).
