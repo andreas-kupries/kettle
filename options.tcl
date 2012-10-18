@@ -23,10 +23,14 @@ namespace eval ::kettle::option {
     # definition, including state information about values.
     variable config {}
     variable def    {}
+
     # Dictionary containing the names of the options (as keys) which
     # will be used in keys into the work database maintained by the
     # 'status' command.
     variable work {}
+
+    # Type of change getting propagated. List to handle nested propagations.
+    variable change {}
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -76,6 +80,8 @@ proc ::kettle::option::set {o value} {
     variable config
     variable def
 
+    io trace {OPTION SET ($o) = "$value"}
+
     if {[dict exists $config $o]} {
 	::set has 1
 	::set old [dict get $config $o]
@@ -88,7 +94,7 @@ proc ::kettle::option::set {o value} {
     dict set def    $o user 1
 
     # Propagate choice, if possible
-    reportchange $o $old $value
+    reportchange user $o $old $value
     return
 }
 
@@ -97,17 +103,25 @@ proc ::kettle::option::set {o value} {
 proc ::kettle::option::set-default {o value} {
     variable config
     variable def
+    variable change
+
+    if {[lindex $change end] eq "user"} {
+	set $o $value
+	return
+    }
 
     if {![dict exists $def $o]} {
 	return -code error "Unable to set default of undefined option $o."
     }
+
+    io trace {OPTION SET-D ($o) =[dict get $def $o user]= "$value"}
 
     if {[dict get $def $o user]} return
 
     ::set old [dict get $config $o]
     dict set config $o $value
     # Propagate new default.
-    reportchange $o $old $value
+    reportchange default $o $old $value
     return
 }
 
@@ -135,14 +149,17 @@ proc ::kettle::option::get {o} {
     return [dict get $config $o]
 }
 
-proc ::kettle::option::reportchange {o old new} {
+proc ::kettle::option::reportchange {type o old new} {
     variable def
     if {![dict exists $def $o setter]} return
+    variable change
+    lappend change $type
     try {
 	{*}[dict get $def $o setter] $o $old $new
     } trap {KETTLE OPTION VETO} {e opts} {
 	return {*}${opts} "Bad option $o: $e"
     }
+    ::set change [lreplace $change end end]
     return
 }
 
@@ -181,6 +198,7 @@ proc ::kettle::option::load {file} {
 
 proc ::kettle::option::config {args} {
     variable config
+    variable def
     variable work
 
     # Apply the overrides. We use the regular set command to invoke
@@ -190,10 +208,12 @@ proc ::kettle::option::config {args} {
     # (Ad *) Well, actually just the part needed to key the work
     #        database.
 
-    ::set saved $config
+    ::set sconfig $config
+    ::set sdef    $def
     foreach {o v} $args { set $o $v }
     ::set serial [dict filter $config script {o v} { dict exists $work $o }]
-    ::set config $saved
+    ::set sdef   $def
+    ::set config $sconfig
 
     # Now we have the modified configuration a child process will
     # compute for itself given the --config and overrides as options
@@ -204,7 +224,7 @@ proc ::kettle::option::config {args} {
 
 proc ::kettle::option::DictSort {dict} {
     array set a $dict
-    set out [list]
+    ::set out [list]
     foreach key [lsort -dict [array names a]] {
 	lappend out $key $a($key)
     }
@@ -253,6 +273,7 @@ apply {{} {
 	*.bak *.bzr *.cdv *.pc _MTN _build _darcs _sgbak blib
 	autom4te.cache cover_db ~.dep ~.dot ~.nib ~.plst
     } {} {}
+    no-work-key --ignore-glob
 
     # - -- --- ----- -------- -------------
     # File action. Default on (== dry-run off).
