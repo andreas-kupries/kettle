@@ -8,8 +8,9 @@ namespace eval ::kettle { namespace export testsuite }
 ## Shell to run the tests with.
 ## Irrelevant to work database keying.
 
-kettle option define --with-shell {} { set! --shell [path norm $new] }
-kettle option setd   --with-shell [info nameofexecutable]
+kettle option define --with-shell  [info nameofexecutable] {} {
+    set! --with-shell [path norm $new]
+}
 
 # # ## ### ##### ######## ############# #####################
 ## API.

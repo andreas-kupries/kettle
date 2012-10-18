@@ -28,7 +28,7 @@ namespace eval ::kettle::option {
 # # ## ### ##### ######## ############# #####################
 ## API
 
-proc ::kettle::option::define {o arguments script args} {
+proc ::kettle::option::define {o default arguments script args} {
     variable config
     variable def
 
@@ -40,7 +40,7 @@ proc ::kettle::option::define {o arguments script args} {
 
     lappend arguments option old new
 
-    dict set config $o {}
+    dict set config $o $default
     dict set def    $o user  0
     dict set def    $o setter \
 	[lambda@ ::kettle::option $arguments $script {*}$args]
@@ -80,7 +80,7 @@ proc ::kettle::option::set {o value} {
 
 # set value, system choice, new default. ignored if a user has chosen
 # a value for the option.
-proc ::kettle::option::setd {o value} {
+proc ::kettle::option::set-default {o value} {
     variable config
     variable def
 
@@ -202,98 +202,90 @@ apply {{} {
     global tcl_platform
 
     # - -- --- ----- -------- -------------
-    define --exec-prefix {} {
+    define --exec-prefix {} {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
-	set! --exec-prefix $new
-	setd --bin-dir     $new/bin
-	setd --lib-dir     $new/lib
+	set!        --exec-prefix $new
+	set-default --bin-dir     $new/bin
+	set-default --lib-dir     $new/lib
     }
 
-    define --bin-dir {} { set! --bin-dir [path norm $new] }
-    define --lib-dir {} { set! --lib-dir [path norm $new] }
+    define --bin-dir {} {} { set! --bin-dir [path norm $new] }
+    define --lib-dir {} {} { set! --lib-dir [path norm $new] }
 
-    define --prefix {} {
+    define --prefix {} {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
-	set! --prefix      $new
-	setd --exec-prefix $new
-	setd --man-dir     $new/man
-	setd --html-dir    $new/html
-	setd --include-dir $new/include
+	set!        --prefix      $new
+	set-default --exec-prefix $new
+	set-default --man-dir     $new/man
+	set-default --html-dir    $new/html
+	set-default --include-dir $new/include
     }
 
-    define --man-dir     {} { set! --man-dir     [path norm $new] }
-    define --html-dir    {} { set! --html-dir    [path norm $new] }
-    define --include-dir {} { set! --include-dir [path norm $new] }
+    define --man-dir     {} {} { set! --man-dir     [path norm $new] }
+    define --html-dir    {} {} { set! --html-dir    [path norm $new] }
+    define --include-dir {} {} { set! --include-dir [path norm $new] }
 
-    setd --prefix [file dirname [file dirname [info library]]]
+    set-default --prefix  [file dirname [file dirname [info library]]]
     # -> man, html, exec-prefix -> bin, lib
+    set-default --bin-dir [file dirname [path norm [info nameofexecutable]]]
+    set-default --lib-dir [info library]
 
-    setd --bin-dir [file dirname [path norm [info nameofexecutable]]]
-    setd --lib-dir [info library]
-
-    define --ignore-glob {} {}
-    setd --ignore-glob {
+    define --ignore-glob {
 	*~ _FOSSIL_ .fslckout .fos .git .svn CVS .hg RCS SCCS
 	*.bak *.bzr *.cdv *.pc _MTN _build _darcs _sgbak blib
 	autom4te.cache cover_db ~.dep ~.dot ~.nib ~.plst
-    }
+    } {} {}
 
     # - -- --- ----- -------- -------------
-    # File action. Default on.
+    # File action. Default on (== dry-run off).
 
-    define --dry {} {
+    define --dry 0 {} {
 	if {[string is boolean -strict $new]} return
 	veto "Expected boolean, but got \"$new\""
     }
-    setd --dry 0
 
     # - -- --- ----- -------- -------------
     # Tracing of internals. Default off.
 
-    define --verbose {} {
+    define --verbose 0 {} {
 	if {[string is boolean -strict $new]} {
 	    if {$new} { io trace-on }
 	    return
 	}
 	veto "Expected boolean, but got \"$new\""
     }
-    setd --verbose 0
 
     # - -- --- ----- -------- -------------
     # Output colorization. Default platform dependent.
 
-    define --color {} {
+    define --color 0 {} {
 	if {[string is boolean -strict $new]} return
 	veto "Expected boolean, but got \"$new\""
     }
     if {$tcl_platform(platform) eq "windows"} {
-	setd --color 0
+	set-default --color 0
     } else {
 	if {[catch {
 	    package require Tclx
 	}] || ![fstat stdout tty]} {
-	    setd --color 0
+	    set-default --color 0
 	} else {
-	    setd --color 1
+	    set-default --color 1
 	}
     }
 
     # - -- --- ----- -------- -------------
     # State and configuration handling for sub-processes. Default none.
 
-    define --state {} {
-	if {$new eq {}} return
+    define --state {} {} {
 	status load $new
     }
-    setd --state {}
 
-    define --config {} {
-	if {$new eq {}} return
+    define --config {} {} {
 	load $new
     }
-    setd --config {}
 
     # - -- --- ----- -------- -------------
     # Default goals to use when invoked with none.

@@ -4,8 +4,7 @@
 
 namespace eval ::kettle { namespace export critcl3 }
 
-kettle option define --target {} {}
-kettle option setd   --target {}
+kettle option define --target {} {} {}
 
 # # ## ### ##### ######## ############# #####################
 ## Locate a suitable critcl package or application (3+),

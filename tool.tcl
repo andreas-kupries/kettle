@@ -18,18 +18,25 @@ namespace eval ::kettle::tool {
 
 proc ::kettle::tool::declare {names {validator {}}} {
     set primary [lindex $names 0]
-    option define --with-$primary {} {}
+    option define --with-$primary {} {} {}
 
     foreach name $names {
 	set cmd [auto_execok $name]
-	option setd --with-$primary $cmd
+	option set-default --with-$primary $cmd
 
 	# Do not try to validate applications which were not found.
+	# Continue search.
 	if {![llength $cmd]} continue
+
+	# Do not try to validate if we have no validation code.
+	# Assume ok, stop search.
 	if {$validator eq ""} break
+
+	# Validate. If ok, stop search.
 	if {[apply [list {cmd} $validator] $cmd]} break
 
-	option setd --with-$primary {}
+	# Validation failed, revert, continue search.
+	option set-default --with-$primary {}
     }
     return
 }
