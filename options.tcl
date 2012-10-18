@@ -23,14 +23,23 @@ namespace eval ::kettle::option {
     # definition, including state information about values.
     variable config {}
     variable def    {}
+
+    # Dictionary containing the names of the options (as keys) which
+    # will be used in keys into the work database maintained by the
+    # 'status' command.
+    variable work {}
+
+    # Type of change getting propagated. List to handle nested propagations.
+    variable change {}
 }
 
 # # ## ### ##### ######## ############# #####################
 ## API
 
-proc ::kettle::option::define {o arguments script args} {
+proc ::kettle::option::define {o default arguments script args} {
     variable config
     variable def
+    variable work
 
     io trace {DEF'option $o}
 
@@ -40,10 +49,19 @@ proc ::kettle::option::define {o arguments script args} {
 
     lappend arguments option old new
 
-    dict set config $o {}
-    dict set def    $o user  0
+    dict set config $o $default   ; # Initial value is default.
+    dict set work   $o .          ; # Use as key for work database
+    dict set def    $o user  0    ; # Flag, this option has been set
+				    # by the user. Plus code to
+				    # validate and propagate changes.
     dict set def    $o setter \
 	[lambda@ ::kettle::option $arguments $script {*}$args]
+    return
+}
+
+proc ::kettle::option::no-work-key {o} {
+    variable work
+    dict unset work $o
     return
 }
 
@@ -62,6 +80,8 @@ proc ::kettle::option::set {o value} {
     variable config
     variable def
 
+    io trace {OPTION SET ($o) = "$value"}
+
     if {[dict exists $config $o]} {
 	::set has 1
 	::set old [dict get $config $o]
@@ -74,26 +94,34 @@ proc ::kettle::option::set {o value} {
     dict set def    $o user 1
 
     # Propagate choice, if possible
-    reportchange $o $old $value
+    reportchange user $o $old $value
     return
 }
 
 # set value, system choice, new default. ignored if a user has chosen
 # a value for the option.
-proc ::kettle::option::setd {o value} {
+proc ::kettle::option::set-default {o value} {
     variable config
     variable def
+    variable change
+
+    if {[lindex $change end] eq "user"} {
+	set $o $value
+	return
+    }
 
     if {![dict exists $def $o]} {
 	return -code error "Unable to set default of undefined option $o."
     }
+
+    io trace {OPTION SET-D ($o) =[dict get $def $o user]= "$value"}
 
     if {[dict get $def $o user]} return
 
     ::set old [dict get $config $o]
     dict set config $o $value
     # Propagate new default.
-    reportchange $o $old $value
+    reportchange default $o $old $value
     return
 }
 
@@ -121,14 +149,17 @@ proc ::kettle::option::get {o} {
     return [dict get $config $o]
 }
 
-proc ::kettle::option::reportchange {o old new} {
+proc ::kettle::option::reportchange {type o old new} {
     variable def
     if {![dict exists $def $o setter]} return
+    variable change
+    lappend change $type
     try {
 	{*}[dict get $def $o setter] $o $old $new
     } trap {KETTLE OPTION VETO} {e opts} {
 	return {*}${opts} "Bad option $o: $e"
     }
+    ::set change [lreplace $change end end]
     return
 }
 
@@ -167,22 +198,22 @@ proc ::kettle::option::load {file} {
 
 proc ::kettle::option::config {args} {
     variable config
+    variable def
+    variable work
 
     # Apply the overrides. We use the regular set command to invoke
     # all relevant setter hooks. Afterward we retrieve the modified
-    # configuration and restore the old state.
+    # configuration (*) and restore the old state.
+    #
+    # (Ad *) Well, actually just the part needed to key the work
+    #        database.
 
-    ::set saved $config
+    ::set sconfig $config
+    ::set sdef    $def
     foreach {o v} $args { set $o $v }
-    ::set serial [dict filter [dict filter $config key --*] script {o v} {
-	expr {($o ne "--state") &&
-	      ($o ne "--config") &&
-	      ($o ne "--log") &&
-	      ![string match --with-* $o] &&
-	      ![string match --log-*  $o]
-	  }
-    }]
-    ::set config $saved
+    ::set serial [dict filter $config script {o v} { dict exists $work $o }]
+    ::set sdef   $def
+    ::set config $sconfig
 
     # Now we have the modified configuration a child process will
     # compute for itself given the --config and overrides as options
@@ -193,7 +224,7 @@ proc ::kettle::option::config {args} {
 
 proc ::kettle::option::DictSort {dict} {
     array set a $dict
-    set out [list]
+    ::set out [list]
     foreach key [lsort -dict [array names a]] {
 	lappend out $key $a($key)
     }
@@ -207,98 +238,97 @@ apply {{} {
     global tcl_platform
 
     # - -- --- ----- -------- -------------
-    define --exec-prefix {} {
+    define --exec-prefix {} {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
-	set! --exec-prefix $new
-	setd --bin-dir     $new/bin
-	setd --lib-dir     $new/lib
+	set!        --exec-prefix $new
+	set-default --bin-dir     $new/bin
+	set-default --lib-dir     $new/lib
     }
 
-    define --bin-dir {} { set! --bin-dir [path norm $new] }
-    define --lib-dir {} { set! --lib-dir [path norm $new] }
+    define --bin-dir {} {} { set! --bin-dir [path norm $new] }
+    define --lib-dir {} {} { set! --lib-dir [path norm $new] }
 
-    define --prefix {} {
+    define --prefix {} {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
-	set! --prefix      $new
-	setd --exec-prefix $new
-	setd --man-dir     $new/man
-	setd --html-dir    $new/html
-	setd --include-dir $new/include
+	set!        --prefix      $new
+	set-default --exec-prefix $new
+	set-default --man-dir     $new/man
+	set-default --html-dir    $new/html
+	set-default --include-dir $new/include
     }
 
-    define --man-dir     {} { set! --man-dir     [path norm $new] }
-    define --html-dir    {} { set! --html-dir    [path norm $new] }
-    define --include-dir {} { set! --include-dir [path norm $new] }
+    define --man-dir     {} {} { set! --man-dir     [path norm $new] }
+    define --html-dir    {} {} { set! --html-dir    [path norm $new] }
+    define --include-dir {} {} { set! --include-dir [path norm $new] }
 
-    setd --prefix [file dirname [file dirname [info library]]]
+    set-default --prefix  [file dirname [file dirname [info library]]]
     # -> man, html, exec-prefix -> bin, lib
+    set-default --bin-dir [file dirname [path norm [info nameofexecutable]]]
+    set-default --lib-dir [info library]
 
-    setd --bin-dir [file dirname [path norm [info nameofexecutable]]]
-    setd --lib-dir [info library]
-
-    define --ignore-glob {} {}
-    setd --ignore-glob {
+    define --ignore-glob {
 	*~ _FOSSIL_ .fslckout .fos .git .svn CVS .hg RCS SCCS
 	*.bak *.bzr *.cdv *.pc _MTN _build _darcs _sgbak blib
 	autom4te.cache cover_db ~.dep ~.dot ~.nib ~.plst
-    }
+    } {} {}
+    no-work-key --ignore-glob
 
     # - -- --- ----- -------- -------------
-    # File action. Default on.
+    # File action. Default on (== dry-run off).
 
-    define --dry {} {
+    define --dry 0 {} {
 	if {[string is boolean -strict $new]} return
 	veto "Expected boolean, but got \"$new\""
     }
-    setd --dry 0
+    no-work-key --dry
 
     # - -- --- ----- -------- -------------
     # Tracing of internals. Default off.
 
-    define --verbose {} {
+    define --verbose 0 {} {
 	if {[string is boolean -strict $new]} {
 	    if {$new} { io trace-on }
 	    return
 	}
 	veto "Expected boolean, but got \"$new\""
     }
-    setd --verbose 0
+    no-work-key --verbose
 
     # - -- --- ----- -------- -------------
     # Output colorization. Default platform dependent.
 
-    define --color {} {
+    define --color 0 {} {
 	if {[string is boolean -strict $new]} return
 	veto "Expected boolean, but got \"$new\""
     }
+    no-work-key --color
     if {$tcl_platform(platform) eq "windows"} {
-	setd --color 0
+	set-default --color 0
     } else {
 	if {[catch {
 	    package require Tclx
 	}] || ![fstat stdout tty]} {
-	    setd --color 0
+	    set-default --color 0
 	} else {
-	    setd --color 1
+	    set-default --color 1
 	}
     }
 
     # - -- --- ----- -------- -------------
     # State and configuration handling for sub-processes. Default none.
 
-    define --state {} {
-	if {$new eq {}} return
+    define --state {} {} {
 	status load $new
     }
-    setd --state {}
 
-    define --config {} {
-	if {$new eq {}} return
+    define --config {} {} {
 	load $new
     }
-    setd --config {}
+
+    no-work-key --state
+    no-work-key --config
 
     # - -- --- ----- -------- -------------
     # Default goals to use when invoked with none.
