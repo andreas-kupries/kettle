@@ -23,6 +23,10 @@ namespace eval ::kettle::option {
     # definition, including state information about values.
     variable config {}
     variable def    {}
+    # Dictionary containing the names of the options (as keys) which
+    # will be used in keys into the work database maintained by the
+    # 'status' command.
+    variable work {}
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -31,6 +35,7 @@ namespace eval ::kettle::option {
 proc ::kettle::option::define {o default arguments script args} {
     variable config
     variable def
+    variable work
 
     io trace {DEF'option $o}
 
@@ -40,10 +45,19 @@ proc ::kettle::option::define {o default arguments script args} {
 
     lappend arguments option old new
 
-    dict set config $o $default
-    dict set def    $o user  0
+    dict set config $o $default   ; # Initial value is default.
+    dict set work   $o .          ; # Use as key for work database
+    dict set def    $o user  0    ; # Flag, this option has been set
+				    # by the user. Plus code to
+				    # validate and propagate changes.
     dict set def    $o setter \
 	[lambda@ ::kettle::option $arguments $script {*}$args]
+    return
+}
+
+proc ::kettle::option::no-work-key {o} {
+    variable work
+    dict unset work $o
     return
 }
 
@@ -167,17 +181,19 @@ proc ::kettle::option::load {file} {
 
 proc ::kettle::option::config {args} {
     variable config
+    variable work
 
     # Apply the overrides. We use the regular set command to invoke
     # all relevant setter hooks. Afterward we retrieve the modified
-    # configuration and restore the old state.
+    # configuration (*) and restore the old state.
+    #
+    # (Ad *) Well, actually just the part needed to key the work
+    #        database.
 
     ::set saved $config
     foreach {o v} $args { set $o $v }
-    ::set   serial [dict filter [dict filter $config key --*] script {o v} {
-	expr {($o ne "--state") && ($o ne "--config") && ![string match --with-* $o]}
-    }]
-    ::set   config $saved
+    ::set serial [dict filter $config script {o v} { dict exists $work $o }]
+    ::set config $saved
 
     # Now we have the modified configuration a child process will
     # compute for itself given the --config and overrides as options
@@ -245,6 +261,7 @@ apply {{} {
 	if {[string is boolean -strict $new]} return
 	veto "Expected boolean, but got \"$new\""
     }
+    no-work-key --dry
 
     # - -- --- ----- -------- -------------
     # Tracing of internals. Default off.
@@ -256,6 +273,7 @@ apply {{} {
 	}
 	veto "Expected boolean, but got \"$new\""
     }
+    no-work-key --verbose
 
     # - -- --- ----- -------- -------------
     # Output colorization. Default platform dependent.
@@ -264,6 +282,7 @@ apply {{} {
 	if {[string is boolean -strict $new]} return
 	veto "Expected boolean, but got \"$new\""
     }
+    no-work-key --color
     if {$tcl_platform(platform) eq "windows"} {
 	set-default --color 0
     } else {
@@ -286,6 +305,9 @@ apply {{} {
     define --config {} {} {
 	load $new
     }
+
+    no-work-key --state
+    no-work-key --config
 
     # - -- --- ----- -------- -------------
     # Default goals to use when invoked with none.

@@ -11,6 +11,7 @@ namespace eval ::kettle { namespace export testsuite }
 kettle option define --with-shell  [info nameofexecutable] {} {
     set! --with-shell [path norm $new]
 }
+kettle option no-work-key --with-shell
 
 # # ## ### ##### ######## ############# #####################
 ## API.
