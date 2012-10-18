@@ -174,10 +174,15 @@ proc ::kettle::option::config {args} {
 
     ::set saved $config
     foreach {o v} $args { set $o $v }
-    ::set   serial [dict filter [dict filter $config key --*] script {o v} {
-	expr {($o ne "--state") && ($o ne "--config") && ![string match --with-* $o]}
+    ::set serial [dict filter [dict filter $config key --*] script {o v} {
+	expr {($o ne "--state") &&
+	      ($o ne "--config") &&
+	      ($o ne "--log") &&
+	      ![string match --with-* $o] &&
+	      ![string match --log-*  $o]
+	  }
     }]
-    ::set   config $saved
+    ::set config $saved
 
     # Now we have the modified configuration a child process will
     # compute for itself given the --config and overrides as options
