@@ -8,26 +8,28 @@ namespace eval ::kettle { namespace export testsuite }
 ## Shell to run the tests with.
 ## Irrelevant to work database keying.
 
-kettle option define --with-shell {} { set! --with-shell [path norm $new] }
-kettle option setd   --with-shell [info nameofexecutable]
+kettle option define --with-shell  [info nameofexecutable] {} {
+    set! --with-shell [path norm $new]
+}
+kettle option no-work-key --with-shell
 
 # # ## ### ##### ######## ############# #####################
 ## Mode and file/channel for test logging.
 ## Irrelevant to work database keying.
 
-kettle option define --log-mode {} {
+kettle option define --log-mode compact {} {
     if {$new ni {compact raw}} {
 	veto "Expected one of 'compact', or 'raw', got \"$new\""
     }
     return
 }
-kettle option define --log {} {
-    if {$new eq {}} return
+kettle option define --log {} {} {
     set! --log [path norm $new]
     set! --log-mode files
 }
-kettle option setd --log-mode compact
-kettle option setd --log {}
+
+kettle option no-work-key --log-mode
+kettle option no-work-key --log
 
 # # ## ### ##### ######## ############# #####################
 ## API.

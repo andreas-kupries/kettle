@@ -4,8 +4,8 @@
 
 namespace eval ::kettle { namespace export doc doc-destination }
 
-kettle option define --with-doc-destination {} {}
-kettle option setd   --with-doc-destination embedded
+kettle option define      --with-doc-destination embedded {} {}
+kettle option no-work-key --with-doc-destination
 
 kettle tool declare {
     dtplite dtplite.kit dtplite.tcl dtplite.exe
