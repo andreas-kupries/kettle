@@ -8,8 +8,26 @@ namespace eval ::kettle { namespace export testsuite }
 ## Shell to run the tests with.
 ## Irrelevant to work database keying.
 
-kettle option define --with-shell {} { set! --shell [path norm $new] }
+kettle option define --with-shell {} { set! --with-shell [path norm $new] }
 kettle option setd   --with-shell [info nameofexecutable]
+
+# # ## ### ##### ######## ############# #####################
+## Mode and file/channel for test logging.
+## Irrelevant to work database keying.
+
+kettle option define --log-mode {} {
+    if {$new ni {compact raw}} {
+	veto "Expected one of 'compact', or 'raw', got \"$new\""
+    }
+    return
+}
+kettle option define --log {} {
+    if {$new eq {}} return
+    set! --log [path norm $new]
+    set! --log-mode files
+}
+kettle option setd --log-mode compact
+kettle option setd --log {}
 
 # # ## ### ##### ######## ############# #####################
 ## API.
@@ -61,6 +79,14 @@ namespace eval ::kettle::Test {
     namespace import ::kettle::io
     namespace import ::kettle::status
     namespace import ::kettle::option
+
+    # Dictionary of log streams. Maps names to write command.
+    variable stream {}
+    # Names of our streams.
+    variable streams {
+	log summary failures skipped none errdetails faildetails
+	timings
+    }
 }
 
 proc ::kettle::Test::Run {srcdir testfiles localprefix} {
@@ -75,6 +101,8 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 
     # Note: See tcllib's sak.tcl for a more mature and featureful
     # system of running a testsuite and postprocessing results.
+
+    LogBegin
 
     package require struct::matrix
 
@@ -112,6 +140,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     io puts [M format 2string]
     io puts ""
 
+    LogDone
     # Report ok/fail
     status $status
     return
@@ -180,6 +209,46 @@ proc ::kettle::Test::ProcessLine {line} {
     incr cfailed  $failed
     return
 }
+
+# # ## ### ##### ######## ############# #####################
+
+proc ::kettle::Test::Log {name text} {
+    variable stream
+    {*}[dict get $stream $name] $text
+    return
+}
+
+proc ::kettle::Test::LogBegin {} {
+    variable stream
+    variable streams
+
+    if {[option get --log-mode] eq "files"} {
+	set stem [option get --log]
+	foreach name $streams {
+	    dict set stream $name [list ::puts [open $stem.$name] w]
+	}
+    } else {
+	dict set stream log [list ::puts stdout]
+	foreach name $streams {
+	    if {$name eq "log"} continue
+	    dict set stream $name ::kettle::Test::LogNull
+	}
+    }
+}
+
+proc ::kettle::Test::LogDone {} {
+    variable stream
+    dict for {name cmd} $stream {
+	if {[llength $cmd] < 2} continue
+	set ch [lindex $cmd 1]
+	if {$ch eq "stdout"} continue
+	close $ch
+    }
+    return
+}
+
+# Writer for disabled log streams.
+proc ::kettle::Test::LogNull {args} {}
 
 # # ## ### ##### ######## ############# #####################
 return
