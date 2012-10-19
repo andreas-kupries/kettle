@@ -25,7 +25,8 @@ kettle option define --log-mode compact {} {
 }
 kettle option define --log {} {} {
     set! --log [path norm $new]
-    set! --log-mode files
+    set  --log raw
+    # When logging to files the main stream is a full log.
 }
 
 kettle option no-work-key --log-mode
@@ -315,6 +316,38 @@ proc ::kettle::Test::LogC {text} {
     return
 }
 
+# was =|
+proc ::kettle::Test::Aclose {text} {
+    if {[option get --log-mode] ne "compact"} return
+    io animation last $text
+
+    Log summary $text
+    # Maybe use a mapping table here instead, status to stream.
+    switch -exact -- [dict get $state suite] {
+	error   -
+	fail    { Log failures $string }
+	none    { Log none     $string }
+	aborted { Log skipped  $string }
+    }
+    return
+}
+
+# was +=
+proc ::kettle::Test::Aextend {text} {
+    if {[option get --log-mode] ne "compact"} return
+    io animation index " $text"
+    io animation write ""
+    return
+    
+}
+
+# was =
+proc ::kettle::Test::Awrite {text} {
+    if {[option get --log-mode] ne "compact"} return
+    io animation write $text
+    return
+}
+
 proc ::kettle::Test::Log {name text} {
     variable stream
     {*}[dict get $stream $name] $text
@@ -325,13 +358,16 @@ proc ::kettle::Test::LogBegin {} {
     variable stream
     variable streams
 
-    if {[option get --log-mode] eq "files"} {
+    if {[option get --log] ne {}} {
+	# Log file (stem) specified, generate all log streams.
 	set stem [option get --log]
 	foreach name $streams {
 	    dict set stream $name [list ::puts [open $stem.$name w]]
 	}
     } else {
-	dict set stream log [list ::puts stdout]
+	# Without stem generate only the main log stream and go
+	# through the virtualized io so that the gui may see it.
+	dict set stream log ::kettle::io::puts
 	foreach name $streams {
 	    if {$name eq "log"} continue
 	    dict set stream $name ::kettle::Test::LogNull
@@ -383,7 +419,7 @@ proc ::kettle::Test::InitState {} {
 proc ::kettle::Test::Host {} {
     upvar 1 line line state state
     if {![regexp "^@@ Host (.*)$" $line -> host]} return
-    # += $host
+    # Aextend $host
     LogC "Host     $host"
     dict set state host $host
     # FUTURE: Write tests results to a storage back end.
@@ -396,7 +432,7 @@ proc ::kettle::Test::Platform {} {
     if {![regexp "^@@ Platform (.*)$" $line -> platform]} return
     LogC "Platform $platform"
     dict set state platform $platform
-    # += ($xplatform)
+    # Aextend ($platform)
     #sak::registry::local set $xhost Platform $xplatform
     return -code return
 }
@@ -416,7 +452,7 @@ proc ::kettle::Test::Shell {} {
     if {![regexp "^@@ Shell (.*)$" $line -> shell]} return
     LogC "Shell    $shell"
     dict set state shell $shell
-    # += [file tail $shell]
+    # Aextend [file tail $shell]
     #set xshell [linsert $xcwd end $xshell]
     #sak::registry::local set $xshell
     return -code return
@@ -429,7 +465,7 @@ proc ::kettle::Test::Tcl {} {
     dict set state tcl $tcl
     #variable xshell
     #variable maxvl
-    #+= \[$xtcl\][blank [expr {$maxvl - [string length $xtcl]}]]
+    #Aextend \[$xtcl\][blank [expr {$maxvl - [string length $xtcl]}]]
     #sak::registry::local set $xshell Tcl $xtcl
     return -code return
 }
@@ -462,16 +498,14 @@ proc ::kettle::Test::End {} {
     if {![regexp "^@@ End (.*)$" $line -> end]} return
 
     set start [dict get $state start]
+    set shell [dict get $state shell]
+    set file  [dict get $state file]
+    set num   [dict get $state testnum]
+
     LogC "Started  [clock format $start]"
     LogC "End      [clock format $end]"
 
-    set k ? ; # dict get $state file
-    #set k [lreplace $xfile 0 3]
-    #set k [lreplace $k 2 2 [file tail [lindex $k 2]]]
-
     set delta [expr {$end - $start}]
-    set num   [dict get $state testnum]
-
     if {$num == 0} {
 	set score $delta
     } else {
@@ -479,9 +513,10 @@ proc ::kettle::Test::End {} {
 	set score [expr {int(($delta/double($num))*1000000)}]
     }
 
-    dict lappend times $k [list $num $delta $score]
+    set key [list $shell $file]
+    dict lappend times $key [list $num $delta $score]
 
-    Log timings [list TIME $k $num $delta $score]
+    Log timings [list TIME $key $num $delta $score]
     #variable xshell
     #sak::registry::local set $xshell End $end
     return -code return
@@ -561,7 +596,7 @@ proc ::kettle::Test::Summary {} {
 
     if {$xstatus == "ok"} {
 	# Quick return for ok suite.
-	=| "~~ $st T $t P $p S $s F $f"
+	Aclose "~~ $st T $t P $p S $s F $f"
 	return -code return
     }
 
@@ -571,13 +606,13 @@ proc ::kettle::Test::Summary {} {
 
     = "   $st T $t P $p S $s F $f"
     switch -exact -- $xstatus {
-	none    {=| "~~ [yel]$st T $t[rst] P $p S $s F $f"}
-	aborted {=| "~~ [whi]$st[rst] T $t P $p S $s F $f"}
+	none    {Aclose "~~ [yel]$st T $t[rst] P $p S $s F $f"}
+	aborted {Aclose "~~ [whi]$st[rst] T $t P $p S $s F $f"}
 	error   {
-	    =| "~~ [mag]$st[rst] T $t P $p S $s F $f"
+	    Aclose "~~ [mag]$st[rst] T $t P $p S $s F $f"
 	    incr _err
 	}
-	fail    {=| "~~ [red]$st[rst] T $t P $p S $s [red]F $f[rst]"}
+	fail    {Aclose "~~ [red]$st[rst] T $t P $p S $s [red]F $f[rst]"}
     }
     return -code return
 }
@@ -811,48 +846,6 @@ proc ::kettle::Test::SetupError {} {
 }
 
 # ###
-
-proc ::kettle::Test::+= {string} {
-    variable araw
-    if {$araw} return
-    variable aprefix
-    append   aprefix " " $string
-    sak::animate::next $aprefix
-    return
-}
-
-proc ::kettle::Test::= {string} {
-    variable araw
-    if {$araw} return
-    variable aprefix
-    sak::animate::next "$aprefix $string"
-    return
-}
-
-proc ::kettle::Test::=| {string} {
-    variable araw
-    if {$araw} return
-    variable aprefix
-    sak::animate::last "$aprefix $string"
-    variable alog
-    if {$alog} {
-	variable logsum
-	variable logfai
-	variable logski
-	variable lognon
-	variable xstatus
-	puts $logsum "$aprefix $string" ; flush $logsum
-	switch -exact -- $xstatus {
-	    error   -
-	    fail    {puts $logfai "$aprefix $string" ; flush $logfai}
-	    none    {puts $lognon "$aprefix $string" ; flush $lognon}
-	    aborted {puts $logski "$aprefix $string" ; flush $logski}
-	}
-    }
-    set aprefix ""
-    return
-}
-
 # ###
 
 namespace eval ::kettle::Test {
