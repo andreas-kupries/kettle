@@ -209,13 +209,25 @@ proc ::kettle::io::animation::write {text} {
     variable maxn
 
     set text $prefix$text
-    puts -nonewline \r[format %${maxn}s $text]
+    set n    [string length $text]
+    set len  [L $text]
+
+    if {$n > $maxn} { set maxn $n }
+    while {$len < $maxn} {
+	append text { } ; incr len
+    }
+
+    puts -nonewline \r$text
     for-terminal { flush stdout }
 
-    set len [string length [string map [list \t {        }] $text]]
-    if {$len < $maxn} return
-    set maxn $len
     return
+}
+
+# Visible length of the string, without tabs expansion, or escapes.
+proc ::kettle::io::animation::L {text} {
+    regsub -all "\t"               $text {} text
+    regsub -all "\033\\\[\[^m\]*m" $text {} text
+    return [string length $text]
 }
 
 proc ::kettle::io::animation::indent {text} {
