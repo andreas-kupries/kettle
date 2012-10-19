@@ -242,11 +242,21 @@ proc ::kettle::io::Color {t {script {}}} {
     }
 }
 
+proc ::kettle::io::Markup {t text} {
+    return [E$t]$text[Ereset]
+}
+
 proc ::kettle::io::Escape {chars} {
     # Colorization is system and user choice.
     if {![kettle option get --color]} return
     puts -nonewline \033\[${chars}m
     return
+}
+
+proc ::kettle::io::E {chars} {
+    # Colorization is system and user choice.
+    if {![kettle option get --color]} return
+    return \033\[${chars}m
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -295,8 +305,10 @@ apply {{} {
 	reset    0 {}
     } {
 	interp alias {} ::kettle::io::H$tag {} ::kettle::io::Escape $chars
+	interp alias {} ::kettle::io::E$tag {} ::kettle::io::E      $chars
 	if {$tag eq "reset"} continue
-	interp alias {} ::kettle::io::$tag {} ::kettle::io::Color $tag
+	interp alias {} ::kettle::io::$tag  {} ::kettle::io::Color  $tag
+	interp alias {} ::kettle::io::m$tag {} ::kettle::io::Markup $tag
     }
 }}
 
