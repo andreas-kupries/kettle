@@ -25,8 +25,6 @@ kettle option define --log-mode compact {} {
 }
 kettle option define --log {} {} {
     set! --log [path norm $new]
-    set  --log raw
-    # When logging to files the main stream is a full log.
 }
 
 kettle option no-work-key --log-mode
@@ -90,6 +88,16 @@ namespace eval ::kettle::Test {
 	log summary failures skipped none errdetails faildetails
 	timings
     }
+
+    # Map from testsuite states to readable labels. These include
+    # trailing whitespace to align the following text vertically.
+    variable statelabel {
+	ok      {     }
+	none    {None }
+	aborted {Skip }
+	error   {ERR  }
+	fail    {FAILS}
+    }
 }
 
 proc ::kettle::Test::Run {srcdir testfiles localprefix} {
@@ -121,6 +129,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 	foreach test $testfiles {
 	    # change next to log/log
 	    io note { io puts ${test}... }
+	    io animation begin
 
 	    path pipe line {
 		io trace {TEST: $line}
@@ -133,35 +142,25 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 	}
     }
 
+    # Summary results...
+    set fn [dict get $state cfailed]
+    set en [dict get $state cerrors]
 
+    set t [format %6d [dict get $state ctotal]]
+    set p [format %6d [dict get $state cpassed]]
+    set s [format %6d [dict get $state cskipped]]
+    set f [format %6d $fn]
+    set e [format %6d $en]
 
+    if {$fn} { set f [io mred $f] }
+    if {$en} { set e [io mmagenta $e] }
 
-    #M add row {File Total Passed Skipped Failed}
-    #M add row [list {} $ctotal $cpassed $cskipped $cfailed]
-
-    #io puts "\n"
-    #io puts [M format 2string]
-    #io puts ""
-
-    LogDone
+    Log log "Passed  $p of $t"
+    Log log "Skipped $s of $t"
+    Log log "Failed  $f of $t"
+    Log log "#Errors $e"
 
     if {0} {
-
-
-    puts $logext "Passed  [format %6d $pass] of [format %6d $total]"
-    puts $logext "Skipped [format %6d $skip] of [format %6d $total]"
-
-    if {$fail} {
-	puts $logext "Failed  [red][format %6d $fail][rst] of [format %6d $total]"
-    } else {
-	puts $logext "Failed  [format %6d $fail] of [format %6d $total]"
-    }
-    if {$err} {
-	puts $logext "#Errors [mag][format %6d $err][rst]"
-    } else {
-	puts $logext "#Errors [format %6d $err]"
-    }
-
     if {$alog} {
 	variable xtimes
 	array set times $xtimes
@@ -169,22 +168,20 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 	struct::matrix M
 	M add columns 6
 	foreach k [lsort -dict [array names times]] {
-	    #foreach {shell module testfile} $k break
-	    foreach {testnum delta score} $times($k) break
-	    M add row [linsert $k end $testnum $delta $score]
+	    M add row [list {*}$k {*}$times($k)]
 	}
 	M sort rows -decreasing 5
 
-	M insert row 0 {Shell Module Testsuite Tests Seconds uSec/Test}
-	M insert row 1 {===== ====== ========= ===== ======= =========}
-	M add    row   {===== ====== ========= ===== ======= =========}
+	M insert row 0 {Shell Testsuite Tests Seconds uSec/Test}
+	M insert row 1 {===== ========= ===== ======= =========}
+	M add    row   {===== ========= ===== ======= =========}
 
-	puts $logsum \nTimings...
-	puts $logsum [M format 2string]
+	Log summary \nTimings...
+	Log summary [M format 2string]
+    }
     }
 
-
-    }
+    LogDone
 
     # Report ok/fail
     status [dict get $state status]
@@ -209,21 +206,20 @@ proc ::kettle::Test::ProcessLine {line} {
 
     Host;Platform;Cwd;Shell;Tcl
     Start;End
-    #Testsuite;NoTestsuite
-    #Support;Testing;Other
-    #Summary
-    #CaptureFailureSync            ; # xcollect 1 => 2
-    #CaptureFailureCollectBody     ; # xcollect 2 => 3 => 5
-    #CaptureFailureCollectActual   ; # xcollect 3 => 4
-    #CaptureFailureCollectExpected ; # xcollect 4 => 0
-    #CaptureFailureCollectError    ; # xcollect 5 => 0
+    Testsuite;NoTestsuite
+    Support;Testing
+    Summary
+
+    CaptureFailureSync            ; # cap state: sync => body
+    CaptureFailureCollectBody     ; # cap state: body => actual|error
+    CaptureFailureCollectActual   ; # cap state: actual   => expected
+    CaptureFailureCollectExpected ; # cap state: expected => done
+    CaptureFailureCollectError    ; # cap state: error    => expected
+
     #CaptureStackStart
     #CaptureStack
 
-    #TestStart
-    #TestSkipped
-    #TestPassed
-    #TestFailed                    ; # xcollect => 1
+    TestStart;TestSkipped;TestPassed;TestFailed ; # cap state => sync
 
     #SetupError
     #Aborted
@@ -312,39 +308,7 @@ proc ::kettle::Test::LogE {text} {
 
 proc ::kettle::Test::LogC {text} {
     if {[option get --log-mode] ne "compact"} return
-    Log log $text
-    return
-}
-
-# was =|
-proc ::kettle::Test::Aclose {text} {
-    if {[option get --log-mode] ne "compact"} return
-    io animation last $text
-
-    Log summary $text
-    # Maybe use a mapping table here instead, status to stream.
-    switch -exact -- [dict get $state suite] {
-	error   -
-	fail    { Log failures $string }
-	none    { Log none     $string }
-	aborted { Log skipped  $string }
-    }
-    return
-}
-
-# was +=
-proc ::kettle::Test::Aextend {text} {
-    if {[option get --log-mode] ne "compact"} return
-    io animation index " $text"
-    io animation write ""
-    return
-    
-}
-
-# was =
-proc ::kettle::Test::Awrite {text} {
-    if {[option get --log-mode] ne "compact"} return
-    io animation write $text
+    io puts $text
     return
 }
 
@@ -391,15 +355,49 @@ proc ::kettle::Test::LogNull {args} {}
 
 # # ## ### ##### ######## ############# #####################
 
+proc ::kettle::Test::Aclose {text} {
+    upvar 1 state state
+    if {[option get --log-mode] ne "compact"} return
+    io animation last $text
+
+    Log summary $text
+    # Maybe use a mapping table here instead, status to stream.
+    switch -exact -- [dict get $state suite] {
+	error   -
+	fail    { Log failures $text }
+	none    { Log none     $text }
+	aborted { Log skipped  $text }
+    }
+    return
+}
+
+proc ::kettle::Test::Aextend {text} {
+    if {[option get --log-mode] ne "compact"} return
+    io animation indent " $text"
+    io animation write  ""
+    return
+    
+}
+
+# was =
+proc ::kettle::Test::Awrite {text} {
+    if {[option get --log-mode] ne "compact"} return
+    io animation write $text
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+
 proc ::kettle::Test::InitState {} {
     upvar 1 state state
     # The counters are all updated in ProcessLine.
     # The status may change to 'fail' in ProcessLine.
     set state {
-	ctotal   0 
-	cpassed  0 
-	cskipped 0 
-	cfailed  0 
+	ctotal   0
+	cpassed  0
+	cskipped 0
+	cfailed  0
+	cerrors  0
 	status   ok
 
 	host     {}
@@ -411,7 +409,10 @@ proc ::kettle::Test::InitState {} {
 	start    {}
 	times    {}
 
+	err 0
 	suite ok
+
+	cap {state none}
     }
     return
 }
@@ -419,54 +420,47 @@ proc ::kettle::Test::InitState {} {
 proc ::kettle::Test::Host {} {
     upvar 1 line line state state
     if {![regexp "^@@ Host (.*)$" $line -> host]} return
-    # Aextend $host
-    LogC "Host     $host"
+    #Aextend $host
+    #LogC "Host     $host"
     dict set state host $host
-    # FUTURE: Write tests results to a storage back end.
-    #sak::registry::local set [list Tests Results $xhost]
+    # FUTURE: Write tests results to a storage back end for analysis.
     return -code return
 }
 
 proc ::kettle::Test::Platform {} {
     upvar 1 line line state state
     if {![regexp "^@@ Platform (.*)$" $line -> platform]} return
-    LogC "Platform $platform"
+    #LogC "Platform $platform"
     dict set state platform $platform
-    # Aextend ($platform)
-    #sak::registry::local set $xhost Platform $xplatform
+    #Aextend ($platform)
     return -code return
 }
 
 proc ::kettle::Test::Cwd {} {
     upvar 1 line line state state
     if {![regexp "^@@ TestCWD (.*)$" $line -> cwd]} return
-    LogC "Cwd      [path relativecwd $cwd]"
+    #LogC "Cwd      [path relativecwd $cwd]"
     dict set state cwd $cwd
-    #set xcwd [linsert $xhost end $xcwd]
-    #sak::registry::local set $xcwd
     return -code return
 }
 
 proc ::kettle::Test::Shell {} {
     upvar 1 line line state state
     if {![regexp "^@@ Shell (.*)$" $line -> shell]} return
-    LogC "Shell    $shell"
+    #LogC "Shell    $shell"
     dict set state shell $shell
-    # Aextend [file tail $shell]
-    #set xshell [linsert $xcwd end $xshell]
-    #sak::registry::local set $xshell
+    #Aextend [file tail $shell]
     return -code return
 }
 
 proc ::kettle::Test::Tcl {} {
     upvar 1 line line state state
     if {![regexp "^@@ Tcl (.*)$" $line -> tcl]} return
-    LogC "Tcl      $tcl"
+    #LogC "Tcl      $tcl"
     dict set state tcl $tcl
     #variable xshell
     #variable maxvl
     #Aextend \[$xtcl\][blank [expr {$maxvl - [string length $xtcl]}]]
-    #sak::registry::local set $xshell Tcl $xtcl
     return -code return
 }
 
@@ -486,10 +480,9 @@ proc ::kettle::Test::Match||Skip||Sourced {} {
 proc ::kettle::Test::Start {} {
     upvar 1 line line state state
     if {![regexp "^@@ Start (.*)$" $line -> start]} return
-    LogC "Start    [clock format $start]"
+    #LogC "Start    [clock format $start]"
     dict set state start $start
     dict set state testnum 0
-    #sak::registry::local set $xshell Start $start
     return -code return
 }
 
@@ -502,8 +495,8 @@ proc ::kettle::Test::End {} {
     set file  [dict get $state file]
     set num   [dict get $state testnum]
 
-    LogC "Started  [clock format $start]"
-    LogC "End      [clock format $end]"
+    #LogC "Started  [clock format $start]"
+    #LogC "End      [clock format $end]"
 
     set delta [expr {$end - $start}]
     if {$num == 0} {
@@ -525,9 +518,11 @@ proc ::kettle::Test::End {} {
 proc ::kettle::Test::Testsuite {} {
     upvar 1 line line state state ; variable xfile
     if {![regexp "^@@ Testsuite (.*)$" $line -> file]} return
-    #= <[file tail $xfile]>
+
+LogC "Test $file"
+
+    #Awrite <[file tail $xfile]>
     dict set state file $file
-    #sak::registry::local set $xfile Aborted 0
     return -code return
 }
 
@@ -535,85 +530,77 @@ proc ::kettle::Test::NoTestsuite {} {
     upvar 1 line line state state
     if {![string match "Error:  No test files remain after*" $line]} return
     dict set state suite none
-    = {No tests}
+    Awrite {No tests}
     return -code return
 }
 
 proc ::kettle::Test::Support {} {
     upvar 1 line line state state
-    if {![regexp "^- (.*)$" $line -> package]} return
-    #= "S $package"
-    foreach {pn pv} $package break
-    variable xfile
-    #sak::registry::local set [linsert $xfile end Support] $pn $pv
-    return -code return
+    #Awrite "S $package" /when caught
+    #if {[regexp "^SYSTEM - (.*)$" $line -> package]} {LogC "Ss $package";return -code return}
+    #if {[regexp "^LOCAL  - (.*)$" $line -> package]} {LogC "Sl $package";return -code return}
+    if {[regexp "^SYSTEM - (.*)$" $line -> package]} {return -code return}
+    if {[regexp "^LOCAL  - (.*)$" $line -> package]} {return -code return}
+    return
+
 }
 
 proc ::kettle::Test::Testing {} {
     upvar 1 line line state state
-    if {![regexp "^\\* (.*)$" $line -> package]} return
-    #= "T $package"
-    foreach {pn pv} $package break
-    variable xfile
-    #sak::registry::local set [linsert $xfile end Testing] $pn $pv
-    return -code return
-}
-
-proc ::kettle::Test::Other {} {
-    upvar 1 line line state state
-    if {![string match ">*" $line]} return
-    return -code return
+    #Awrite "T $package" /when caught
+    #if {[regexp "^SYSTEM % (.*)$" $line -> package]} {LogC "Ts $package";return -code return}
+    #if {[regexp "^LOCAL  % (.*)$" $line -> package]} {LogC "Tl $package";return -code return}
+    if {[regexp "^SYSTEM % (.*)$" $line -> package]} {return -code return}
+    if {[regexp "^LOCAL  % (.*)$" $line -> package]} {return -code return}
+    return
 }
 
 proc ::kettle::Test::Summary {} {
     upvar 1 line line state state
-    if {![regexp "^all\\.tcl:(.*)$" $line -> line]} return
-    variable xmodule
-    variable xstatus
-    variable xvstatus
-    foreach {_ t _ p _ s _ f} [split [string trim $line]] break
-    #sak::registry::local set $xmodule Total   $t ; set t [format %5d $t]
-    #sak::registry::local set $xmodule Passed  $p ; set p [format %5d $p]
-    #sak::registry::local set $xmodule Skipped $s ; set s [format %5d $s]
-    #sak::registry::local set $xmodule Failed  $f ; set f [format %5d $f]
+    variable statelabel
+    #LogC S?$line
+    if {![regexp "(Total(.*)Passed(.*)Skipped(.*)Failed(.*))$" $line -> line]} return
 
-    upvar 2 total _total ; incr _total $t
-    upvar 2 pass  _pass  ; incr _pass  $p
-    upvar 2 skip  _skip  ; incr _skip  $s
-    upvar 2 fail  _fail  ; incr _fail  $f
-    upvar 2 err   _err
+    lassign [string trim $line] _ total _ passed _ skipped _ failed
 
-    set t [format %5d $t]
-    set p [format %5d $p]
-    set s [format %5d $s]
-    set f [format %5d $f]
+    set thestate [dict get $state suite]
 
-    if {$xstatus == "ok" && $t == 0} {
-	set xstatus none
+    dict incr state ctotal   $total
+    dict incr state cpassed  $passed
+    dict incr state cskipped $skipped
+    dict incr state cfailed  $failed
+
+    set total   [format %5d $total]
+    set passed  [format %5d $passed]
+    set skipped [format %5d $skipped]
+    set failed  [format %5d $failed]
+
+    if {!$total && ($thestate eq "ok")} {
+	dict set state suite none
+	set thestate         none
     }
 
-    set st $xvstatus($xstatus)
+    set st [dict get $statelabel $thestate]
 
-    if {$xstatus == "ok"} {
+    if {$thestate eq "ok"} {
 	# Quick return for ok suite.
-	Aclose "~~ $st T $t P $p S $s F $f"
+	Aclose "~~ $st T $total P $passed S $skipped F $failed"
 	return -code return
     }
 
-    # Clean out progress display using a non-highlighted
-    # string. Prevents the char couint from being off. This is
-    # followed by construction and display of the highlighted version.
+    # Clean out progress display using a non-highlighted string.
+    # Prevents the char count from being off. This is followed by
+    # construction and display of the highlighted version.
 
-    = "   $st T $t P $p S $s F $f"
-    switch -exact -- $xstatus {
-	none    {Aclose "~~ [yel]$st T $t[rst] P $p S $s F $f"}
-	aborted {Aclose "~~ [whi]$st[rst] T $t P $p S $s F $f"}
-	error   {
-	    Aclose "~~ [mag]$st[rst] T $t P $p S $s F $f"
-	    incr _err
-	}
-	fail    {Aclose "~~ [red]$st[rst] T $t P $p S $s [red]F $f[rst]"}
+    Awrite "   $st T $total P $passed S $skipped F $failed"
+    switch -exact -- $thestate {
+	none    { Aclose "~~ [io myellow "$st T $total"] P $passed S $skipped F $failed" }
+	aborted { Aclose "~~ [io mwhite   $st] T $total P $passed S $skipped F $failed" }
+	error   { Aclose "~~ [io mmagenta $st] T $total P $passed S $skipped F $failed" }
+	fail    { Aclose "~~ [io mred     $st] T $total P $passed S $skipped [io mred "F $failed"]" }
     }
+
+    if {$thestate eq "error"} { dict incr state cerrors }
     return -code return
 }
 
@@ -621,11 +608,9 @@ proc ::kettle::Test::TestStart {} {
     upvar 1 line line state state
     if {![string match {---- * start} $line]} return
     set testname [string range $line 5 end-6]
-    = "---- $testname"
-    variable xfile
-    variable xtest [linsert $xfile end $testname]
-    variable xtestnum
-    incr     xtestnum
+    Awrite "---- $testname"
+    dict set state test $testname
+    dict incr state testnum
     return -code return
 }
 
@@ -633,173 +618,133 @@ proc ::kettle::Test::TestSkipped {} {
     upvar 1 line line state state
     if {![string match {++++ * SKIPPED:*} $line]} return
     regexp {^[^ ]* (.*)SKIPPED:.*$} $line -> testname
-    set              testname [string trim $testname]
-    variable xtest
-    = "SKIP $testname"
-    if {$xtest == {}} {
-	variable xfile
-	set xtest [linsert $xfile end $testname]
-    }
-    #sak::registry::local set $xtest Status Skip
-    set xtest {}
+    set testname [string trim $testname]
+    Awrite "SKIP $testname"
+    dict set state test {}
     return -code return
 }
 
 proc ::kettle::Test::TestPassed {} {
     upvar 1 line line state state
     if {![string match {++++ * PASSED} $line]} return
-    set             testname [string range $line 5 end-7]
-    variable xtest
-    = "PASS $testname"
-    if {$xtest == {}} {
-	variable xfile
-	set xtest [linsert $xfile end $testname]
-    }
-    #sak::registry::local set $xtest Status Pass
-    set xtest {}
+    set testname [string range $line 5 end-7]
+    Awrite "PASS $testname"
+    dict set state test {}
     return -code return
 }
 
 proc ::kettle::Test::TestFailed {} {
     upvar 1 line line state state
     if {![string match {==== * FAILED} $line]} return
-    set        testname [lindex [split [string range $line 5 end-7]] 0]
-    = "FAIL $testname"
-    variable xtest
-    if {$xtest == {}} {
-	variable xfile
-	set xtest [linsert $xfile end $testname]
-    }
-    #sak::registry::local set $xtest Status Fail
-    ## CAPTURE INIT
-    variable xcollect  1
-    variable xbody     ""
-    variable xactual   ""
-    variable xexpected ""
-    variable xstatus   fail
-    # Ignore failed status if we already have it, or an error
-    # status. The latter is more important to show. We do override
-    # status 'aborted'.
-    if {$xstatus == "ok"}      {set xstatus fail}
-    if {$xstatus == "aborted"} {set xstatus fail}
+    set testname [lindex [split [string range $line 5 end-7]] 0]
+    Awrite "FAIL $testname"
+    dict set state suite fail
+
+    ## Initialize state machine to capture the test result.
+    ## states: none, sync, body, actual, expected, done, error
+
+    dict set state cap state    sync
+    dict set state cap body     {}
+    dict set state cap actual   {}
+    dict set state cap expected {}
     return -code return
 }
 
 proc ::kettle::Test::CaptureFailureSync {} {
-    variable xcollect
-    if {$xcollect != 1} return
-    upvar 1 line line state state
+    upvar 1 state state
+    if {[dict get $state cap state] ne "sync"} return
+    upvar 1 line line
     if {![string match {==== Contents*} $line]} return
-    set xcollect 2
+    dict set state cap state body
     return -code return
 }
 
 proc ::kettle::Test::CaptureFailureCollectBody {} {
-    variable xcollect
-    if {$xcollect != 2} return
+    upvar 1 state state
+    if {[dict get $state cap state] ne "body"} return
+
     upvar 1 rline line
-    variable xbody
     if {[string match {---- Result was*} $line]} {
-	set xcollect 3
+	dict set state cap state actual
 	return -code return
     } elseif {[string match {---- Test generated error*} $line]} {
-	set xcollect 5
+	dict set state cap state error
 	return -code return
     }
 
-    variable xbody
-    append   xbody $line \n
+    set v [dict get $state cap body]
+    append v $line \n
+    dict set state cap body $v
+
     return -code return
 }
 
 proc ::kettle::Test::CaptureFailureCollectActual {} {
-    variable xcollect
-    if {$xcollect != 3} return
+    upvar 1 state state
+    if {[dict get $state cap state] ne "actual"} return
+
     upvar 1 rline line
-    if {![string match {---- Result should*} $line]} {
-	variable xactual
-	append   xactual $line \n
-    } else {
-	set xcollect 4
+    if {[string match {---- Result should*} $line]} {
+	dict set state cap state expected
+	return -code return
     }
+
+    set v [dict get $state cap actual]
+    append v $line \n
+    dict set state cap actual $v
+
     return -code return
 }
 
 proc ::kettle::Test::CaptureFailureCollectExpected {} {
-    variable xcollect
-    if {$xcollect != 4} return
+    upvar 1 state state
+    if {[dict get $state cap state] ne "expected"} return
+
     upvar 1 rline line
     if {![string match {==== *} $line]} {
-	variable xexpected
-	append   xexpected $line \n
-    } else {
-	variable alog
-	if {$alog} {
-	    variable logfad
-	    variable xtest
-	    variable xbody
-	    variable xactual
-	    variable xexpected
-
-	    puts  $logfad "==== [lrange $xtest end-1 end] FAILED ========="
-	    puts  $logfad "==== Contents of test case:\n"
-	    puts  $logfad $xbody
-
-	    puts  $logfad "---- Result was:"
-	    puts  $logfad [string range $xactual 0 end-1]
-
-	    puts  $logfad "---- Result should have been:"
-	    puts  $logfad [string range $xexpected 0 end-1]
-
-	    puts  $logfad "==== [lrange $xtest end-1 end] ====\n\n"
-	    flush $logfad
-	}
-	set xcollect 0
-	#sak::registry::local set $xtest Body     $xbody
-	#sak::registry::local set $xtest Actual   $xactual
-	#sak::registry::local set $xtest Expected $xexpected
-	set xtest {}
+	set v [dict get $state cap expected]
+	append v $line \n
+	dict set state cap expected $v
+	return -code return
     }
+
+    variable alog
+    if {$alog} {
+	set test     [dict get $state test]
+	set body     [dict get $state cap body]
+	set actual   [dict get $state cap actual]
+	set expected [dict get $state cap expected]
+
+	Log faildetails "==== [lrange $test end-1 end] FAILED ========="
+	Log faildetails "==== Contents of test case:\n"		       
+	Log faildetails $body					       
+	Log faildetails "---- Result was:"			       
+	Log faildetails [string range $actual 0 end-1]		       
+	Log faildetails "---- Result should have been:"		       
+	Log faildetails [string range $expected 0 end-1]		       
+	Log faildetails "==== [lrange $test end-1 end] ====\n\n"
+    }
+
+    dict unset state cap
+    dict set   state cap state none
+    dict set   state test {}
     return -code return
 }
 
 proc ::kettle::Test::CaptureFailureCollectError {} {
-    variable xcollect
-    if {$xcollect != 5} return
+    upvar 1 state state
+    if {[dict get $state cap state] ne "error"} return
+
     upvar 1 rline line
-    variable xbody
     if {[string match {---- errorCode*} $line]} {
-	set xcollect 4
+	dict set state cap state expected
 	return -code return
     }
 
-    variable xactual
-    append   xactual $line \n
-    return -code return
-}
+    set v [dict get $state cap actual]
+    append v $line \n
+    dict set state cap actual $v
 
-proc ::kettle::Test::Aborted {} {
-    upvar 1 line line state state
-    if {![string match {Aborting the tests found *} $line]} return
-    variable xfile
-    variable xstatus
-    # Ignore aborted status if we already have it, or some other error
-    # status (like error, or fail). These are more important to show.
-    if {$xstatus == "ok"} {set xstatus aborted}
-    = Aborted
-    #sak::registry::local set $xfile Aborted {}
-    return -code return
-}
-
-proc ::kettle::Test::AbortCause {} {
-    upvar 1 line line state state
-    if {
-	![string match {Requiring *} $line] &&
-	![string match {Error in *} $line]
-    } return ; # {}
-    variable xfile
-    = $line
-    #sak::registry::local set $xfile Aborted $line
     return -code return
 }
 
@@ -809,7 +754,7 @@ proc ::kettle::Test::CaptureStackStart {} {
     variable xstackcollect 1
     variable xstack        {}
     variable xstatus       error
-    = {Error, capturing stacktrace}
+    Awrite {Error, capturing stacktrace}
     return -code return
 }
 
@@ -837,11 +782,31 @@ proc ::kettle::Test::CaptureStack {} {
     return -code return
 }
 
+proc ::kettle::Test::Aborted {} {
+    upvar 1 line line state state
+    if {![string match {Aborting the tests found *} $line]} return
+    # Ignore aborted status if we already have it, or some other error
+    # status (like error, or fail). These are more important to show.
+    if {[dict get $state suite] eq "ok"} {dict set state suite aborted}
+    Awrite Aborted
+    return -code return
+}
+
+proc ::kettle::Test::AbortCause {} {
+    upvar 1 line line state state
+    if {
+	![string match {Requir *}   $line] &&
+	![string match {Error in *} $line]
+    } return ; # {}
+    Awrite $line
+    return -code return
+}
+
 proc ::kettle::Test::SetupError {} {
     upvar 1 line line state state
     if {![string match {SETUP Error*} $line]} return
-    variable xstatus error
-    = {Setup error}
+    dict set state suite error
+    Awrite {Setup error}
     return -code return
 }
 
@@ -853,46 +818,19 @@ namespace eval ::kettle::Test {
 
     variable xstackcollect 0
     variable xstack    {}
-    variable xcollect  0
-    variable xbody     {}
-    variable xactual   {}
-    variable xexpected {}
-    #variable xhost     {}
-    #variable xplatform {}
-    #variable xcwd      {}
-    #variable xshell    {}
-    #--removed--variable xmodule   {}
-    #variable xfile     {}
-    variable xtest     {}
-    #variable xstartfile {}
+    #variable xcollect  0
+    #variable xbody     {}
+    #variable xactual   {}
+    #variable xexpected {}
     #variable xtimes     {}
 
     variable xstatus ok ;# none, aborted, error, fail
     # --> state suite
 
-    # Animation prefix of test processing, and flag controlling the
-    # nature of logging (raw vs animation).
-
-    variable aprefix   {}
-    variable araw      0
-
     # Max length of module names and patchlevel information.
 
     variable maxml 0
     variable maxvl 0
-
-    # Map from internal stati to the displayed human readable
-    # strings. This includes the trailing whitespace needed for
-    # vertical alignment.
-
-    variable  xvstatus
-    array set xvstatus {
-	ok      {     }
-	none    {None }
-	aborted {Skip }
-	error   {ERR  }
-	fail    {FAILS}
-    }
 }
 
 # # ## ### ##### ######## ############# #####################
