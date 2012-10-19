@@ -182,6 +182,56 @@ proc ::kettle::io::trace-on {} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Animation Sub API (progressbar, barberpoles, ...)
+
+namespace eval ::kettle::io::animation {
+    namespace export {[a-z]*}
+    namespace ensemble create
+
+    namespace import ::kettle::io::puts
+    namespace import ::kettle::io::for-terminal
+
+    # Unchanging prefix written before each actual line.
+    variable prefix
+
+    # Max number of characters seen so far in output
+    variable maxn 0
+}
+
+proc ::kettle::io::animation::begin {} {
+    variable maxn 0
+    variable prefix {}
+    return
+}
+
+proc ::kettle::io::animation::write {text} {
+    variable prefix
+    variable maxn
+
+    set text $prefix$text
+    puts -nonewline \r[format %${maxn}s $text]
+    for-terminal { flush stdout }
+
+    set len [string length [string map [list \t {        }] $text]]
+    if {$len < $maxn} return
+    set maxn $len
+    return
+}
+
+proc ::kettle::io::animation::indent {text} {
+    variable prefix
+    append prefix $text
+    return
+}
+
+proc ::kettle::io::animation::last {text} {
+    write $text\n
+    variable maxn 0
+    variable prefix {}
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
 ## Internals
 
 proc ::kettle::io::Color {t {script {}}} {
