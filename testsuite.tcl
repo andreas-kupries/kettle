@@ -147,23 +147,33 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     }
 
     # Summary results...
+    # ... the numbers
     set fn [dict get $state cfailed]
     set en [dict get $state cerrors]
+    set tn [dict get $state ctotal]
+    set pn [dict get $state cpassed]
+    set sn [dict get $state cskipped]
 
-    set t [format %6d [dict get $state ctotal]]
-    set p [format %6d [dict get $state cpassed]]
-    set s [format %6d [dict get $state cskipped]]
+    # ... formatted
+    set t $tn;#[format %6d $tn]
+    set p [format %6d $pn]
+    set s [format %6d $sn]
     set f [format %6d $fn]
     set e [format %6d $en]
 
-    if {$fn} { set f [io mred $f] }
+    # ... and colorized where needed.
+    if {$pn} { set p [io mgreen   $p] }
+    if {$sn} { set s [io mblue    $s] }
+    if {$fn} { set f [io mred     $f] }
     if {$en} { set e [io mmagenta $e] }
 
-    LogC "Passed  $p of $t"
-    LogC "Skipped $s of $t"
-    LogC "Failed  $f of $t"
-    LogC "#Errors $e"
+    # Show in terminal, always...
+    Log* "Passed  $p of $t"
+    Log* "Skipped $s of $t"
+    Log* "Failed  $f of $t"
+    Log* "#Errors $e"
 
+    # And in the main stream...
     Stream log "Passed  $p of $t"
     Stream log "Skipped $s of $t"
     Stream log "Failed  $f of $t"
@@ -244,6 +254,11 @@ proc ::kettle::Test::ProcessLine {line} {
 
 # # ## ### ##### ######## ############# #####################
 ## Terminal log.
+##
+## F Write on full.
+## C Write on compact
+## * Write always
+##
 
 proc ::kettle::Test::LogF {text} {
     if {[option get --log-mode] ne "full"} return
@@ -257,6 +272,11 @@ proc ::kettle::Test::LogC {text} {
     return
 }
 
+proc ::kettle::Test::Log* {text} {
+    io puts $text
+    return
+}
+
 proc ::kettle::Test::Aopen {} {
     if {[option get --log-mode] ne "compact"} return
     io animation begin
@@ -265,8 +285,12 @@ proc ::kettle::Test::Aopen {} {
 
 proc ::kettle::Test::Aclose {text} {
     upvar 1 state state
-    if {[option get --log-mode] ne "compact"} return
-    io animation last $text
+
+    if {[option get --log-mode] eq "compact"} {
+	io animation last $text
+    }
+
+    if {![Streams]} return
 
     set file [file tail [dict get $state file]]
     set text "\[$file\] $text"
