@@ -182,6 +182,68 @@ proc ::kettle::io::trace-on {} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Animation Sub API (progressbar, barberpoles, ...)
+
+namespace eval ::kettle::io::animation {
+    namespace export {[a-z]*}
+    namespace ensemble create
+
+    namespace import ::kettle::io::puts
+    namespace import ::kettle::io::for-terminal
+
+    # Unchanging prefix written before each actual line.
+    variable prefix
+
+    # Max number of characters seen so far in output
+    variable maxn 0
+}
+
+proc ::kettle::io::animation::begin {} {
+    variable maxn 0
+    variable prefix {}
+    return
+}
+
+proc ::kettle::io::animation::write {text} {
+    variable prefix
+    variable maxn
+
+    set text $prefix$text
+    set n    [string length $text]
+    set len  [L $text]
+
+    if {$n > $maxn} { set maxn $n }
+    while {$len < $maxn} {
+	append text { } ; incr len
+    }
+
+    puts -nonewline \r$text
+    for-terminal { flush stdout }
+
+    return
+}
+
+# Visible length of the string, without tabs expansion, or escapes.
+proc ::kettle::io::animation::L {text} {
+    regsub -all "\t"               $text {} text
+    regsub -all "\033\\\[\[^m\]*m" $text {} text
+    return [string length $text]
+}
+
+proc ::kettle::io::animation::indent {text} {
+    variable prefix
+    append prefix $text
+    return
+}
+
+proc ::kettle::io::animation::last {text} {
+    write $text\n
+    variable maxn 0
+    variable prefix {}
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
 ## Internals
 
 proc ::kettle::io::Color {t {script {}}} {
@@ -192,11 +254,21 @@ proc ::kettle::io::Color {t {script {}}} {
     }
 }
 
+proc ::kettle::io::Markup {t text} {
+    return [E$t]$text[Ereset]
+}
+
 proc ::kettle::io::Escape {chars} {
     # Colorization is system and user choice.
     if {![kettle option get --color]} return
     puts -nonewline \033\[${chars}m
     return
+}
+
+proc ::kettle::io::E {chars} {
+    # Colorization is system and user choice.
+    if {![kettle option get --color]} return
+    return \033\[${chars}m
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -245,8 +317,10 @@ apply {{} {
 	reset    0 {}
     } {
 	interp alias {} ::kettle::io::H$tag {} ::kettle::io::Escape $chars
+	interp alias {} ::kettle::io::E$tag {} ::kettle::io::E      $chars
 	if {$tag eq "reset"} continue
-	interp alias {} ::kettle::io::$tag {} ::kettle::io::Color $tag
+	interp alias {} ::kettle::io::$tag  {} ::kettle::io::Color  $tag
+	interp alias {} ::kettle::io::m$tag {} ::kettle::io::Markup $tag
     }
 }}
 
