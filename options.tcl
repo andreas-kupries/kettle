@@ -12,6 +12,7 @@ namespace eval ::kettle::option {
     namespace import ::kettle::path
     namespace import ::kettle::io
     namespace import ::kettle::status
+    namespace import ::kettle::ovalidate
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -36,7 +37,7 @@ namespace eval ::kettle::option {
 # # ## ### ##### ######## ############# #####################
 ## API
 
-proc ::kettle::option::define {o default arguments script args} {
+proc ::kettle::option::define {o default {type any}} {
     variable config
     variable def
     variable work
@@ -47,14 +48,22 @@ proc ::kettle::option::define {o default arguments script args} {
 	return -code error "Illegal redefinition of option $o."
     }
 
-    lappend arguments option old new
+    # Validate the default before accepting the definition.
+    ovalidate {*}$type $default
 
-    dict set config $o $default   ; # Initial value is default.
-    dict set work   $o .          ; # Use as key for work database
-    dict set def    $o user  0    ; # Flag, this option has been set
-				    # by the user. Plus code to
-				    # validate and propagate changes.
-    dict set def    $o setter \
+    dict set config $o $default     ; # Initial value is default.
+    dict set work   $o .            ; # Use as key for work database
+    dict set def    $o type   $type ; # Validation command.
+    dict set def    $o user   0     ; # Flag, this option has been set
+    dict set def    $o setter {}    ; # by the user. Plus code to
+				      # validate and propagate changes.
+    return
+}
+
+proc ::kettle::option::onchange {o arguments script args} {
+    variable def
+    lappend arguments option old new
+    dict set def $o setter \
 	[lambda@ ::kettle::option $arguments $script {*}$args]
     return
 }
@@ -81,6 +90,10 @@ proc ::kettle::option::set {o value} {
     variable def
 
     io trace {OPTION SET ($o) = "$value"}
+
+    if {[dict exists $def $o type]} {
+	ovalidate {*}[dict get $def $o type] $value
+    }
 
     if {[dict exists $config $o]} {
 	::set has 1
@@ -115,6 +128,10 @@ proc ::kettle::option::set-default {o value} {
     }
 
     io trace {OPTION SET-D ($o) =[dict get $def $o user]= "$value"}
+
+    if {[dict exists $def $o type]} {
+	ovalidate {*}[dict get $def $o type] $value
+    }
 
     if {[dict get $def $o user]} return
 
@@ -152,10 +169,12 @@ proc ::kettle::option::get {o} {
 proc ::kettle::option::reportchange {type o old new} {
     variable def
     if {![dict exists $def $o setter]} return
+    ::set setter [dict get $def $o setter]
+    if {$setter eq {}} return
     variable change
     lappend change $type
     try {
-	{*}[dict get $def $o setter] $o $old $new
+	{*}$setter $o $old $new
     } trap {KETTLE OPTION VETO} {e opts} {
 	return {*}${opts} "Bad option $o: $e"
     }
@@ -238,7 +257,8 @@ apply {{} {
     global tcl_platform
 
     # - -- --- ----- -------- -------------
-    define --exec-prefix {} {} {
+    define   --exec-prefix {}
+    onchange --exec-prefix {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
 	set!        --exec-prefix $new
@@ -246,10 +266,13 @@ apply {{} {
 	set-default --lib-dir     $new/lib
     }
 
-    define --bin-dir {} {} { set! --bin-dir [path norm $new] }
-    define --lib-dir {} {} { set! --lib-dir [path norm $new] }
+    define   --bin-dir {}
+    onchange --bin-dir {} { set! --bin-dir [path norm $new] }
+    define   --lib-dir {}
+    onchange --lib-dir {} { set! --lib-dir [path norm $new] }
 
-    define --prefix {} {} {
+    define   --prefix {}
+    onchange --prefix {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
 	set!        --prefix      $new
@@ -259,11 +282,14 @@ apply {{} {
 	set-default --include-dir $new/include
     }
 
-    define --man-dir     {} {} { set! --man-dir     [path norm $new] }
-    define --html-dir    {} {} { set! --html-dir    [path norm $new] }
-    define --include-dir {} {} { set! --include-dir [path norm $new] }
+    define   --man-dir     {}
+    onchange --man-dir     {} { set! --man-dir [path norm $new] }
+    define   --html-dir    {}
+    onchange --hmtl-dir    {} { set! --html-dir [path norm $new] }
+    define   --include-dir {}
+    onchange --include-dir {} { set! --include-dir [path norm $new] }
 
-    set-default --prefix  [file dirname [file dirname [info library]]]
+    set-default --prefix [file dirname [file dirname [info library]]]
     # -> man, html, exec-prefix -> bin, lib
     set-default --bin-dir [file dirname [path norm [info nameofexecutable]]]
     set-default --lib-dir [info library]
@@ -272,63 +298,51 @@ apply {{} {
 	*~ _FOSSIL_ .fslckout .fos .git .svn CVS .hg RCS SCCS
 	*.bak *.bzr *.cdv *.pc _MTN _build _darcs _sgbak blib
 	autom4te.cache cover_db ~.dep ~.dot ~.nib ~.plst
-    } {} {}
+    }
     no-work-key --ignore-glob
 
     # - -- --- ----- -------- -------------
     # File action. Default on (== dry-run off).
 
-    define --dry 0 {} {
-	if {[string is boolean -strict $new]} return
-	veto "Expected boolean, but got \"$new\""
-    }
+    define      --dry 0 boolean
     no-work-key --dry
 
     # - -- --- ----- -------- -------------
     # Tracing of internals. Default off.
 
-    define --verbose 0 {} {
-	if {[string is boolean -strict $new]} {
-	    if {$new} { io trace-on }
-	    return
-	}
-	veto "Expected boolean, but got \"$new\""
-    }
+    define      --verbose off boolean
     no-work-key --verbose
+    onchange    --verbose {} {
+	if {$new} { io trace-on }
+    }
 
     # - -- --- ----- -------- -------------
     # Output colorization. Default platform dependent.
 
-    define --color 0 {} {
-	if {[string is boolean -strict $new]} return
-	veto "Expected boolean, but got \"$new\""
-    }
+    define      --color off boolean
     no-work-key --color
     if {$tcl_platform(platform) eq "windows"} {
-	set-default --color 0
+	set-default --color off
     } else {
 	if {[catch {
 	    package require Tclx
 	}] || ![fstat stdout tty]} {
-	    set-default --color 0
+	    set-default --color off
 	} else {
-	    set-default --color 1
+	    set-default --color on
 	}
     }
 
     # - -- --- ----- -------- -------------
     # State and configuration handling for sub-processes. Default none.
 
-    define --state {} {} {
-	status load $new
-    }
-
-    define --config {} {} {
-	load $new
-    }
-
+    define      --state {} rfile
     no-work-key --state
+    onchange    --state {} { status load $new }
+
+    define      --config {} rfile
     no-work-key --config
+    onchange    --config {} { load $new }
 
     # - -- --- ----- -------- -------------
     # Default goals to use when invoked with none.

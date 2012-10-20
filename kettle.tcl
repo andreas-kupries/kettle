@@ -28,6 +28,7 @@ namespace eval ::kettle {
 ## @owns: io.tcl
 ## @owns: lambda.tcl
 ## @owns: options.tcl
+## @owns: ovalidate.tcl
 ## @owns: path.tcl
 ## @owns: recipes.tcl
 ## @owns: standard.tcl
@@ -57,6 +58,7 @@ namespace eval ::kettle {
     source $selfdir/status.tcl     ; # General goal status.
     source $selfdir/recipes.tcl    ; # Recipe management.
     source $selfdir/path.tcl       ; # General path utilities
+    source $selfdir/ovalidate.tcl  ; # Option management. Validation sub layer.
     source $selfdir/options.tcl    ; # Option management.
     source $selfdir/invoke.tcl     ; # Goal recursion via sub-processes.
     source $selfdir/tool.tcl       ; # Manage tool requirements.

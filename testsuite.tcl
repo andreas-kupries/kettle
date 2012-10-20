@@ -8,10 +8,12 @@ namespace eval ::kettle { namespace export testsuite }
 ## Shell to run the tests with.
 ## Irrelevant to work database keying.
 
-kettle option define --with-shell  [info nameofexecutable] {} {
+kettle option define      --with-shell \
+    [kettle path norm [info nameofexecutable]]
+kettle option no-work-key --with-shell
+kettle option onchange    --with-shell {} {
     set! --with-shell [path norm $new]
 }
-kettle option no-work-key --with-shell
 
 # # ## ### ##### ######## ############# #####################
 ## Mode and file/channel for logging of test output.
@@ -27,17 +29,11 @@ kettle option no-work-key --with-shell
 #    The option --log specifies their (path) stem.
 #    If no stem is specified no streams are generated.
 
-kettle option define --log-mode compact {} {
-    if {$new ni {compact full}} {
-	veto "Expected one of 'compact', or 'full', got \"$new\""
-    }
-    return
-}
-kettle option define --log {} {} {
-    set! --log [path norm $new]
-}
-
+kettle option define      --log-mode compact {enum {compact full}}
 kettle option no-work-key --log-mode
+
+kettle option define      --log {}
+kettle option onchange    --log {} { set! --log [path norm $new] }
 kettle option no-work-key --log
 
 # # ## ### ##### ######## ############# #####################
@@ -366,6 +362,7 @@ proc ::kettle::Test::StreamsDone {} {
 # Writer for log streams. Create on demand, on first write.
 proc ::kettle::Test::StreamsMake {stem name text} {
     variable stream
+    file mkdir [file dirname $stem.$name]
     dict set stream $name [list ::puts [open $stem.$name w]]
     Stream $name $text
     return
