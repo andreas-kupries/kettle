@@ -38,14 +38,18 @@ proc ::kettle::gui::make {} {
     label  .l -text {Install Path: }
     entry  .e -textvariable ::kettle::gui::INSTALLPATH
 
-    foreach r {help show-options show-state} {
+    # TODO: Extend recipe definitions to carry this information.
+    set special {help help-recipes help-options show show-configuration show-state}
+    set ignore  {gui null list list-recipes list-options}
+
+    foreach r $special {
 	# treat a few recipes out of order to have them at the top.
 	MakeGoalButton $r
     }
     foreach r [lsort -dict [recipe names]] {
 	# ignore the standard recipes which are nonsensical for the
 	# gui, and those which we treated out of order (see above).
-	if {$r in {gui null recipes options help show-options show-state}} continue
+	if {($r in $ignore) || ($r in $special)} continue
 	MakeGoalButton $r
     }
 
