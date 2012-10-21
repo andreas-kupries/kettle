@@ -4,12 +4,6 @@ fix:	--dry-run likely not working properly for various situations.
 
 task:	gui for options
 
-task:	options should have types (validation), help strings.
-	new recipes to show option help
-	types required for gui also => chosen gui elements.
-
-		boolean, int, string, path, enum (with legal strings)
-
 task:	rename 'drop' to 'uninstall'
 
 

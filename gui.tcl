@@ -20,6 +20,7 @@ namespace eval ::kettle::gui {
     namespace import ::kettle::io
     namespace import ::kettle::option
     namespace import ::kettle::recipe
+    namespace import ::kettle::status
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -131,8 +132,7 @@ proc ::kettle::gui::Run {goal} {
     option set --lib-dir $INSTALLPATH
     recipe run $goal
 
-    # TODO: Clear work database. Allow multiple uses of each recipe.
-
+    status clear
     State normal
     return
 }

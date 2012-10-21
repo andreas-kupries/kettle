@@ -99,22 +99,6 @@ proc ::kettle::status::fail {{msg FAIL}} {
     return -errorcode {KETTLE STATUS FAIL} -code error ""
 }
 
-proc ::kettle::status::Show {key} {
-    variable work
-
-    set state [dict get $work $key state]
-    set msg   [dict get $work $key msg]
-
-    if {$state ne "ok"} {
-	io $state { io puts $msg }
-    } else {
-	io for-gui {
-	    io $state { io puts $msg }
-	}
-    }
-    return
-}
-
 proc ::kettle::status::is {goal {src {}} args} {
     variable work
     # possible results: unknown|ok|fail|work
@@ -151,6 +135,29 @@ proc ::kettle::status::save {{path {}}} {
 proc ::kettle::status::load {file} {
     io trace {status loaded from $file}
     variable work [kettle path cat $file]
+    return
+}
+
+proc ::kettle::status::clear {} {
+    variable work {}
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+
+proc ::kettle::status::Show {key} {
+    variable work
+
+    set state [dict get $work $key state]
+    set msg   [dict get $work $key msg]
+
+    if {$state ne "ok"} {
+	io $state { io puts $msg }
+    } else {
+	io for-gui {
+	    io $state { io puts $msg }
+	}
+    }
     return
 }
 
