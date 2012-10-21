@@ -21,7 +21,7 @@ proc ::kettle::tool::declare {names {validator {}}} {
     option define --with-$primary [subst {
 	Path to the tool '$primary'.
 	Overides kettle's search on the PATH.
-    }] {} rfile
+    }] {} readable.file
     option no-work-key --with-$primary
 
     foreach name $names {

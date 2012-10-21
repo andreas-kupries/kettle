@@ -14,10 +14,11 @@ namespace eval ::kettle::gui {
 ## State
 
 namespace eval ::kettle::gui {
-    variable INSTALLPATH {}
     variable actions     {}
+    variable options     {}
 
     namespace import ::kettle::io
+    namespace import ::kettle::ovalidate
     namespace import ::kettle::option
     namespace import ::kettle::recipe
     namespace import ::kettle::status
@@ -42,10 +43,8 @@ proc ::kettle::gui::make {} {
     Options     .options
     Actions     .actions
 
-    .n select 1
-
-
-    #AddAction $win ::_exit Exit 1
+    .n select 0 ; # Configuration
+    #.n select 1 ; # Actions
 
     # Disable uncontrolled exit. This may come out of deeper layers,
     # like, for example, critcl compilation.
@@ -66,25 +65,41 @@ proc ::kettle::gui::make {} {
 }
 
 proc ::kettle::gui::Options {win} {
-    variable INSTALLPATH
+    set top $win ; if {$top eq {}} { set top . }
+
+    # TODO: Have this information directly attached to the option itself.
+    set ignore {--state --config}
+
+    foreach o [lsort -dict [option names]] {
+	if {$o in $ignore} continue
+	AddOption $win $o
+    }
+    return
+}
+
+proc ::kettle::gui::AddOption {win o} {
+    variable options
+    set row [llength $options]
 
     set top $win ; if {$top eq {}} { set top . }
 
-    # Dynamic adaptation to the config database contents, and
-    # ability to extend that database from the GUI.
-    # ==> ttk notebook, tree.
+    set type [option type $o]
 
-    label ${win}.l -text {Install Path: }
-    entry ${win}.e -textvariable ::kettle::gui::INSTALLPATH
+    label                  ${win}.l$row -text $o -anchor w
+    ovalidate {*}$type gui ${win}.e$row $o
 
-    grid ${win}.l  -row 0 -column 0 -sticky new
-    grid ${win}.e  -row 0 -column 1 -sticky new
+    grid ${win}.l$row  -row $row -column 0 -sticky new
+    grid ${win}.e$row  -row $row -column 1 -sticky new
 
     grid columnconfigure $top 0 -weight 0
     grid columnconfigure $top 1 -weight 1
+    grid rowconfigure    $top $row -weight 0
 
-    set INSTALLPATH [info library]
+    lappend options ${win}.i$row
+    return
 }
+
+# # ## ### ##### ######## ############# #####################
 
 proc ::kettle::gui::Actions {win} {
     set top $win ; if {$top eq {}} { set top . }
@@ -111,10 +126,13 @@ proc ::kettle::gui::Actions {win} {
 
     ${win}.st setwidget ${win}.t
 
-    grid ${win}.st -row 0 -column 0 -sticky swen \
-	-columnspan 2 -rowspan [NumActions]
+    set n [NumActions]
 
-    grid columnconfigure $top 2 -weight 0
+    grid ${win}.st -row 0 -column 0 -sticky swen -rowspan $n
+
+    grid columnconfigure $top  0 -weight 1
+    grid columnconfigure $top  1 -weight 0
+    grid rowconfigure    $top $n -weight 1
 
     io setwidget ${win}.t
     return
@@ -140,7 +158,7 @@ proc ::kettle::gui::AddAction {win cmd label weight} {
 
     # ttk::button -> no -anchor option, labels centered.
     button ${win}.i$row -command $cmd -text $label -anchor w
-    grid   ${win}.i$row -row $row -column 2 -sticky new
+    grid   ${win}.i$row -row $row -column 1 -sticky new
     grid rowconfigure $top $row -weight $weight
 
     lappend actions ${win}.i$row
@@ -156,16 +174,10 @@ proc ::kettle::gui::Label {recipe} {
 }
 
 proc ::kettle::gui::Run {win recipe} {
-    variable INSTALLPATH
-
-    #set argv [list $INSTALLPATH]
-    #=> update option database
-
     Action disabled
 
     ${win}.t delete 0.1 end
 
-    option set --lib-dir $INSTALLPATH
     recipe run $recipe
 
     status clear
