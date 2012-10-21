@@ -13,6 +13,7 @@ namespace eval ::kettle::option {
     namespace import ::kettle::io
     namespace import ::kettle::status
     namespace import ::kettle::ovalidate
+    namespace import ::kettle::strutil
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -37,7 +38,7 @@ namespace eval ::kettle::option {
 # # ## ### ##### ######## ############# #####################
 ## API
 
-proc ::kettle::option::define {o default {type any}} {
+proc ::kettle::option::define {o description {default {}} {type string}} {
     variable config
     variable def
     variable work
@@ -49,10 +50,22 @@ proc ::kettle::option::define {o default {type any}} {
     }
 
     # Validate the default before accepting the definition.
-    ovalidate {*}$type $default
+    ovalidate {*}$type check $default
+
+    # Construct the help text. Takes into account both type
+    # information and chosen default value.
+
+    ::set desc [strutil reflow $description]
+    if {($default ne {}) &&
+	![string match {*Default is*} $desc]} {
+	append desc \n[strutil reflow [subst {
+	    Default is '$default'.
+	}]]
+    }
 
     dict set config $o $default     ; # Initial value is default.
     dict set work   $o .            ; # Use as key for work database
+    dict set def    $o help   $desc ; # Help text
     dict set def    $o type   $type ; # Validation command.
     dict set def    $o user   0     ; # Flag, this option has been set
     dict set def    $o setter {}    ; # by the user. Plus code to
@@ -84,6 +97,23 @@ proc ::kettle::option::names {{pattern --*}} {
     return [dict keys $config $pattern]
 }
 
+proc ::kettle::option::help {} {
+    global argv0
+    variable def
+    append prefix $argv0 " "
+
+    foreach option [lsort -dict [names]] {
+	::set type [ovalidate {*}[dict get $def $option type] help]
+	::set help [dict get $def $option help]
+
+	io puts ""
+	io note { io puts "$prefix${option} <$type>" }
+	io puts $help
+    }
+    io puts ""
+    return
+}
+
 # set value, user choice
 proc ::kettle::option::set {o value} {
     variable config
@@ -92,7 +122,7 @@ proc ::kettle::option::set {o value} {
     io trace {OPTION SET ($o) = "$value"}
 
     if {[dict exists $def $o type]} {
-	ovalidate {*}[dict get $def $o type] $value
+	ovalidate {*}[dict get $def $o type] check $value
     }
 
     if {[dict exists $config $o]} {
@@ -130,7 +160,7 @@ proc ::kettle::option::set-default {o value} {
     io trace {OPTION SET-D ($o) =[dict get $def $o user]= "$value"}
 
     if {[dict exists $def $o type]} {
-	ovalidate {*}[dict get $def $o type] $value
+	ovalidate {*}[dict get $def $o type] check $value
     }
 
     if {[dict get $def $o user]} return
@@ -180,10 +210,6 @@ proc ::kettle::option::reportchange {type o old new} {
     }
     ::set change [lreplace $change end end]
     return
-}
-
-proc ::kettle::option::veto {msg} {
-    return -code error -errorcode {KETTLE OPTION VETO} $msg
 }
 
 proc ::kettle::option::save {} {
@@ -257,7 +283,10 @@ apply {{} {
     global tcl_platform
 
     # - -- --- ----- -------- -------------
-    define   --exec-prefix {}
+    define --exec-prefix {
+	Path to the root directory for the installation of binaries.
+	Default is $(--prefix).
+    } {} path
     onchange --exec-prefix {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
@@ -266,12 +295,26 @@ apply {{} {
 	set-default --lib-dir     $new/lib
     }
 
-    define   --bin-dir {}
+    define --bin-dir {
+	Path to binary applications.
+	Default is the directory of the tclsh running kettle.
+	Default is $(--exec-prefix)/bin should --exec-prefix get
+	defined by the user.
+    } {} path
     onchange --bin-dir {} { set! --bin-dir [path norm $new] }
-    define   --lib-dir {}
+    define --lib-dir {
+	Path to binary libraries.
+	Default is [info library] of the tclsh running kettle.
+	Default is $(--exec-prefix)/lib should --exec-prefix get
+	defined by the user.
+    } {} path
     onchange --lib-dir {} { set! --lib-dir [path norm $new] }
 
-    define   --prefix {}
+    define --prefix {
+	Path to the root directory for the installation of any files.
+	Default is the twice parent directory of [info library] of the
+	tclsh running kettle.
+    } {} path
     onchange --prefix {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
@@ -282,11 +325,22 @@ apply {{} {
 	set-default --include-dir $new/include
     }
 
-    define   --man-dir     {}
+    define --man-dir {
+	Path to the root directory to install manpages into.
+	Default is $(--prefix)/man.
+    } {} path
     onchange --man-dir     {} { set! --man-dir [path norm $new] }
-    define   --html-dir    {}
-    onchange --hmtl-dir    {} { set! --html-dir [path norm $new] }
-    define   --include-dir {}
+
+    define --html-dir {
+	Path to the root directory to install HTML documentation into.
+	Default is $(--prefix)/html.
+    } {} path
+    onchange --html-dir    {} { set! --html-dir [path norm $new] }
+
+    define --include-dir {
+	Path to the root directory to install C header files into.
+	Default is $(--prefix)/include.
+    } {} path
     onchange --include-dir {} { set! --include-dir [path norm $new] }
 
     set-default --prefix [file dirname [file dirname [info library]]]
@@ -295,22 +349,32 @@ apply {{} {
     set-default --lib-dir [info library]
 
     define --ignore-glob {
+	Tcl list of glob patterns for files to ignore in directory scans.
+	Default is a list of patterns matching the special directories
+	and files of a matter of source code control systems and
+	editor backup files.
+    } {
 	*~ _FOSSIL_ .fslckout .fos .git .svn CVS .hg RCS SCCS
 	*.bak *.bzr *.cdv *.pc _MTN _build _darcs _sgbak blib
 	autom4te.cache cover_db ~.dep ~.dot ~.nib ~.plst
-    }
+    } string
     no-work-key --ignore-glob
 
     # - -- --- ----- -------- -------------
     # File action. Default on (== dry-run off).
 
-    define      --dry 0 boolean
+    define --dry {
+	Disable file operations during recipe execution, leaving the
+	filesystem untouched.
+    } off boolean
     no-work-key --dry
 
     # - -- --- ----- -------- -------------
     # Tracing of internals. Default off.
 
-    define      --verbose off boolean
+    define --verbose {
+	Activate tracing of kettle's internal operations.
+    } off boolean
     no-work-key --verbose
     onchange    --verbose {} {
 	if {$new} { io trace-on }
@@ -319,7 +383,13 @@ apply {{} {
     # - -- --- ----- -------- -------------
     # Output colorization. Default platform dependent.
 
-    define      --color off boolean
+    define --color {
+	Colorize the text written to the terminal during execution.
+	Default is platform-dependent.
+	* Windows: Off
+	* Unix && Terminal:     On
+	* Unix && not Terminal: Off
+    } off boolean
     no-work-key --color
     if {$tcl_platform(platform) eq "windows"} {
 	set-default --color off
@@ -336,11 +406,19 @@ apply {{} {
     # - -- --- ----- -------- -------------
     # State and configuration handling for sub-processes. Default none.
 
-    define      --state {} rfile
+    define --state {
+	Path to a file containing shared work state.
+	Used for communication between kettle parent and child
+	processes.
+    } {} rfile
     no-work-key --state
     onchange    --state {} { status load $new }
 
-    define      --config {} rfile
+    define --config {
+	Path to a file overriding the option configuration in full.
+	Used for communication between kettle parent and child
+	processes.
+    } {} rfile
     no-work-key --config
     onchange    --config {} { load $new }
 

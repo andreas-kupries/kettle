@@ -18,7 +18,10 @@ namespace eval ::kettle::tool {
 
 proc ::kettle::tool::declare {names {validator {}}} {
     set primary [lindex $names 0]
-    option define      --with-$primary {} rfile
+    option define --with-$primary [subst {
+	Path to the tool '$primary'.
+	Overides kettle's search on the PATH.
+    }] {} rfile
     option no-work-key --with-$primary
 
     foreach name $names {

@@ -14,65 +14,70 @@ kettle recipe define null {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle recipe define recipes {
+kettle recipe define list-recipes {
     List all available recipes, without details.
 } {} {
     io puts [lsort -dict [recipe names]]
 }
 
+kettle recipe define help-recipes {
+    Print the help.
+} {} {
+    recipe help {Usage: }
+}
+
+kettle recipe parent help-recipes help
+kettle recipe parent list-recipes list
+
 # # ## ### ##### ######## ############# #####################
 
-kettle recipe define options {
+kettle recipe define list-options {
     List all available options, without details.
 } {} {
     io puts [lsort -dict [option names]]
 }
 
-kettle recipe define show-options {
+kettle recipe define help-options {
+    Print the help about options.
+} {} {
+    option help
+}
+
+kettle recipe parent help-options help
+kettle recipe parent list-options list
+
+# # ## ### ##### ######## ############# #####################
+
+kettle recipe define show-configuration {
     Show the state of the option database.
 } {} {
-    set maxl 0
     set names [lsort -dict [option names]]
-
-    foreach name $names {
-        if {[string length $name] > $maxl} {
-            set maxl [string length $name]
-        }
-    }
-
-    set maxl [expr {$maxl + 2}]
     io puts {}
-    foreach name $names {
-        io puts \t[format "%-*s = %s" $maxl $name [option get $name]]
+    foreach name $names padded [strutil padr $names] {
+	set value [option get $name]
+	if {[string match *\n* $value]} {
+	    set value \n[strutil reflow $value "\t    "]
+	}
+        io puts "\t$padded = $value"
     }
 }
 
 kettle recipe define show-state {
     Show the state
 } {} {
-    set maxl 0
     set names [lsort -dict [option names @*]]
-
-    foreach name $names {
-        if {[string length $name] > $maxl} {
-            set maxl [string length $name]
-        }
-    }
-
-    set maxl [expr {$maxl + 2}]
     io puts {}
-    foreach name $names {
-        io puts [format "%-*s = %s" $maxl $name [option get $name]]
+    foreach name $names padded [strutil padr $names] {
+	set value [option get $name]
+	if {[string match *\n* $value]} {
+	    set value \n[strutil reflow $value "\t    "]
+	}
+        io puts "\t$padded = $value"
     }
 }
 
-# # ## ### ##### ######## ############# #####################
-
-kettle recipe define help {
-    Print the help.
-} {} {
-    recipe help {Usage: }
-}
+kettle recipe parent show-configuration show
+kettle recipe parent show-state         show
 
 # # ## ### ##### ######## ############# #####################
 
