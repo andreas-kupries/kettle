@@ -4,7 +4,10 @@
 
 namespace eval ::kettle { namespace export critcl3 }
 
-kettle option define --target {}
+kettle option define --target {
+    Critcl build option. Overrides critcl's choice of target
+    configuration.
+}
 
 # # ## ### ##### ######## ############# #####################
 ## Locate a suitable critcl package or application (3+),

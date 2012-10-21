@@ -8,8 +8,11 @@ namespace eval ::kettle { namespace export testsuite }
 ## Shell to run the tests with.
 ## Irrelevant to work database keying.
 
-kettle option define      --with-shell \
-    [kettle path norm [info nameofexecutable]]
+kettle option define --with-shell {
+    'test' option. Path of the shell to run the tests with.
+    Defaults to the tclsh running the kettle build code.
+} [kettle path norm [info nameofexecutable]]
+
 kettle option no-work-key --with-shell
 kettle option onchange    --with-shell {} {
     set! --with-shell [path norm $new]
@@ -29,10 +32,15 @@ kettle option onchange    --with-shell {} {
 #    The option --log specifies their (path) stem.
 #    If no stem is specified no streams are generated.
 
-kettle option define      --log-mode compact {enum {compact full}}
+kettle option define --log-mode {
+    'test' option. Verbosity of the logging on the terminal.
+} compact {enum {compact full}}
 kettle option no-work-key --log-mode
 
-kettle option define      --log {}
+kettle option define --log {
+    'test' option. Path (stem) for a set of files to log to
+    (independent of logging to the terminal).
+} {} path
 kettle option onchange    --log {} { set! --log [path norm $new] }
 kettle option no-work-key --log
 

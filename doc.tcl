@@ -4,7 +4,11 @@
 
 namespace eval ::kettle { namespace export doc doc-destination }
 
-kettle option define      --with-doc-destination embedded
+kettle option define --with-doc-destination {
+    Documentation option. Path to the directory the generated
+    documentation is placed in. The path is relative to the
+    overall source directory.
+} embedded rpath
 kettle option no-work-key --with-doc-destination
 
 kettle tool declare {
