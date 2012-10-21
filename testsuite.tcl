@@ -94,6 +94,7 @@ namespace eval ::kettle::Test {
     namespace import ::kettle::io
     namespace import ::kettle::status
     namespace import ::kettle::option
+    namespace import ::kettle::strutil
 
     # Dictionary of log streams. Maps names to write command.
     variable stream {}
@@ -184,24 +185,52 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     Stream log "#Errors $e"
 
     if {[Streams]} {
-	package require struct::matrix
-
+	# Extract data ...
 	set times [dict get $state times]
 
-	struct::matrix M
-	M add columns 5
+	# Sort by shell and testsuite, re-package into tuples.
+	set tmp {}
 	foreach k [lsort -dict [dict keys $times]] {
-	    M add row [list {*}$k {*}[dict get $times $k]]
+	    lassign $k                   shell suite
+	    lassign [dict get $times $k] ntests sec usec
+	    lappend tmp [list $shell $suite $ntests $sec $usec]
 	}
-	M sort rows -decreasing 4
 
-	M insert row 0 {Shell Testsuite Tests Seconds uSec/Test}
-	M insert row 1 {===== ========= ===== ======= =========}
-	M add    row   {===== ========= ===== ======= =========}
+	# Sort tuples by time per test, and transpose into
+	# columns. Add the header and footer lines.
+
+	lappend sh Shell     =====
+	lappend ts Testsuite =========
+	lappend nt Tests     =====
+	lappend ns Seconds   =======
+	lappend us uSec/Test =========
+
+	foreach item [lsort -index 4 -decreasing $tmp] {
+	    lassign $item shell suite ntests sec usec
+	    lappend sh $shell
+	    lappend ts $suite
+	    lappend nt $ntests
+	    lappend ns $sec
+	    lappend us $usec
+	}
+
+	lappend sh =====
+	lappend ts =========
+	lappend nt =====
+	lappend ns =======
+	lappend us =========
+
+	# Print the columns, each padded for vertical alignment.
 
 	Stream summary \nTimings...
-	Stream summary [M format 2string]
-	M destroy
+	foreach \
+	    shell  [strutil padr $sh] \
+	    suite  [strutil padr $ts] \
+	    ntests [strutil padr $nt] \
+	    sec    [strutil padr $ns] \
+	    usec   [strutil padr $us] {
+	    Stream summary "$shell $suite $ntests $sec $usec"
+	}
     }
 
     StreamsDone
