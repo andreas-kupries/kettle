@@ -28,7 +28,24 @@ namespace eval ::kettle::gui {
 proc ::kettle::gui::make {} {
     package require Tk
 
-    Actions {}
+    ttk::notebook .n
+    ttk::frame  .options
+    ttk::frame  .actions
+    ttk::button .exit -command ::_exit -text Exit
+
+    .n add .options -text Configuration -underline 0
+    .n add .actions -text Action        -underline 0
+
+    pack .n    -side top   -expand 1 -fill both
+    pack .exit -side right -expand 0 -fill both
+
+    Options     .options
+    Actions     .actions
+
+    .n select 1
+
+
+    #AddAction $win ::_exit Exit 1
 
     # Disable uncontrolled exit. This may come out of deeper layers,
     # like, for example, critcl compilation.
@@ -48,7 +65,7 @@ proc ::kettle::gui::make {} {
     return
 }
 
-proc ::kettle::gui::Actions {win} {
+proc ::kettle::gui::Options {win} {
     variable INSTALLPATH
 
     set top $win ; if {$top eq {}} { set top . }
@@ -57,10 +74,22 @@ proc ::kettle::gui::Actions {win} {
     # ability to extend that database from the GUI.
     # ==> ttk notebook, tree.
 
-    package require widget::scrolledwindow ; # Tklib
-
     label ${win}.l -text {Install Path: }
     entry ${win}.e -textvariable ::kettle::gui::INSTALLPATH
+
+    grid ${win}.l  -row 0 -column 0 -sticky new
+    grid ${win}.e  -row 0 -column 1 -sticky new
+
+    grid columnconfigure $top 0 -weight 0
+    grid columnconfigure $top 1 -weight 1
+
+    set INSTALLPATH [info library]
+}
+
+proc ::kettle::gui::Actions {win} {
+    set top $win ; if {$top eq {}} { set top . }
+
+    package require widget::scrolledwindow ; # Tklib
 
     # TODO: Extend recipe definitions to carry this information.
     set special {help help-recipes help-options show show-configuration show-state}
@@ -77,22 +106,15 @@ proc ::kettle::gui::Actions {win} {
 	AddActionForRecipe $win $r
     }
 
-    AddAction $win ::_exit Exit 1
-
     widget::scrolledwindow ${win}.st -borderwidth 1 -relief sunken
-    text ${win}.t
+    text                   ${win}.t
+
     ${win}.st setwidget ${win}.t
 
-    grid ${win}.l  -row 0 -column 0 -sticky new
-    grid ${win}.e  -row 0 -column 1 -sticky new
-    grid ${win}.st -row 1 -column 0 -sticky swen \
+    grid ${win}.st -row 0 -column 0 -sticky swen \
 	-columnspan 2 -rowspan [NumActions]
 
-    grid columnconfigure $top 0 -weight 0
-    grid columnconfigure $top 1 -weight 1
     grid columnconfigure $top 2 -weight 0
-
-    set INSTALLPATH [info library]
 
     io setwidget ${win}.t
     return
