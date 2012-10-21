@@ -8,6 +8,8 @@
 namespace eval ::kettle::recipe {
     namespace export {[a-z]*}
     namespace ensemble create
+
+    namespace import ::kettle::strutil
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -38,7 +40,7 @@ proc ::kettle::recipe::define {name description arguments script args} {
     # ::kettle. This provide access to various internal commands
     # without making them visible to the user/DSL.
 
-    set description [Reflow $description]
+    set description [strutil reflow $description]
     io trace {DEF $name}
 
     Init $name
@@ -92,7 +94,7 @@ proc ::kettle::recipe::help {prefix} {
 	    io puts [join $help \n]
 	}
     }
-
+    io puts ""
     return
 }
 
@@ -175,80 +177,6 @@ proc ::kettle::recipe::Children {name} {
 	lappend result $c
     }
     return $result
-}
-
-proc ::kettle::recipe::Reflow {help} {
-    return [Indent [Undent [string trim $help]] {    }]
-}
-
-proc ::kettle::recipe::Indent {text prefix} {
-    set text [string trimright $text]
-    set res {}
-    foreach line [split $text \n] {
-	if {[string trim $line] eq {}} {
-	    lappend res {}
-	} else {
-	    lappend res $prefix[string trimright $line]
-	}
-    }
-    return [join $res \n]
-}
-
-proc ::kettle::recipe::Undent {text} {
-    if {$text eq {}} { return {} }
-
-    set lines [split $text \n]
-    set ne {}
-    foreach l $lines {
-	if {[string length [string trim $l]] == 0} continue
-	lappend ne $l
-    }
-
-    set lcp [LCP $ne]
-    if {$lcp eq {}} { return $text }
-
-    regexp "^(\[\t \]*)" $lcp -> lcp
-    if {$lcp eq {}} { return $text }
-
-    set len [string length $lcp]
-
-    set res {}
-    foreach l $lines {
-	if {[string trim $l] eq {}} {
-	    lappend res {}
-	} else {
-	    lappend res [string range $l $len end]
-	}
-    }
-    return [join $res \n]
-}
-
-proc ::kettle::recipe::LCP {list} {
-    if {[llength $list] <= 1} {
-	return [lindex $list 0]
-    }
-
-    set list [lsort $list]
-    set min [lindex $list 0]
-    set max [lindex $list end]
-
-    # Min and max are the two strings which are most different. If
-    # they have a common prefix, it will also be the common prefix for
-    # all of them.
-
-    # Fast bailouts for common cases.
-
-    set n [string length $min]
-    if {$n == 0}      { return "" }
-    if {$min eq $max} { return $min }
-
-    set prefix ""
-    set i 0
-    while {[string index $min $i] eq [string index $max $i]} {
-	append prefix [string index $min $i]
-	if {[incr i] > $n} {break}
-    }
-    return $prefix
 }
 
 # # ## ### ##### ######## ############# #####################

@@ -33,6 +33,7 @@ namespace eval ::kettle {
 ## @owns: recipes.tcl
 ## @owns: standard.tcl
 ## @owns: status.tcl
+## @owns: strutil.tcl
 ## @owns: tcl.tcl
 ## @owns: tclapp.tcl
 ## @owns: testsuite.tcl
@@ -53,7 +54,8 @@ namespace eval ::kettle {
 ::apply {{selfdir} {
     # # ## ### ##### ######## ############# ##################### Foundation
     source $selfdir/lambda.tcl     ; # Nicer way of writing apply
-    source $selfdir/try.tcl        ; # try/finally in Tcl, snarfed from 8.6
+    source $selfdir/try.tcl        ; # try/finally coded in Tcl, snarfed from 8.6
+    source $selfdir/strutil.tcl    ; # String utilities.
     source $selfdir/io.tcl         ; # Message output support.
     source $selfdir/status.tcl     ; # General goal status.
     source $selfdir/recipes.tcl    ; # Recipe management.
