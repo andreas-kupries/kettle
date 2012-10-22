@@ -1,4 +1,8 @@
 
+task:	write docs for all the commands
+	starting with user commands and working
+	down the layers
+
 todo: 	Extend recipe definitions with flags the gui can use to
       	determine sort order, and the set it should not show ...
 	... A category string/tag? Allows grouping of other
@@ -9,21 +13,10 @@ options:	document the use cases and implementation
 		- need 3rd for override (invoke)?
 		- works without, because o-processing ordered.
 
-
-idea:	$HOME/.kettle option file, for standard setup
-	(like no color, ...)
-
 note:	no need for hooks to define local kettle recipes and support!
 	=> use source and existing commands. example:
 
 		source [path sourcedir mydefinitions.tcl]
-
-
-task:	write docs for all the commands
-	starting with user commands and working
-	down the layers
-
-
 
 task:	gui use separators for button groups
 	what to do when list of recipes = buttons way to large?
