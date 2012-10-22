@@ -14,12 +14,10 @@ proc ::kettle::Application {} {
 	# Process arguments: -f, -trace, --* options, and goals
 
 	if {[lindex $argv 0] eq {-f}} {
-	    set argv [lassign $argv __ path]
+	    set argv     [lassign $argv __ path]
 	    set declfile [path norm $path]
-
 	} elseif {[file exists build.tcl]} {
 	    set declfile [path norm build.tcl]
-
 	} else {
 	    io err {
 		io puts "Build declaration file neither specified, nor found"
@@ -27,12 +25,22 @@ proc ::kettle::Application {} {
 	    ::exit 1
 	}
 
+	# Early trace activation.
 	if {[lindex $argv 0] eq {-trace}} {
 	    set argv [lrange $argv 1 end]
 	    option set --verbose on
 	}
 
 	set goals {}
+
+	set dotfile ~/.kettle
+	if {[file exists   $dotfile] &&
+	    [file isfile   $dotfile] &&
+	    [file readable $dotfile]} {
+	    io trace {Loading dotfile $dotfile ...}
+	    set argv [list {*}[path cat $dotfile] {*}$argv]
+	}
+
 	while {[llength $argv]} {
 	    set o [lindex $argv 0]
 	    switch -glob -- $o {
