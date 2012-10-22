@@ -1,9 +1,4 @@
 
-fix:	--dry-run likely not working properly for various situations.
-
-
-task:	gui for options
-
 task:	rename 'drop' to 'uninstall'
 
 
