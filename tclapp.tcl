@@ -28,7 +28,7 @@ proc ::kettle::tclapp {fname} {
 	    [info nameofexecutable]
     } $src
 
-    recipe define drop-app-$fname "Uninstall application $fname" {src} {
+    recipe define uninstall-app-$fname "Uninstall application $fname" {src} {
 	path uninstall-application \
 	    $src [path bindir]
     } $src
@@ -40,9 +40,9 @@ proc ::kettle::tclapp {fname} {
     recipe parent install-tcl-applications install-applications
     recipe parent install-applications     install
 
-    recipe parent drop-app-$fname       drop-tcl-applications
-    recipe parent drop-tcl-applications drop-applications
-    recipe parent drop-applications     drop
+    recipe parent uninstall-app-$fname       uninstall-tcl-applications
+    recipe parent uninstall-tcl-applications uninstall-applications
+    recipe parent uninstall-applications     uninstall
     return
 }
 

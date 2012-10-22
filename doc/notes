@@ -1,7 +1,4 @@
 
-task:	rename 'drop' to 'uninstall'
-
-
 todo: 	Extend recipe definitions with flags the gui can use to
       	determine sort order, and the set it should not show ...
 	... A category string/tag? Allows grouping of other

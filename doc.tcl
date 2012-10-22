@@ -113,7 +113,7 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	return
     } $htmlsrc $htmldst
 
-    recipe define drop-doc-manpages {
+    recipe define uninstall-doc-manpages {
 	Uninstall manpages
     } {src dst} {
 	path uninstall-file-set \
@@ -122,7 +122,7 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	return
     } $mansrc $mandst
 
-    recipe define drop-doc-html {
+    recipe define uninstall-doc-html {
 	Uninstall HTML documentation
     } {dst} {
 	path uninstall-file-group \
@@ -134,9 +134,9 @@ proc ::kettle::doc {{docsrcdir doc}} {
     recipe parent install-doc-manpages install-doc
     recipe parent install-doc install
 
-    recipe parent drop-doc-html     drop-doc
-    recipe parent drop-doc-manpages drop-doc
-    recipe parent drop-doc drop
+    recipe parent uninstall-doc-html     uninstall-doc
+    recipe parent uninstall-doc-manpages uninstall-doc
+    recipe parent uninstall-doc uninstall
 
     recipe parent validate-doc validate
     return

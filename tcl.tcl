@@ -57,7 +57,7 @@ proc ::kettle::TclSetup {root files pn pv} {
 	}
     } $pkgdir $root $files $pn $pv
 
-   recipe define drop-package-$pn "Uninstall package $pn $pv" {pkgdir pn pv} {
+   recipe define uninstall-package-$pn "Uninstall package $pn $pv" {pkgdir pn pv} {
        path uninstall-file-group "package $pn $pv" $pkgdir
    } $pkgdir $pn $pv
 
@@ -68,9 +68,9 @@ proc ::kettle::TclSetup {root files pn pv} {
     recipe parent install-tcl-packages install-packages
     recipe parent install-packages     install
 
-    recipe parent drop-package-$pn  drop-tcl-packages
-    recipe parent drop-tcl-packages drop-packages
-    recipe parent drop-packages     drop
+    recipe parent uninstall-package-$pn  uninstall-tcl-packages
+    recipe parent uninstall-tcl-packages uninstall-packages
+    recipe parent uninstall-packages     uninstall
 
     recipe parent install-package-$pn debug-package-$pn  
     recipe parent debug-package-$pn   debug-tcl-packages
