@@ -76,8 +76,10 @@ proc ::kettle::option::define {o description {default {}} {type string}} {
 proc ::kettle::option::onchange {o arguments script args} {
     variable def
     lappend arguments option old new
-    dict set def $o setter \
-	[lambda@ ::kettle::option $arguments $script {*}$args]
+    dict update def $o o {
+	dict lappend o setter \
+	    [lambda@ ::kettle::option $arguments $script {*}$args]
+    }
     return
 }
 
@@ -196,18 +198,28 @@ proc ::kettle::option::get {o} {
     return [dict get $config $o]
 }
 
+proc ::kettle::option::type {o} {
+    variable def
+
+    if {![dict exists $def $o]} {
+	return -code error "Unable to retrieve type of unknown option $o."
+    }
+
+    return [dict get $def $o type]
+}
+
 proc ::kettle::option::reportchange {type o old new} {
     variable def
     if {![dict exists $def $o setter]} return
     ::set setter [dict get $def $o setter]
-    if {$setter eq {}} return
+    if {![llength $setter]} return
     variable change
-    lappend change $type
-    try {
-	{*}$setter $o $old $new
-    } trap {KETTLE OPTION VETO} {e opts} {
-	return {*}${opts} "Bad option $o: $e"
+    lappend  change $type
+
+    foreach s $setter {
+	{*}$s $o $old $new
     }
+
     ::set change [lreplace $change end end]
     return
 }
@@ -286,7 +298,7 @@ apply {{} {
     define --exec-prefix {
 	Path to the root directory for the installation of binaries.
 	Default is $(--prefix).
-    } {} path
+    } {} directory
     onchange --exec-prefix {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
@@ -300,21 +312,21 @@ apply {{} {
 	Default is the directory of the tclsh running kettle.
 	Default is $(--exec-prefix)/bin should --exec-prefix get
 	defined by the user.
-    } {} path
+    } {} directory
     onchange --bin-dir {} { set! --bin-dir [path norm $new] }
     define --lib-dir {
 	Path to binary libraries.
 	Default is [info library] of the tclsh running kettle.
 	Default is $(--exec-prefix)/lib should --exec-prefix get
 	defined by the user.
-    } {} path
+    } {} directory
     onchange --lib-dir {} { set! --lib-dir [path norm $new] }
 
     define --prefix {
 	Path to the root directory for the installation of any files.
 	Default is the twice parent directory of [info library] of the
 	tclsh running kettle.
-    } {} path
+    } {} directory
     onchange --prefix {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
@@ -328,19 +340,19 @@ apply {{} {
     define --man-dir {
 	Path to the root directory to install manpages into.
 	Default is $(--prefix)/man.
-    } {} path
+    } {} directory
     onchange --man-dir     {} { set! --man-dir [path norm $new] }
 
     define --html-dir {
 	Path to the root directory to install HTML documentation into.
 	Default is $(--prefix)/html.
-    } {} path
+    } {} directory
     onchange --html-dir    {} { set! --html-dir [path norm $new] }
 
     define --include-dir {
 	Path to the root directory to install C header files into.
 	Default is $(--prefix)/include.
-    } {} path
+    } {} directory
     onchange --include-dir {} { set! --include-dir [path norm $new] }
 
     set-default --prefix [file dirname [file dirname [info library]]]
@@ -357,7 +369,7 @@ apply {{} {
 	*~ _FOSSIL_ .fslckout .fos .git .svn CVS .hg RCS SCCS
 	*.bak *.bzr *.cdv *.pc _MTN _build _darcs _sgbak blib
 	autom4te.cache cover_db ~.dep ~.dot ~.nib ~.plst
-    } string
+    } listsimple
     no-work-key --ignore-glob
 
     # - -- --- ----- -------- -------------
@@ -410,7 +422,7 @@ apply {{} {
 	Path to a file containing shared work state.
 	Used for communication between kettle parent and child
 	processes.
-    } {} rfile
+    } {} readable.file
     no-work-key --state
     onchange    --state {} { status load $new }
 
@@ -418,7 +430,7 @@ apply {{} {
 	Path to a file overriding the option configuration in full.
 	Used for communication between kettle parent and child
 	processes.
-    } {} rfile
+    } {} readable.file
     no-work-key --config
     onchange    --config {} { load $new }
 
