@@ -125,6 +125,7 @@ proc ::kettle::path::htmldir {{path {}}} {
 
 proc ::kettle::path::set-executable {path} {
     io trace {	!chmod ugo+x   $path}
+    dry-barrier
     catch {
 	file attributes $path -permissions ugo+x
     }
@@ -140,6 +141,8 @@ proc ::kettle::path::rgrep {pattern data} {
 }
 
 proc ::kettle::path::fixhashbang {file shell} {
+    dry-barrier
+
     set in [open $file r]
     gets $in line
     if {![string match "#!*tclsh*" $line]} {
@@ -428,90 +431,92 @@ proc ::kettle::path::write {path contents args} {
 }
 
 proc ::kettle::path::copy-file {src dstdir} {
-    # copy single file into destination _directory_
-    # Fails on an existing file.
+    # Copy single file into destination _directory_
+    # Fails goal on an existing file.
 
     io puts -nonewline "\tInstalling file \"[file tail $src]\": "
+
+    dry-barrier
+
     if {[catch {
-	if {![kettle option get --dry]} {
-	    file copy $src $dstdir/[file tail $src]
-	}
+	file copy $src $dstdir/[file tail $src]
     } msg]} {
 	io err { io puts "FAIL ($msg)" }
-	status fail
-	return 0
+	status fail "FAIL ($msg)"
     } else {
 	io ok { io puts OK }
-	return 1
     }
 }
 
 proc ::kettle::path::copy-files {dstdir args} {
-    # copy multiple files into a destination _directory_
-    # Fails on an existing file.
+    # Copy multiple files into a destination _directory_
+    # Fails goal on an existing file.
     foreach src $args {
-	if {![copy-file $src $dstdir]} { return 0 }
+	copy-file $src $dstdir
     }
-    return 1
+    return
 }
 
 proc ::kettle::path::remove-path {base path} {
     # General uninstallation of a file or directory.
 
     io puts -nonewline "\tUninstalling \"[relative $base ${path}]\": "
+
+    dry-barrier
+
     if {[catch {
-	if {![kettle option get --dry]} {
 	file delete -force $path
-	}
     } msg]} {
 	io err { io puts "FAIL ($msg)" }
 	status fail
-	return 0
     } else {
 	io ok { io puts OK }
-	return 1
     }
 }
 
 proc ::kettle::path::remove-paths {base args} {
     # General uninstallation of multiple files.
     foreach path $args {
-	if {![remove-path $base $path]} { return 0 }
+	remove-path $base $path
     }
-    return 1
+    return
 }
 
 proc ::kettle::path::install-application {src dstdir} {
-    # install single-file application into destination _directory_.
+    # Install single-file application into destination _directory_.
     # a previously existing file is moved out of the way.
 
     set fname [file tail $src]
     io puts "Installing application \"$fname\""
     io puts "    Into [relativesrc $dstdir]"
 
-    if {![kettle option get --dry]} {
-	# Save existing file, if any.
-	file delete -force $dstdir/${fname}.old
-	catch {
-	    file rename $dstdir/${fname} $dstdir/${fname}.old
-	}
+    dry-barrier {
+	# Simulated run, has its own dry-barrier.
+	copy-file $src $dstdir
     }
 
-    if {![copy-file $src $dstdir]} {
+    # Save existing file, if any.
+    file delete -force $dstdir/${fname}.old
+    catch {
+	file rename $dstdir/${fname} $dstdir/${fname}.old
+    }
+
+    try {
+	copy-file $src $dstdir
+    } trap {KETTLE STATUS FAIL} {e o} {
 	# Failed, restore previous, if any.
 	catch {
 	    file rename $dstdir/${fname}.old $dstdir/${fname}
 	}
+	return {*}$o $e
     }
 
-    if {![kettle option get --dry]} {
-	set-executable $dstdir/$fname
-    }
+    set-executable $dstdir/$fname
     return
 }
 
 proc ::kettle::path::install-script {src dstdir shell} {
-    # install single-file script application into destination _directory_.
+    # Install single-file script application into destination _directory_.
     # a previously existing file is moved out of the way.
 
     set fname [file tail $src]
@@ -519,26 +524,31 @@ proc ::kettle::path::install-script {src dstdir shell} {
     io puts "Installing script \"$fname\""
     io puts "    Into [relativesrc $dstdir]"
 
-    # Save existing file, if any.
-    if {![kettle option get --dry]} {
-	file mkdir $dstdir
-	file delete -force $dstdir/${fname}.old
-	catch {
-	    file rename $dstdir/${fname} $dstdir/${fname}.old
-	}
+    dry-barrier {
+	# Simulated run, has its own dry-barrier.
+	copy-file $src $dstdir
     }
 
-    if {![copy-file $src $dstdir]} {
+    # Save existing file, if any.
+    file mkdir $dstdir
+    file delete -force $dstdir/${fname}.old
+    catch {
+	file rename $dstdir/${fname} $dstdir/${fname}.old
+    }
+
+    try {
+	copy-file $src $dstdir
+    } trap {KETTLE STATUS FAIL} {e o} {
 	# Failed, restore previous, if any.
 	catch {
 	    file rename $dstdir/${fname}.old $dstdir/${fname}
 	}
+
+	return {*}$o $e
     }
 
-    if {![kettle option get --dry]} {
-	fixhashbang    $dstdir/$fname $shell
-	set-executable $dstdir/$fname
-    }
+    fixhashbang    $dstdir/$fname $shell
+    set-executable $dstdir/$fname
     return
 }
 
@@ -550,29 +560,32 @@ proc ::kettle::path::install-file-group {label dstdir args} {
     io puts "Installing $label"
     io puts "    Into [relativesrc $dstdir]"
 
+    dry-barrier {
+	# Simulated installation (has its own dry-barrier).
+	copy-files $dstdir {*}$args
+    }
+
     set new ${dstdir}-new
     set old ${dstdir}-old
 
-    if {![kettle option get --dry]} {
-	# Clean temporary destination. Remove left-overs from previous runs.
-	file delete -force $new
-	file mkdir         $new
-    }
+    # Clean temporary destination. Remove left-overs from previous runs.
+    file delete -force $new
+    file mkdir         $new
 
-    if {![copy-files $new {*}$args]} {
+    try {
+	copy-files $new {*}$args
+    } trap {KETTLE STATUS FAIL} {e o} {
 	file delete -force $new
-	return
+	return {*}$o $e
     }
 
     # Now shuffle old and new things around to put the new into place.
     io puts -nonewline {    Commmit: }
     if {[catch {
-	if {![kettle option get --dry]} {
-	    file delete -force $old
-	    catch { file rename $dstdir $old }
-	    file rename -force $new $dstdir
-	    file delete -force $old
-	}
+	file delete -force $old
+	catch { file rename $dstdir $old }
+	file rename -force $new $dstdir
+	file delete -force $old
     } msg]} {
 	io err { io puts "FAIL ($msg)" }
 	status fail
@@ -629,7 +642,7 @@ proc ::kettle::path::uninstall-file-set {label dstdir args} {
     ## for others it might make sense ...
 
     foreach f $args {
-	if {![remove-path $dstdir $dstdir/$f]} return
+	remove-path $dstdir $dstdir/$f
     }
     return
 }
@@ -699,6 +712,18 @@ proc ::kettle::path::in {path script} {
 
 # # ## ### ##### ######## ############# #####################
 ## Internal
+
+proc ::kettle::path::dry-barrier {{dryscript {}}} {
+    if {![kettle option get --dry]} return
+    # dry run: notify, ... 
+    if {$dryscript eq {}} {
+	io cyan { io puts {!dry run!} }
+    } else {
+	uplevel 1 $dryscript
+    }
+    # ... and abort caller.
+    return -code return
+}
 
 proc ::kettle::path::T {words} {
     set r {}

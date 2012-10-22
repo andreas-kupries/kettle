@@ -11,7 +11,7 @@ namespace eval ::kettle { namespace export testsuite }
 kettle option define --with-shell {
     'test' option. Path of the shell to run the tests with.
     Defaults to the tclsh running the kettle build code.
-} [kettle path norm [info nameofexecutable]]
+} [kettle path norm [info nameofexecutable]] readable.file
 
 kettle option no-work-key --with-shell
 kettle option onchange    --with-shell {} {

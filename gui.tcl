@@ -14,10 +14,11 @@ namespace eval ::kettle::gui {
 ## State
 
 namespace eval ::kettle::gui {
-    variable INSTALLPATH {}
-    variable buttons     {}
+    variable actions     {}
+    variable options     {}
 
     namespace import ::kettle::io
+    namespace import ::kettle::ovalidate
     namespace import ::kettle::option
     namespace import ::kettle::recipe
     namespace import ::kettle::status
@@ -26,48 +27,24 @@ namespace eval ::kettle::gui {
 # # ## ### ##### ######## ############# #####################
 
 proc ::kettle::gui::make {} {
-    variable INSTALLPATH
-
-    # Dynamic adaptation to the config database contents, and
-    # ability to extend that database from the GUI.
-    # ==> ttk notebook, tree.
-
     package require Tk
-    package require widget::scrolledwindow ; # Tklib
 
-    label  .l -text {Install Path: }
-    entry  .e -textvariable ::kettle::gui::INSTALLPATH
+    ttk::notebook .n
+    ttk::frame  .options
+    ttk::frame  .actions
+    ttk::button .exit -command ::_exit -text Exit
 
-    # TODO: Extend recipe definitions to carry this information.
-    set special {help help-recipes help-options show show-configuration show-state}
-    set ignore  {gui null list list-recipes list-options}
+    .n add .options -text Configuration -underline 0
+    .n add .actions -text Action        -underline 0
 
-    foreach r $special {
-	# treat a few recipes out of order to have them at the top.
-	MakeGoalButton $r
-    }
-    foreach r [lsort -dict [recipe names]] {
-	# ignore the standard recipes which are nonsensical for the
-	# gui, and those which we treated out of order (see above).
-	if {($r in $ignore) || ($r in $special)} continue
-	MakeGoalButton $r
-    }
+    pack .n    -side top   -expand 1 -fill both
+    pack .exit -side right -expand 0 -fill both
 
-    MakeButton ::_exit Exit 1
+    Options     .options
+    Actions     .actions
 
-    widget::scrolledwindow .st -borderwidth 1 -relief sunken
-    text .t
-    .st setwidget .t
-
-    grid .l  -row 0 -column 0 -sticky new
-    grid .e  -row 0 -column 1 -sticky new
-    grid .st -row 1 -column 0 -sticky swen -columnspan 2 -rowspan [NButtons]
-
-    grid columnconfigure . 0 -weight 0
-    grid columnconfigure . 1 -weight 1
-    grid columnconfigure . 2 -weight 0
-
-    set INSTALLPATH [info library]
+    .n select 0 ; # Configuration
+    #.n select 1 ; # Actions
 
     # Disable uncontrolled exit. This may come out of deeper layers,
     # like, for example, critcl compilation.
@@ -82,68 +59,135 @@ proc ::kettle::gui::make {} {
 
     wm protocol . WM_DELETE_WINDOW ::_exit
 
-    io setwidget .t
-
     # And start to interact with the user.
     vwait forever
     return
+}
 
+proc ::kettle::gui::Options {win} {
+    set top $win ; if {$top eq {}} { set top . }
+
+    # TODO: Have this information directly attached to the option itself.
+    set ignore {--state --config}
+
+    foreach o [lsort -dict [option names]] {
+	if {$o in $ignore} continue
+	AddOption $win $o
+    }
+    return
+}
+
+proc ::kettle::gui::AddOption {win o} {
+    variable options
+    set row [llength $options]
+
+    set top $win ; if {$top eq {}} { set top . }
+
+    set type [option type $o]
+
+    label                  ${win}.l$row -text $o -anchor w
+    ovalidate {*}$type gui ${win}.e$row $o
+
+    grid ${win}.l$row  -row $row -column 0 -sticky new
+    grid ${win}.e$row  -row $row -column 1 -sticky new
+
+    grid columnconfigure $top 0 -weight 0
+    grid columnconfigure $top 1 -weight 1
+    grid rowconfigure    $top $row -weight 0
+
+    lappend options ${win}.i$row
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+
+proc ::kettle::gui::Actions {win} {
+    set top $win ; if {$top eq {}} { set top . }
+
+    package require widget::scrolledwindow ; # Tklib
+
+    # TODO: Extend recipe definitions to carry this information.
+    set special {help help-recipes help-options show show-configuration show-state}
+    set ignore  {gui null list list-recipes list-options}
+
+    foreach r $special {
+	# treat a few recipes out of order to have them at the top.
+	AddActionForRecipe $win $r
+    }
+    foreach r [lsort -dict [recipe names]] {
+	# ignore the standard recipes which are nonsensical for the
+	# gui, and those which we treated out of order (see above).
+	if {($r in $ignore) || ($r in $special)} continue
+	AddActionForRecipe $win $r
+    }
+
+    widget::scrolledwindow ${win}.st -borderwidth 1 -relief sunken
+    text                   ${win}.t
+
+    ${win}.st setwidget ${win}.t
+
+    set n [NumActions]
+
+    grid ${win}.st -row 0 -column 0 -sticky swen -rowspan $n
+
+    grid columnconfigure $top  0 -weight 1
+    grid columnconfigure $top  1 -weight 0
+    grid rowconfigure    $top $n -weight 1
+
+    io setwidget ${win}.t
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Internal help.
 
-proc ::kettle::gui::NButtons {} {
-    variable buttons
-    llength $buttons
+proc ::kettle::gui::NumActions {} {
+    variable actions
+    llength $actions
 }
 
-proc ::kettle::gui::MakeGoalButton {goal} {
-    MakeButton [list ::kettle::gui::Run $goal] [Label $goal] 0
+proc ::kettle::gui::AddActionForRecipe {win r} {
+    AddAction $win [list ::kettle::gui::Run $win $r] [Label $r] 0
 }
 
-proc ::kettle::gui::MakeButton {cmd label weight} {
-    variable buttons
-    set row [llength $buttons]
+proc ::kettle::gui::AddAction {win cmd label weight} {
+    variable actions
+    set row [llength $actions]
+
+    set top $win ; if {$top eq {}} { set top . }
 
     # ttk::button -> no -anchor option, labels centered.
-    button .i$row -command $cmd -text $label -anchor w
-    grid .i$row -row $row -column 2 -sticky new
-    grid rowconfigure . $row -weight $weight
+    button ${win}.i$row -command $cmd -text $label -anchor w
+    grid   ${win}.i$row -row $row -column 1 -sticky new
+    grid rowconfigure $top $row -weight $weight
 
-    lappend buttons .i$row
+    lappend actions ${win}.i$row
     return
 }
 
-proc ::kettle::gui::Label {goal} {
-    set r {}
-    foreach e [split $goal -] {
-	lappend r [string totitle $e]
+proc ::kettle::gui::Label {recipe} {
+    set result {}
+    foreach e [split $recipe -] {
+	lappend result [string totitle $e]
     }
-    return [join $r { }]
+    return [join $result { }]
 }
 
-proc ::kettle::gui::Run {goal} {
-    variable INSTALLPATH
+proc ::kettle::gui::Run {win recipe} {
+    Action disabled
 
-    #set argv [list $INSTALLPATH]
-    #=> update option database
+    ${win}.t delete 0.1 end
 
-    State disabled
-
-    .t delete 0.1 end
-
-    option set --lib-dir $INSTALLPATH
-    recipe run $goal
+    recipe run $recipe
 
     status clear
-    State normal
+    Action normal
     return
 }
 
-proc ::kettle::gui::State {e} {
-    variable buttons
-    foreach b $buttons {
+proc ::kettle::gui::Action {e} {
+    variable actions
+    foreach b $actions {
 	$b configure -state $e
     }
     return

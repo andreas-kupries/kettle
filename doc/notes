@@ -1,11 +1,11 @@
 
-fix:	--dry-run likely not working properly for various situations.
-
-
-task:	gui for options
-
 task:	rename 'drop' to 'uninstall'
 
+
+todo: 	Extend recipe definitions with flags the gui can use to
+      	determine sort order, and the set it should not show ...
+	... A category string/tag? Allows grouping of other
+	recipes also.
 
 options:	document the use cases and implementation
 		- user/default - 2-level priority
@@ -30,7 +30,6 @@ task:	write docs for all the commands
 
 task:	gui use separators for button groups
 	what to do when list of recipes = buttons way to large?
-
 
 task:	auto show the used options and values in log
 	when running a recipe.
