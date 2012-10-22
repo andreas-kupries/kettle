@@ -107,7 +107,7 @@ proc ::kettle::CritclSetup {root file pn pv} {
 	CritclDo $pkgdir $root $pnc $pn $pv {*}$cmd
     } $pkgdir $root $file $pn $pv
 
-    recipe define drop-package-$pn "Uninstall package $pn $pv" {pkgdir pn pv} {
+    recipe define uninstall-package-$pn "Uninstall package $pn $pv" {pkgdir pn pv} {
 	path uninstall-file-group "package $pn $pv" $pkgdir
     } $pkgdir $pn $pv
 
@@ -119,9 +119,9 @@ proc ::kettle::CritclSetup {root file pn pv} {
     recipe parent debug-binary-packages debug-packages
     recipe parent debug-packages        debug
 
-    recipe parent drop-package-$pn     drop-binary-packages
-    recipe parent drop-binary-packages drop-packages
-    recipe parent drop-packages        drop
+    recipe parent uninstall-package-$pn     uninstall-binary-packages
+    recipe parent uninstall-binary-packages uninstall-packages
+    recipe parent uninstall-packages        uninstall
 
     # critcl specific target
     # - Wrap the critcl package into a regular TEA-based buildsystem.
