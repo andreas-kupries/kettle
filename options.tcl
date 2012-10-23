@@ -227,13 +227,13 @@ proc ::kettle::option::reportchange {type o old new} {
 proc ::kettle::option::save {} {
     variable config
 
-    ::set path   [kettle path tmpfile config_]
+    ::set path   [path tmpfile config_]
     ::set serial [dict filter $config key --*]
 
     dict unset serial --state
     dict unset serial --config
 
-    kettle path write $path $serial
+    path write $path $serial
     io trace {options saved to    $path}
     return $path
 }
@@ -245,7 +245,7 @@ proc ::kettle::option::load {file} {
     # Note: See how this bypasses all the setters. The configuration
     # is loaded as is. With setters active the state may change
     # from what we loaded, depending on order of options. Bad.
-    ::set config [dict merge $config [kettle path cat $file]]
+    ::set config [dict merge $config [path cat $file]]
 
     # Special handling of --verbose, i.e. activate, as if the setter
     # had been run.
