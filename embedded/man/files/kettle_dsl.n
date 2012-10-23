@@ -337,8 +337,8 @@ If documentation files are found the command will define the
 recipe "doc" which, when invoked, will convert the documentation into
 HTML and nroff and save the result of that conversion into the
 directory specified by \fBkettle doc-destination\fR (see below) or
-\fBkettle\fR's option \fB--doc-destination\fR. The default for
-this is "\fIembedded\fR".
+\fBkettle\fR's option \fB--with-doc-destination\fR. The default
+for this is "\fIembedded\fR".
 .sp
 It will further define the recipes
 .RS
