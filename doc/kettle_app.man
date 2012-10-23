@@ -1,0 +1,24 @@
+[comment {-*- tcl -*- --- doctools ---}]
+[manpage_begin kettle_dsl n 0]
+[include include/general.inc]
+[titledesc {Kettle - Application - Build Interpreter}]
+[description]
+[para]
+[include include/welcome.inc]
+[para]
+
+[section {The kettle application}]
+    [include include/app.inc]
+
+[section {Options}]
+    [include include/options.inc]
+
+[section {Standard Recipes}]
+    [include include/r_standard.inc]
+
+[section {build.tcl Example}]
+    [include include/app_example.inc]
+
+[include include/license.inc]
+[include include/feedback.inc]
+[manpage_end]

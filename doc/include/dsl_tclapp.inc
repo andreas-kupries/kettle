@@ -8,14 +8,31 @@ This command declares the presence of a Tcl script application found
 at the [arg path] under the package source directory.
 
 [para] If the specified application is found the command will define
-two recipes to install and uninstall this application, with the names
-"install-app-[arg path]" and ""drop-app-[arg path]".
+two recipes to install and uninstall this application, namely:
 
-[para] It will further extend the recipes "install-tcl-applications",
-"install-applications", "install", "drop-tcl-applications",
-"drop-applications", and "drop".  This enables the package builder to
-(un)install the application as part of various groups.
+[list_begin definitions]
+[def [const install-app-[arg path]]]
+[def [const uninstall-app-[arg path]]]
+[list_end]
 
-[comment { ## TODO ## Describe --bin-dir, and defaults }]
+[para] It will further extend the recipes
+[list_begin definitions]
+[def [const install-tcl-applications]]
+[def [const install-applications]]
+[def [const install]]
+[def [const uninstall-tcl-applications]]
+[def [const uninstall-applications]]
+[def [const uninstall]]
+[list_end]
+
+This enables the package builder to (un)install the application as
+part of various groups.
+
+[para] Applications are installed into the application bin/ directory
+(--bin-dir, despite technically not being binary files).
+
+[list_begin options]
+[include o_bindir.inc]
+[list_end]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]

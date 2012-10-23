@@ -18,21 +18,42 @@ directory specified by [cmd {kettle doc-destination}] (see below) or
 this is [file embedded].
 
 [para] It will further define the recipes
-[list_begin enumerated]
-[enum] "install-doc-manpages"
-[enum] "install-doc-html"
-[enum] "drop-doc-manpages"
-[enum] "drop-doc-html"
+[list_begin definitions]
+[def [const install-doc-html]]
+[def [const install-doc-manpages]]
+[def [const uninstall-doc-html]]
+[def [const uninstall-doc-manpages]]
 [list_end]
 
-and extend the recipes "install-doc", "install", "drop-doc", and
-"drop".  This enables the package builder to (un)install the
-documentation, all, or in part.
+and extend the recipes
 
-[comment { ## TODO ## Describe --html-dir, --man-dir, and defaults }]
+[list_begin definitions]
+[def [const install-doc]]
+[def [const install]]
+[def [const uninstall-doc]]
+[def [const uninstall]]
+[list_end]
 
-[para] The documentation in these recipes is taken from the doc
-destination directory in the package sources (see recipe "doc" above).
+This enables the package builder to (un)install the documentation
+whole or in part.
+
+The installation of the documentation is influenced by the two
+following options:
+
+[list_begin options]
+[include o_htmldir.inc]
+[include o_mandir.inc]
+[list_end]
+
+Another relevant option is
+
+[list_begin options]
+[include o_docdestination.inc]
+[list_end]
+
+[para]	The documentation in the install recipes is taken from the
+	doc-destination directory in the package sources (see recipe
+	"doc" above).
 
 [para] Now for various important notes, limitations, etc.:
 
@@ -41,11 +62,12 @@ destination directory in the package sources (see recipe "doc" above).
 [enum]	This command is run for effect only once, even if invoked
 	multiple times. First invocation wins.
 
-[enum]	This command is run implicitly by [cmd {kettle tcl}].
+[enum]	This command is run implicitly by [cmd {kettle tcl}] and
+	[cmd {kettle critcl3}].
 
 [enum]	The previous two items together mean that any non-standard
 	settings, be it documentation root or destination must come
-	before [cmd {kettle tcl}], if that command is used.
+	before these commands, if they are used.
 
 [enum]	Documentation files are recognized by containing any of the
 	markers
@@ -73,6 +95,10 @@ destination directory in the package sources (see recipe "doc" above).
 	perform the various conversions. It will fail if this
 	application cannot be found on the [var PATH].
 
+[list_begin options]
+[include o_with_dtplite.inc]
+[list_end]
+
 [enum]	This command calls "[cmd {kettle figures}] [arg docroot]/figures"
 	to search for and handle diagrams. Any non-standard settings
 	for diagrams must be declared before [cmd {kettle doc}] itself
@@ -90,7 +116,10 @@ saves its conversion results by default in the sub-directory
 [para]	This command is for the general adjustment of this default
 	destination for the package/application.
 
-[para]	It can also be adjusted on a per-run basis through the option
-	[option --doc-destination] of [cmd kettle]
+[para]	It can also be adjusted on a per-run basis, through the option
+
+[list_begin options]
+[include o_docdestination.inc]
+[list_end]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]

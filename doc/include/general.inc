@@ -1,6 +1,6 @@
 [comment {-*- tcl -*- --- !doctools --- manpage}]
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
-[moddesc   {Kettle Quick Brew System}]
+[moddesc   {Kettle - The Quick Brew System}]
 [category  {Build support}]
 [keywords  {build tea}]
 [require Tcl 8.5]
