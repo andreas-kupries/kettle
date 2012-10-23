@@ -33,7 +33,7 @@ proc ::kettle::Application {} {
 
 	set goals {}
 
-	set dotfile ~/.kettle
+	set dotfile ~/.kettle/x
 	if {[file exists   $dotfile] &&
 	    [file isfile   $dotfile] &&
 	    [file readable $dotfile]} {
@@ -64,7 +64,6 @@ proc ::kettle::Application {} {
 	::source $declfile
 
 	# And execute the chosen goals
-
 	recipe run {*}[option get @goals]
 
 	# Were we invoked as sub-process? If yes, save the work state
