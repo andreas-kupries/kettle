@@ -45,16 +45,12 @@ the kettle interpreter application.
 [para] The relevant manpages are
 
 [list_begin enumerated]
+[enum] [term {Kettle - Application - Build Interpreter}]
 [enum] [term {Kettle - Build Declarations}]
-[para] This is what is important to a kettle user.
-[para] Everything else below is the reference documentation
-       for kettle developers and maintainers.
+[para] Above is what is important to a kettle user.
+[para] Below is the reference documentation for kettle developers and
+       maintainers.
 [enum] [term {Kettle - Core}]
-[enum] [term {Kettle - Utilities}]
-[enum] [term {Kettle - Tcl Packages}]
-[enum] [term {Kettle - Tcl Script Applications}]
-[enum] [term {Kettle - Documentation}]
-[enum] [term {Kettle - Figures}]
 [list_end]
 
 [include include/feedback.inc]

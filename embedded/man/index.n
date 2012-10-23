@@ -248,7 +248,7 @@ build tea
 kettle
 .TP
 \fBfiles/kettle_app.n\fR
-kettle_dsl
+kettle_app
 .TP
 \fBfiles/kettle_changes.n\fR
 kettle_changes
