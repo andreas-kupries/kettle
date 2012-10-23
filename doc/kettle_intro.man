@@ -36,8 +36,8 @@ kettle's DSL, etc.
 
 The image below provides a basic overview of the system's
 architecture, with a package's custom build file at the top, using DSL
-commands from the declaration and core layers, under the mediation of
-the kettle interpreter application.
+commands from core layer, under the mediation of the kettle
+application.
 
 [para][image architecture]
 
