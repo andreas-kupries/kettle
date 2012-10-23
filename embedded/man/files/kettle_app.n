@@ -237,10 +237,10 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "kettle_dsl" n 0 doc "Kettle - The Quick Brew System"
+.TH "kettle_app" n 0 doc "Kettle - The Quick Brew System"
 .BS
 .SH NAME
-kettle_dsl \- Kettle - Application - Build Interpreter
+kettle_app \- Kettle - Application - Build Interpreter
 .SH SYNOPSIS
 package require \fBTcl  8.5\fR
 .sp

@@ -304,24 +304,16 @@ the kettle interpreter application.
 .PP
 The relevant manpages are
 .IP [1]
+\fIKettle - Application - Build Interpreter\fR
+.IP [2]
 \fIKettle - Build Declarations\fR
 .sp
-This is what is important to a kettle user.
+Above is what is important to a kettle user.
 .sp
-Everything else below is the reference documentation
-for kettle developers and maintainers.
-.IP [2]
-\fIKettle - Core\fR
+Below is the reference documentation for kettle developers and
+maintainers.
 .IP [3]
-\fIKettle - Utilities\fR
-.IP [4]
-\fIKettle - Tcl Packages\fR
-.IP [5]
-\fIKettle - Tcl Script Applications\fR
-.IP [6]
-\fIKettle - Documentation\fR
-.IP [7]
-\fIKettle - Figures\fR
+\fIKettle - Core\fR
 .PP
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain

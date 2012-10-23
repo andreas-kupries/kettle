@@ -242,7 +242,7 @@ Database Class:	\\fB\\$3\\fR
 doc
 .RS
 .TP
-\fBkettle_dsl\fR
+\fBkettle_app\fR
 \fIfiles/kettle_app.n\fR: Kettle - Application - Build Interpreter
 .TP
 \fBkettle_dsl\fR
