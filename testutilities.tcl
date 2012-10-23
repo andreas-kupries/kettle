@@ -15,11 +15,11 @@ proc ::kt::source {path} {
     uplevel 1 [list ::source [file join $testsDirectory $path]]
 }
 
-proc kt::find {pattern} {
+proc ::kt::find {pattern} {
     return [lsort -dict [glob -nocomplain -directory $::tcltest::testsDirectory $pattern]]
 }
 
-proc kt::source* {pattern} {
+proc ::kt::source* {pattern} {
     foreach f [find $pattern] {
 	uplevel 1 [list ::source $f]
     }
@@ -118,7 +118,7 @@ namespace eval ::kt {
 # Result:
 #	The canonical representation of the dictionary.
 
-proc kt::dictsort {dict} {
+proc ::kt::dictsort {dict} {
     array set a $dict
     set out [list]
     foreach key [lsort -dict [array names a]] {

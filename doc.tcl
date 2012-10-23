@@ -29,7 +29,7 @@ proc ::kettle::doc-destination {dstdir} {
     # (2) The user may wish to redirect the generated documenation
     # somewhere else.
 
-    option set --with-doc-destination $dstdir
+    option set-default --with-doc-destination $dstdir
     return
 }
 
