@@ -14,8 +14,8 @@ path relative to the source directory we are in.
 recipe "doc" which, when invoked, will convert the documentation into
 HTML and nroff and save the result of that conversion into the
 directory specified by [cmd {kettle doc-destination}] (see below) or
-[syscmd kettle]'s option [option --doc-destination]. The default for
-this is [file embedded].
+[syscmd kettle]'s option [option --with-doc-destination]. The default
+for this is [file embedded].
 
 [para] It will further define the recipes
 [list_begin definitions]
@@ -48,7 +48,7 @@ following options:
 Another relevant option is
 
 [list_begin options]
-[include o_docdestination.inc]
+[include o_with_docdestination.inc]
 [list_end]
 
 [para]	The documentation in the install recipes is taken from the
@@ -119,7 +119,7 @@ saves its conversion results by default in the sub-directory
 [para]	It can also be adjusted on a per-run basis, through the option
 
 [list_begin options]
-[include o_docdestination.inc]
+[include o_with_docdestination.inc]
 [list_end]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]

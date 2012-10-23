@@ -317,18 +317,33 @@ to run the \fBkettle\fR application.
 If the option \fB--exec-prefix\fR is modified the default
 value changes to "\fI\fB--exec-prefix\fR/bin\fR".
 .TP
-\fB--doc-destination\fR path
-This configuration option specifies the path to the directory the
-generated documentation should be placed into for the documentation
-installa recipes to pick up from.
+\fB--color\fR boolean
+The value of this configuration option determines if output is
+colorized or not.
 .sp
-This should be a relative path, which will interpreted relative
-to the package source directory.
+The default value is platform-dependent.
+On windows the default is \fBoff\fR, disabling colorization.
+On unix the default is \fBon\fR, activating colorization. Except if
+it could be determined that the script's \fBstdout\fR is not a
+proper terminal, then the default is \fBoff\fR.
 .sp
-The default value is "\fIembedded\fR".
+For this last check the system attempts to use the package
+\fBTclx\fR. If that package is not available then it cannot be
+determined if \fBstdout\fR is a proper terminal, thus colorization
+is active.
+.TP
+\fB--config\fR path
+This is an internal option used by kettle for the communication
+between parent and child instances when handling a recursive
+invokation. The generated file specified as the value of the option
+holds the configuration of the parent, for the child to read and use.
+.TP
+\fB--color\fR boolean
+The value of this configuration option determines if (un)installation
+modifies the file system (\fBoff\fR) or not (\fBon\fR == dry run).
 .sp
-A build declaration file can override this default with the
-\fBkettle doc-destination\fR command.
+The default value is \fBoff\fR. This means that the system
+will modify the file system as instructed by recipes.
 .TP
 \fB--exec-prefix\fR path
 This configuration option specifies the path to the root directory for
@@ -419,6 +434,21 @@ of the \fBtclsh\fR used to run the \fBkettle\fR application.
 If the option \fB--exec-prefix\fR is modified the default
 value changes to "\fI\fB--exec-prefix\fR/lib\fR".
 .TP
+\fB--log\fR path
+An option for recipe 'test', if defined. Its value is the path "stem"
+for a series of files testsuite information is saved into. The actual
+files use the specified stem and add their specifc file extension to
+it.
+.sp
+The default is the empty string, disabling the saving of
+testsuite information.
+.TP
+\fB--log-mode\fR compact|full
+An option for recipe 'test', if defined. Its value determines the
+verbosity of test suite information printed to the terminal or log window.
+.sp
+The default is \fBcompact\fR.
+.TP
 \fB--man-dir\fR path
 This configuration option specifies the path to the directory package
 documentation (manpages, in *roff format) will be installed into.
@@ -432,6 +462,70 @@ all platform-independent (non-binary) installation files.
 The default value is the twice parent of the
 [\fBinfo library\fR] directory of the \fBtclsh\fR used to
 run the \fBkettle\fR application.
+.TP
+\fB--state\fR path
+This is an internal option used by kettle for the communication
+between parent and child instances when handling a recursive
+invokation. The generated file specified as the value of the option
+holds the work state of the parent, for the child to read and extend.
+.TP
+\fB--target\fR string
+The value of this option is the target name \fBcritcl\fR should use
+to build C code.
+.sp
+The default value is the empty string, leaving the choice of
+target to \fBcritcl\fR itself.
+.TP
+\fB--verbose\fR boolean
+The value of this configuration option determines if tracing of system
+internals is done (\fBon\fR), or not (\fBoff\fR). This is the
+option equivalent of the special flag \fB-trace\fR.
+.sp
+The default value is \fBoff\fR, disabling tracing of internals.
+.TP
+\fB--doc-destination\fR path
+This configuration option specifies the path to the directory the
+generated documentation should be placed into for the documentation
+installa recipes to pick up from.
+.sp
+This should be a relative path, which will interpreted relative
+to the package source directory.
+.sp
+The default value is "\fIembedded\fR".
+.sp
+A build declaration file can override this default with the
+\fBkettle doc-destination\fR command.
+.TP
+\fB--with-critcl3\fR path
+This configuration option specifies the path to the tool
+\fBcritcl3\fR for the compilation and installation of critcl-based
+C code.
+.sp
+The default value is the path to the first of
+.RS
+.IP [1]
+"\fIcritcl3\fR",
+.IP [2]
+"\fIcritcl3.kit\fR",
+.IP [3]
+"\fIcritcl3.tcl\fR",
+.IP [4]
+"\fIcritcl3.exe\fR",
+.IP [5]
+"\fIcritcl\fR",
+.IP [6]
+"\fIcritcl.kit\fR",
+.IP [7]
+"\fIcritcl.tcl\fR", and
+.IP [8]
+"\fIcritcl.exe\fR"
+.RE
+.IP
+found on the \fBPATH\fR. None of these matter however should the
+system find the package \fBcritcl\fR version 3 or higher among the
+packages known to the \fBtclsh\fR running the \fBkettle\fR
+application. In that case kettle will run everything in itself,
+without invoking critcl child processes.
 .TP
 \fB--with-dia\fR path
 This configuration option specifies the path to the tool
@@ -454,6 +548,8 @@ The default value is the path to the first of
 "\fIdtplite.tcl\fR", and
 "\fIdtplite.exe\fR"
 found on the \fBPATH\fR.
+.TP
+\fB--with-shell\fR path
 .PP
 .SH "STANDARD RECIPES"
 The following recipes are understood by \fBkettle\fR regardless of
@@ -500,13 +596,13 @@ after processing the dot-file and command line settings.
 .SH "BUILD.TCL EXAMPLE"
 A simple example of a build.tcl script is that for kettle itself.
 .PP
-Stripping out the special code taking core of the fact that it
-cannot assume to be installed already this reduces to the code below,
-and of that only the last two lines are relevant in terms of build
-declarations. The first three are the magic to find and run the kettle
-application in the \fBPATH\fR
-(The actual code assumes that \fBkettle\fR is found the working
-directory, again it cannot assume to be installed already).
+Stripping out the special code taking care of the fact that it
+cannot assume to have kettle installed already this reduces to the
+code below, and of that only the last two lines are relevant in terms
+of build declarations. The first three are the (bourne) shell magic to
+find and run the kettle application in the \fBPATH\fR environment
+variable. (The actual code assumes that \fBkettle\fR is found the
+working directory, again it cannot assume to be installed already).
 .PP
 .CS
 
@@ -519,11 +615,12 @@ kettle tclapp kettle
 
 .CE
 .PP
-We ask it to search for and handle all Tcl script packages to
-be found in the directory of the "\fIbuild.tcl\fR" file, and that we
-have one script application in that same directory.
+The code asks the system to search for and handle all Tcl
+script packages to be found in the directory of the "\fIbuild.tcl\fR"
+file, and declares that we have a script application named
+\fBkettle\fR in the same directory.
 As the documentation files and figures are in the standard locations,
-we let \fBkettle tcl\fR handle them implicitly.
+\fBkettle tcl\fR is allowed to handle them implicitly.
 .PP
 Done.
 .SH LICENSE
