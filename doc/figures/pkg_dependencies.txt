@@ -10,8 +10,8 @@ standard  <- recipes, options, gui, strutil
 *tclapp    <- recipes, path, io
 app       <- recipes, options, path, status, (io), try
 gui       <- options, (ovalidate), recipes, status, (io)
-*depend    <- options
 
+*depend    <- options
 tool      <- options, io
 invoke    <- options, path, status, (io), try
 recipes   <- status, (io), strutil, try, lambda
