@@ -57,26 +57,32 @@ namespace eval ::kettle {
     source $selfdir/try.tcl        ; # try/finally coded in Tcl, snarfed from 8.6
     source $selfdir/strutil.tcl    ; # String utilities.
     source $selfdir/io.tcl         ; # Message output support.
+    # # ## ### ##### ######## ############# #####################
     source $selfdir/status.tcl     ; # General goal status.
-    source $selfdir/recipes.tcl    ; # Recipe management.
     source $selfdir/path.tcl       ; # General path utilities
-    source $selfdir/ovalidate.tcl  ; # Option management. Validation sub layer.
+    source $selfdir/ovalidate.tcl  ; # Option Validation sub layer.
     source $selfdir/options.tcl    ; # Option management.
+    # # ## ### ##### ######## ############# #####################
+    source $selfdir/recipes.tcl    ; # Recipe management.
     source $selfdir/invoke.tcl     ; # Goal recursion via sub-processes.
     source $selfdir/tool.tcl       ; # Manage tool requirements.
+    # # ## ### ##### ######## ############# #####################
     source $selfdir/gui.tcl        ; # GUI support.
+    source $selfdir/app.tcl        ; # Application core.
+    # # ## ### ##### ######## ############# #####################
     source $selfdir/standard.tcl   ; # Standard recipes.
+    # # ## ### ##### ######## ############# #####################
     # # ## ### ##### ######## ############# ##################### DSL
     source $selfdir/depend.tcl     ; # dependency setup.
     source $selfdir/tclapp.tcl     ; # tcl script applications
-    source $selfdir/tcl.tcl        ; # tcl packages
-    source $selfdir/critcl.tcl     ; # critcl v3 packages
-    source $selfdir/doc.tcl        ; # documentation (doctools)
     source $selfdir/figures.tcl    ; # figures       (diagram)
     source $selfdir/testsuite.tcl  ; # testsuite     (tcltest)
     source $selfdir/benchmarks.tcl ; # benchmarks    (tclbench)
-    # # ## ### ##### ######## ############# ##################### Application
-    source $selfdir/app.tcl        ; # Application core.
+    # # ## ### ##### ######## ############# #####################
+    source $selfdir/doc.tcl        ; # documentation (doctools)
+    # # ## ### ##### ######## ############# #####################
+    source $selfdir/tcl.tcl        ; # tcl packages
+    source $selfdir/critcl.tcl     ; # critcl v3 packages
     # # ## ### ##### ######## ############# #####################
     kettle::option::set @kettledir $selfdir
 }} [file dirname [file normalize [info script]]]
