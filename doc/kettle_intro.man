@@ -16,7 +16,6 @@ packages easy.
 [enum] A package implementing this DSL.
 [enum] An application which can serve as the interpreter for a build
        file containing commands in the above DSL.
-[enum] Plus some internal supporting packages.
 [list_end]
 
 All of these will be explained in the documentation, although not
@@ -42,14 +41,21 @@ the kettle interpreter application.
 
 [para][image architecture]
 
-[para] The relevant manpages are
+[para] The manpages relevant to a user of kettle, i.e. to a package
+developer wishing to use it as the build system for her code are:
 
 [list_begin enumerated]
 [enum] [term {Kettle - Application - Build Interpreter}]
 [enum] [term {Kettle - Build Declarations}]
-[para] Above is what is important to a kettle user.
-[para] Below is the reference documentation for kettle developers and
-       maintainers.
+[enum] [term {Kettle - Testsuite support}]
+[list_end]
+
+[para] For the developers and maintainers of kettle, and power users
+wishing to extend the system to handle their custom circumstances, we
+additionally have:
+
+[list_begin enumerated]
+[enum] [term {Kettle - The Developer's Guide}]
 [enum] [term {Kettle - Core}]
 [list_end]
 

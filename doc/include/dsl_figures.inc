@@ -6,44 +6,45 @@
 
 This command declares the presence of [package diagram]-based figures
 under the directory [arg figroot], which is a path relative to the
-source directory we are in.
+source directory.
 
 [para] If not specified [arg figroot] defaults to [file doc/figures].
 
-[para] If figures are found the command will define two recipes,
-"figures" and "show-figures". When invoked the first will convert the
-figures into raster images in PNG format and save them as siblings to
-their source files. The second will launch a [package Tk]-based GUI
-rendering the figures to a canvas.
+[para] While this command can be invoked multiple times, only the
+first invokation will have an effect. Every invokation after that is
+ignored.
 
-[para] Now for various important notes, limitations, etc.:
+The command [cmd {kettle doc}] (and indirectly [cmd {kettle tcl}] and
+[cmd {kettle critcl3}]) runs this command implicitly, with the default
+paths.
 
-[list_begin enumerated]
+This means that if diagrams are stored in a non-standard location
+[cmd {kettle figures}] must be run explicitly before them, with the
+proper path.
 
-[enum]	This command is run for effect only once, even if invoked
-	multiple times. First invocation wins.
+[para] The package diagram directory is scanned to locate the diagram
+files. They are recognized by containing the marker string
 
-[enum]	This command is run implicitly by [cmd {kettle doc}], using
-	its [arg docroot] as basis for [arg figroot], i.e.
-	[file [arg docroot]/figures].
+[list_begin itemized]
+[item] "[const "tcl.tk//DSL diagram//EN//"]"
+[list_end]
 
-[enum]	The previous two items together mean that any non-standard
-	settings for the figure root must come before
-	[cmd {kettle doc}], if that command is used, directly, or
-	indirectly (like through [cmd {kettle tcl}], for example).
+in their first 1024 characters.
 
-[enum]	Diagram files are recognized by containing the marker
+[para] When diagram files are found the command will define recipes to
+convert the diagrams into PNG raster images (saved as siblings to
+their source files), and to render the diagrams on a Tk canvas.
 
-	[list_begin itemized]
-	[item] "[const "tcl.tk//DSL diagram//EN//"]"
-	[list_end]
+[list_begin definitions]
+[def [const figures]]
+[def [const show-figures]]
+[list_end]
 
-	in their first 1024 characters.
+[para] The recipes use the [syscmd dia] application (of [package tklib])
+to perform the conversions, and GUI rendering.
 
-[enum]	The two recipes use the tklib [syscmd dia] application to
-	perform the conversion and GUI display. They will fail if
-	this application cannot be found on the [var PATH].
-
+[list_begin options]
+[include o_with_dia.inc]
 [list_end]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]

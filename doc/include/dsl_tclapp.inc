@@ -25,11 +25,28 @@ two recipes to install and uninstall this application, namely:
 [def [const uninstall]]
 [list_end]
 
-This enables the package builder to (un)install the application as
-part of various groups.
+generating a recipe tree matching
 
-[para] Applications are installed into the application bin/ directory
-(--bin-dir, despite technically not being binary files).
+[example {
+  install
+  -> install-applications
+     -> install-tcl-applications
+        -> install-app-$path
+
+  uninstall
+  -> uninstall-applications
+     -> uninstall-tcl-applications
+        -> uninstall-app-$path
+}]
+
+[para] The extended recipes may be created by this process. As other
+declarations create similar trees these get merged together, enabling
+a user to install parts of the sources at various levels of specifity,
+from just a specific application up to all and sundry.
+
+[para] Script applications are installed into the directory specified
+by option [option --bin-dir] despite technically not being binary
+files.
 
 [list_begin options]
 [include o_bindir.inc]
