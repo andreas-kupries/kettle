@@ -205,7 +205,7 @@ is active.</p></dd>
 between parent and child instances when handling a recursive
 invokation. The generated file specified as the value of the option
 holds the configuration of the parent, for the child to read and use.</p></dd>
-<dt><b class="option">--color</b> boolean</dt>
+<dt><b class="option">--dry</b> boolean</dt>
 <dd><p>The value of this configuration option determines if (un)installation
 modifies the file system (<b class="const">off</b>) or not (<b class="const">on</b> == dry run).</p>
 <p>The default value is <b class="const">off</b>. This means that the system
@@ -251,7 +251,7 @@ during directory scans, as a Tcl list of glob patterns to match.</p>
 </ol>
 <p>matching the special files and directories of various source code
 control systems, the backup files of various editors, and the like.</p></dd>
-<dt><b class="option">--man-dir</b> path</dt>
+<dt><b class="option">--include-dir</b> path</dt>
 <dd><p>This configuration option specifies the path to the directory package
 C header files will be installed into.</p>
 <p>The default value is &quot;<b class="file"><b class="variable">--prefix</b>/include</b>&quot;.</p></dd>
@@ -298,7 +298,7 @@ target to <b class="syscmd">critcl</b> itself.</p></dd>
 internals is done (<b class="const">on</b>), or not (<b class="const">off</b>). This is the
 option equivalent of the special flag <b class="option">-trace</b>.</p>
 <p>The default value is <b class="const">off</b>, disabling tracing of internals.</p></dd>
-<dt><b class="option">--doc-destination</b> path</dt>
+<dt><b class="option">--with-doc-destination</b> path</dt>
 <dd><p>This configuration option specifies the path to the directory the
 generated documentation should be placed into for the documentation
 installa recipes to pick up from.</p>

@@ -647,7 +647,7 @@ The default value is "\fI\fB--prefix\fR/man\fR".
 Another relevant option is
 .RS
 .TP
-\fB--doc-destination\fR path
+\fB--with-doc-destination\fR path
 This configuration option specifies the path to the directory the
 generated documentation should be placed into for the documentation
 installa recipes to pick up from.
@@ -737,7 +737,7 @@ destination for the package/application.
 It can also be adjusted on a per-run basis, through the option
 .RS
 .TP
-\fB--doc-destination\fR path
+\fB--with-doc-destination\fR path
 This configuration option specifies the path to the directory the
 generated documentation should be placed into for the documentation
 installa recipes to pick up from.
