@@ -7,6 +7,19 @@
 [include include/welcome.inc]
 [para]
 
+Here we document the kettle application available to a user of kettle,
+i.e. a package developer using (or wishing to use) kettle as the build
+system for their code.
+
+[para] This application resides between the kettle core and the build
+script written by the package developer, as shown in the archtectural
+diagram below.
+
+[para][image arch_app]
+
+[para] For the build (declaration) commands available to build scripts
+based on kettle see [term {Kettle - Build Declarations}].
+
 [section {The kettle application}]
     [include include/app.inc]
 
