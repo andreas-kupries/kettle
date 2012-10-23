@@ -11,30 +11,13 @@
 [section {Graphical Interface Support}] [include include/l_gui.inc]
 [section {Tool handling}]               [include include/l_tools.inc]
 [section {Recursive invokations}]       [include include/l_invoke.inc]
-[section {Option database}]             [include include/l_odb.inc]
+[section {Option database}]             [include include/l_options.inc]
 [section {Option Types and Validation}] [include include/l_ovalidate.inc]
 [section {Path utilities}]              [include include/l_pathutil.inc]
 [section {Recipe database}]             [include include/l_recipes.inc]
 [section {Status management}]           [include include/l_status.inc]
 [section {IO virtualization}]           [include include/l_io.inc]
 [section {General Utilities}]           [include include/l_util.inc]
-
-[comment {
-    %% ... layers, top down
-    %% gui
-    %% tools
-    %% invoke
-    %% options
-    %% ovalidate
-    %% path
-    %% recipes
-    %% status
-    %% io
-    %% strutil
-    %% try
-    %% lambda
-}]
-
 
 [include include/license.inc]
 [include include/feedback.inc]
