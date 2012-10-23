@@ -237,7 +237,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "kettle_changes" n 0 doc "Kettle Quick Brew System"
+.TH "kettle_changes" n 0 doc "Kettle - The Quick Brew System"
 .BS
 .SH NAME
 kettle_changes \- Kettle Changes
