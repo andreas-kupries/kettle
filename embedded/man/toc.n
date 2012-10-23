@@ -243,16 +243,13 @@ doc
 .RS
 .TP
 \fBkettle_dsl\fR
+\fIfiles/kettle_app.n\fR: Kettle - Application - Build Interpreter
+.TP
+\fBkettle_dsl\fR
 \fIfiles/kettle_dsl.n\fR: Kettle - Build Declarations
 .TP
 \fBkettle\fR
 \fIfiles/kettle.n\fR: Kettle - Core
-.TP
-\fBkettle_doc\fR
-\fIfiles/kettle_doc.n\fR: Kettle - Documentation
-.TP
-\fBkettle_figures\fR
-\fIfiles/kettle_figures.n\fR: Kettle - Figures
 .TP
 \fBkettle_sources\fR
 \fIfiles/kettle_sources.n\fR: Kettle - How To Get The Sources
@@ -263,20 +260,11 @@ doc
 \fBkettle_license\fR
 \fIfiles/kettle_license.n\fR: Kettle - License
 .TP
-\fBkettle_tcl\fR
-\fIfiles/kettle_tcl.n\fR: Kettle - Tcl Packages
-.TP
-\fBkettle_tclapp\fR
-\fIfiles/kettle_tclapp.n\fR: Kettle - Tcl Script Applications
-.TP
 \fBkettle_devguide\fR
 \fIfiles/kettle_devguide.n\fR: Kettle - The Developer's Guide
 .TP
 \fBkettle_install_guide\fR
 \fIfiles/kettle_installer.n\fR: Kettle - The Installer's Guide
-.TP
-\fBkettle_util\fR
-\fIfiles/kettle_util.n\fR: Kettle - Utilities
 .TP
 \fBkettle_changes\fR
 \fIfiles/kettle_changes.n\fR: Kettle Changes
