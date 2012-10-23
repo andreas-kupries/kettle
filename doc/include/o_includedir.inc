@@ -2,7 +2,7 @@
 [comment { option :: --include-dir :: }]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
-[opt_def --man-dir path]
+[opt_def --include-dir path]
 
 This configuration option specifies the path to the directory package
 C header files will be installed into.

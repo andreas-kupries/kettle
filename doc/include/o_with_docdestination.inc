@@ -1,8 +1,8 @@
 [comment {--- !doctools ---}]
-[comment { option :: --doc-destination :: }]
+[comment { option :: --with-doc-destination :: }]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
-[opt_def --doc-destination path]
+[opt_def --with-doc-destination path]
 
 This configuration option specifies the path to the directory the
 generated documentation should be placed into for the documentation

@@ -338,7 +338,7 @@ between parent and child instances when handling a recursive
 invokation. The generated file specified as the value of the option
 holds the configuration of the parent, for the child to read and use.
 .TP
-\fB--color\fR boolean
+\fB--dry\fR boolean
 The value of this configuration option determines if (un)installation
 modifies the file system (\fBoff\fR) or not (\fBon\fR == dry run).
 .sp
@@ -418,7 +418,7 @@ cover_db
 matching the special files and directories of various source code
 control systems, the backup files of various editors, and the like.
 .TP
-\fB--man-dir\fR path
+\fB--include-dir\fR path
 This configuration option specifies the path to the directory package
 C header files will be installed into.
 .sp
@@ -483,7 +483,7 @@ option equivalent of the special flag \fB-trace\fR.
 .sp
 The default value is \fBoff\fR, disabling tracing of internals.
 .TP
-\fB--doc-destination\fR path
+\fB--with-doc-destination\fR path
 This configuration option specifies the path to the directory the
 generated documentation should be placed into for the documentation
 installa recipes to pick up from.
