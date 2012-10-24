@@ -26,11 +26,27 @@ available in a directory of your choice.
 
 [section Requisites]
 
-Before Kettle can be build and used a number of requisites must be installed. These are:
+Before Kettle can be build and used a number of requisites must and/or
+should be installed. These are:
 
 [list_begin enumerated]
-[enum] The scripting language Tcl.
-       For details see [sectref Tcl].
+[enum]	The scripting language Tcl.
+	This requisite is mandatory.
+	For details see [sectref Tcl].
+
+[enum]	The package [package tcltest].
+	This requisite is optional.
+	For details see [sectref Tcltest].
+
+[enum]	The package [package Tclx].
+	This requisite is optional.
+	For details see [sectref Tclx].
+
+[enum]	The packages [package Tk], [package widget::scrolledwindow],
+	[package widget::listsimple], and [package widget::dialog].
+	These requisites are optional.
+	For details see [sectref Tk] and [sectref Tklib].
+
 [list_end]
 
 This list assumes that the machine where Kettle is to be installed is
@@ -40,6 +56,10 @@ still recommended to read their sections though, to validate that the
 dependencies they talk about are indeed installed.
 
 [include include/rq_tcl.inc]
+[include include/rq_tclx.inc]
+[include include/rq_tk.inc]
+[include include/rq_tklib.inc]
+[include include/rq_tcltest.inc]
 
 [section {Build & Installation}]
 
@@ -54,8 +74,10 @@ where [file /path/to/tclsh8.5] is the tclsh of your Tcl installation, and
 
 [para]
 
-This builds all packages and then places them in a directory where the
-[cmd tclsh8.5] will find them. 
+This will build the package and application and then places them into
+directories where the [cmd tclsh8.5] will find them. Note that the
+installed kettle application is modified to use the chosen tclsh
+instead of searching for one on the [var PATH].
 
 [para]
 
@@ -66,8 +88,8 @@ handling of a double-click is restricted to Windows only however.
 
 [para]
 
-On unix the same GUI is acessible by invoking [file build.tcl] with
-argument [const gui] instead of [const install].
+On unix the same GUI is acessible by invoking [file build.tcl] using
+[const gui] instead of [const install] in the example above.
 
 [para]
 
@@ -77,6 +99,18 @@ syntax, invoke [file build.tcl] with argument [method help], i.e., like
 [example {
     /path/to/tclsh8.5 /path/to/kettle/build.tcl help
 }]
+
+Other methods for gfetting various types of help are:
+
+[list_begin enumerated]
+[enum] help-recipes
+[enum] help-options
+[enum] help
+[enum] list-recipes
+[enum] list-options
+[enum] list
+[enum] show-configuration
+[list_end]
 
 [include include/feedback.inc]
 [manpage_end]
