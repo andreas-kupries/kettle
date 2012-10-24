@@ -36,7 +36,7 @@ should be installed. These are:
 
 [enum]	The package [package tcltest].
 	This requisite is optional.
-	For details see [sectref Tcltest].
+	For details see [sectref tcltest].
 
 [enum]	The package [package Tclx].
 	This requisite is optional.

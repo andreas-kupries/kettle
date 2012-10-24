@@ -7,6 +7,31 @@
 [include include/welcome.inc]
 [para]
 
+This document is the reference to all commands provided by the kettle
+package, from the user-visible declarations to the lowest utilities.
+
+[para] It is intended for both power-users wishing to write their own
+high-level commands linking into the existing foundations and
+developers and maintainers of kettle itself.
+
+[para] A basic user should read
+[term {Kettle - Application - Build Interpreter}]
+and [term {Kettle - Build Declarations}] instead.
+
+[section Overview]
+
+[include include/arch.inc]
+
+Each component C is generally served by a single ensemble command,
+"[cmd kettle] [method C]". The exceptions are the components exporting
+the user-visible declaration commands. Their commands, while still
+named "[cmd kettle] [method C]", are not ensembles, but the one
+command in that component.
+
+[para] The following sections go through the components from the top
+down to the bottom, starting with the user visible commands described
+in [term {Kettle - Build Declarations}], covering all the green boxes.
+
 [section {Build declarations}]          [include include/l_dsl.inc]
 [section {Graphical Interface Support}] [include include/l_gui.inc]
 [section {Tool handling}]               [include include/l_tools.inc]

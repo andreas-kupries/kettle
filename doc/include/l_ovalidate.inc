@@ -1,5 +1,5 @@
 [comment {--- !doctools ---}]
-[comment { support :: kettle XXX :: }]
+[comment { support :: kettle ovalidate :: }]
 
 This layer defines the validation types usable by the options.
 
