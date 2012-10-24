@@ -256,6 +256,18 @@ build code for Tcl packages.
 Please read the document \fIKettle - Introduction to Kettle\fR,
 if you have not done so already, to get an overview of the whole system.
 .PP
+Here we document the kettle application available to a user of kettle,
+i.e. a package developer using (or wishing to use) kettle as the build
+system for their code.
+.PP
+This application resides between the kettle core and the build
+script written by the package developer, as shown in the archtectural
+diagram below.
+.PP
+IMAGE: arch_app
+.PP
+For the build (declaration) commands available to build scripts
+based on kettle see \fIKettle - Build Declarations\fR.
 .SH "THE KETTLE APPLICATION"
 The \fBkettle\fR application is the main interpreter for build
 declarations. It can be used directly, or as a shell in the hash-bang

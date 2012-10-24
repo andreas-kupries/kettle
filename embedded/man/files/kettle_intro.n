@@ -261,8 +261,6 @@ A package implementing this DSL.
 .IP [3]
 An application which can serve as the interpreter for a build
 file containing commands in the above DSL.
-.IP [4]
-Plus some internal supporting packages.
 .PP
 All of these will be explained in the documentation, although not
 everything is for everybody. I.e. a user of the DSL requires a
@@ -281,8 +279,8 @@ kettle's DSL, etc.
 .SH "SYSTEM ARCHITECTURE"
 The image below provides a basic overview of the system's
 architecture, with a package's custom build file at the top, using DSL
-commands from the declaration and core layers, under the mediation of
-the kettle interpreter application.
+commands from core layer, under the mediation of the kettle
+application.
 .PP
 .PS
 .nf
@@ -302,17 +300,22 @@ the kettle interpreter application.
 .fi
 .PE
 .PP
-The relevant manpages are
+The manpages relevant to a user of kettle, i.e. to a package
+developer wishing to use it as the build system for her code are:
 .IP [1]
 \fIKettle - Application - Build Interpreter\fR
 .IP [2]
 \fIKettle - Build Declarations\fR
-.sp
-Above is what is important to a kettle user.
-.sp
-Below is the reference documentation for kettle developers and
-maintainers.
 .IP [3]
+\fIKettle - Testsuite support\fR
+.PP
+.PP
+For the developers and maintainers of kettle, and power users
+wishing to extend the system to handle their custom circumstances, we
+additionally have:
+.IP [1]
+\fIKettle - The Developer's Guide\fR
+.IP [2]
 \fIKettle - Core\fR
 .PP
 .SH "BUGS, IDEAS, FEEDBACK"
