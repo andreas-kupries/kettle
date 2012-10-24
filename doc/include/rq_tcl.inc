@@ -8,9 +8,9 @@ I will not belabor the point.
 [para] Out of the many possibilites use whatever you are comfortable
 with, as long as it provides Tcl 8.5, or higher.
 
-[para] This may be a Tcl installation provided by your operating
-system distribution, from a distribution-independent vendor, or built
-by yourself.
+This may be a Tcl installation provided by your operating system
+distribution, from a distribution-independent vendor, or built by
+yourself.
 
 [para] Myself, I used (and still use)
 [uri http://www.activestate.com ActiveState's]

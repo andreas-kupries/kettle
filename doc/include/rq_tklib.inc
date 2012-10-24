@@ -18,9 +18,9 @@ functional.
 os-independent vendor, building from sources) use whatever you are
 comfortable with.
 
-[para] Well, mostly. The package [package widget::listsimple]
-currently exists only in the CVS repository of Tklib (location at the
-end of the section), and in ActiveState's TEApot.
+Well, mostly. The package [package widget::listsimple] currently
+exists only in the CVS repository of Tklib (location at the end of the
+section), and in ActiveState's TEApot.
 
 [para] For myself, I am most comfortable with using
 [uri http://www.activestate.com ActiveState's]
@@ -50,7 +50,7 @@ to get everything and the kitchensink.
 relevant sources can be found at
 
 [list_begin definitions]
-[def Tclx] [uri http://sourceforge.net/projects/tcllib]
+[def Tcllib/Tklib] [uri http://sourceforge.net/projects/tcllib]
 [list_end]
 
 together with the necessary instructions on how to build it.

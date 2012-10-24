@@ -13,7 +13,7 @@ functional.
 are comfortable with, as long as it provides Tk 8.5, or higher (we use
 the themed widgets, and Tcl 8.5 is our base).
 
-[para] This may be a Tk package provided by your operating system
+This may be a Tk package provided by your operating system
 distribution, from a distribution-independent vendor, or built by
 yourself.
 

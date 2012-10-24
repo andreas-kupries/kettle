@@ -6,12 +6,16 @@
 [include include/welcome.inc]
 
 [para] This document is a guide for developers working on Kettle,
-i.e. maintainers fixing bugs, extending the package's functionality,
-etc.
+i.e. maintainers fixing bugs, extending the functionality of
+application or package, etc.
 
-[para]
+[para] Users of kettle wishing to write their own high-level commands
+linking into the existing foundations should read the
+[term {Kettle - Core}] document instead, as that is the reference
+manpage to the whole functionality available to them, and likely
+enough to get going.
 
-Please read
+[para] Please read
 
 [list_begin enum]
 [enum] [term {Kettle - License}],
@@ -21,7 +25,7 @@ Please read
 
 first, if that was not done already.
 
-Here we assume that the sources are already available in a directory
+[para] Here we assume that the sources are already available in a directory
 of your choice, and that you not only know how to build and install
 them, but also have all the necessary requisites to actually do
 so. The guide to the sources in particular also explains which source
@@ -31,9 +35,13 @@ etc.
 [section {Developing for Kettle}]
 
 [comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
-[subsection {Architecture & Concepts}]
+[subsection {Architecture}]
 
-[image architecture]
+[include include/arch.inc]
+
+[para] More information about the functionality made available by each
+component is found in [term {Kettle - Core}], the reference to all
+commands.
 
 [comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
 [subsection {Directory structure}]
@@ -72,12 +80,8 @@ is, for example, accessing the generated HTML.
 [comment =====================================================================]
 [def {Package Code, General structure}]
 
-TBD
-
-[comment =====================================================================]
-[def {Package Code, Per Package}]
-
-TBD
+See the second image in section [sectref Architecture], and the
+associated explanations.
 
 [list_end][comment {___1___}]
 
