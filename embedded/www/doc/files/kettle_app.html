@@ -136,6 +136,15 @@
 build code for Tcl packages.</p>
 <p>Please read the document <i class="term"><a href="kettle_intro.html">Kettle - Introduction to Kettle</a></i>,
 if you have not done so already, to get an overview of the whole system.</p>
+<p>Here we document the kettle application available to a user of kettle,
+i.e. a package developer using (or wishing to use) kettle as the build
+system for their code.</p>
+<p>This application resides between the kettle core and the build
+script written by the package developer, as shown in the archtectural
+diagram below.</p>
+<p><img alt="arch_app" src="../../image/arch_app.png"></p>
+<p>For the build (declaration) commands available to build scripts
+based on kettle see <i class="term"><a href="kettle_dsl.html">Kettle - Build Declarations</a></i>.</p>
 </div>
 <div id="section2" class="section"><h2><a name="section2">The kettle application</a></h2>
 <p>The <b class="cmd"><a href="kettle.html">kettle</a></b> application is the main interpreter for build

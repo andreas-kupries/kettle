@@ -270,4 +270,7 @@ kettle_license
 .TP
 \fBfiles/kettle_sources.n\fR
 kettle_sources
+.TP
+\fBfiles/kettle_test.n\fR
+kettle_test
 .RE

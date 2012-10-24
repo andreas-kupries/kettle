@@ -137,7 +137,6 @@ packages easy.</p>
 <li><p>A package implementing this DSL.</p></li>
 <li><p>An application which can serve as the interpreter for a build
        file containing commands in the above DSL.</p></li>
-<li><p>Plus some internal supporting packages.</p></li>
 </ol>
 <p>All of these will be explained in the documentation, although not
 everything is for everybody. I.e. a user of the DSL requires a
@@ -155,16 +154,21 @@ kettle's DSL, etc.</p>
 <div id="section3" class="section"><h2><a name="section3">System Architecture</a></h2>
 <p>The image below provides a basic overview of the system's
 architecture, with a package's custom build file at the top, using DSL
-commands from the declaration and core layers, under the mediation of
-the kettle interpreter application.</p>
+commands from core layer, under the mediation of the kettle
+application.</p>
 <p><img alt="architecture" src="../../image/architecture.png"></p>
-<p>The relevant manpages are</p>
+<p>The manpages relevant to a user of kettle, i.e. to a package
+developer wishing to use it as the build system for her code are:</p>
 <ol class="enumerated">
 <li><p><i class="term"><a href="kettle_app.html">Kettle - Application - Build Interpreter</a></i></p></li>
-<li><p><i class="term"><a href="kettle_dsl.html">Kettle - Build Declarations</a></i></p>
-<p>Above is what is important to a kettle user.</p>
-<p>Below is the reference documentation for kettle developers and
-       maintainers.</p></li>
+<li><p><i class="term"><a href="kettle_dsl.html">Kettle - Build Declarations</a></i></p></li>
+<li><p><i class="term">Kettle - Testsuite support</i></p></li>
+</ol>
+<p>For the developers and maintainers of kettle, and power users
+wishing to extend the system to handle their custom circumstances, we
+additionally have:</p>
+<ol class="enumerated">
+<li><p><i class="term"><a href="kettle_devguide.html">Kettle - The Developer's Guide</a></i></p></li>
 <li><p><i class="term"><a href="kettle.html">Kettle - Core</a></i></p></li>
 </ol>
 </div>
