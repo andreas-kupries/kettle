@@ -67,7 +67,7 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 	# Note: We build and install the package under test (and its
 	# dependencies) into a local directory (in the current working
 	# directory). We try to install a debug variant first, and if
-	# that fails a regular one. This is important for
+	# that fails a regular one.
 
 	set tmp [path norm [path tmpfile test_install_]]
 	try {
@@ -122,11 +122,6 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     # tcltest itself, utility commands it may need, etc. This
     # assumption allows us to run it directly, using our own
     # tcl executable as interpreter.
-
-    # options for tcltest. (l => line information for failed tests).
-
-    # Note: See tcllib's sak.tcl for a more mature and featureful
-    # system of running a testsuite and postprocessing results.
 
     StreamsBegin
     Stream log ============================================================
@@ -274,7 +269,6 @@ proc ::kettle::Test::ProcessLine {line} {
 
     TestStart;TestSkipped;TestPassed;TestFailed ; # cap/state => sync
 
-    #SetupError
     Aborted
     AbortCause
 
