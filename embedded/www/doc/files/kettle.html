@@ -150,8 +150,8 @@
 <li><a href="#7"><b class="cmd">kettle figures</b> <span class="opt">?<i class="arg">figroot</i>?</span></a></li>
 <li><a href="#8"><b class="cmd">kettle testsuite</b> <span class="opt">?<i class="arg">testroot</i>?</span></a></li>
 <li><a href="#9"><b class="cmd">kettle gui</b> <b class="method">make</b></a></li>
-<li><a href="#10"><b class="cmd">kettle tool</b> <b class="method">declare</b></a></li>
-<li><a href="#11"><b class="cmd">kettle tool</b> <b class="method">get</b></a></li>
+<li><a href="#10"><b class="cmd">kettle tool</b> <b class="method">declare</b> <i class="arg">names</i> <span class="opt">?<i class="arg">validator</i>?</span></a></li>
+<li><a href="#11"><b class="cmd">kettle tool</b> <b class="method">get</b> <i class="arg">name</i></a></li>
 <li><a href="#12"><b class="cmd">kettle</b> <b class="method">invoke</b></a></li>
 <li><a href="#13"><b class="cmd">kettle option</b> <b class="method">define</b></a></li>
 <li><a href="#14"><b class="cmd">kettle option</b> <b class="method">onchange</b></a></li>
@@ -834,17 +834,45 @@ testsuite information.</p></dd>
 graphical interface to the system.</p>
 <dl class="definitions">
 <dt><a name="9"><b class="cmd">kettle gui</b> <b class="method">make</b></a></dt>
-<dd></dd>
+<dd><p>This high-level command creates a standard graphical interface
+providing access to all options and defined recipes, through two tabs
+in a notebook.</p>
+<p>Options are handled by type specific fields, the details of
+which are created by the option type definitions found under
+<b class="cmd">kettle ovalidate</b>, as specified in section
+<span class="sectref"><a href="#section8">Option Types and Validation</a></span>.</p>
+<p>Recipes are acessible through one button per recipe.</p>
+<p>Output is written to a text widget acting as a log window, in
+the same tab which contains the action buttons.</p></dd>
 </dl>
 </div>
 <div id="section5" class="section"><h2><a name="section5">Tool handling</a></h2>
 <p>This layer contains commands to manage the declaration of a dependency
 on external comands, and their use.</p>
 <dl class="definitions">
-<dt><a name="10"><b class="cmd">kettle tool</b> <b class="method">declare</b></a></dt>
-<dd></dd>
-<dt><a name="11"><b class="cmd">kettle tool</b> <b class="method">get</b></a></dt>
-<dd></dd>
+<dt><a name="10"><b class="cmd">kettle tool</b> <b class="method">declare</b> <i class="arg">names</i> <span class="opt">?<i class="arg">validator</i>?</span></a></dt>
+<dd><p>This command declares the need for an external tool which can have any
+of the listed <i class="arg">names</i>.
+The first element of that list is the name the tool will be known
+under within kettle, also called the <i class="term">primary name</i> of the
+tool.
+This is the name to hand to <b class="cmd">kettle tool get</b> below to retrieve
+the tool's location.</p>
+<p>Similarly the primary name is used to define an option named
+--with-<b class="variable">name</b>, used to hold the path found by searching for the
+tool on the <b class="variable">PATH</b> under its various names, and to allow the user
+to override kettle's choice.</p>
+<p>If <i class="arg">validator</i> is specified it will be treated as the body
+of an anonymous procedure with a single argument <i class="arg">cmd</i>, the path
+of the tool found on <b class="variable">PATH</b> and returning a boolean value telling
+the caller if this path is acceptable (result == <b class="const">true</b>), or
+not. In case of the latter the system will continue searching with the
+next name in <i class="arg">names</i>.</p></dd>
+<dt><a name="11"><b class="cmd">kettle tool</b> <b class="method">get</b> <i class="arg">name</i></a></dt>
+<dd><p>This command returns the path to the <i class="arg">name</i>d tool, assuming that
+it was <b class="method">declare</b>d before.
+If no such tool is specified the command prints an error message and
+aborts the execution of the current recipe and its callers.</p></dd>
 </dl>
 </div>
 <div id="section6" class="section"><h2><a name="section6">Recursive invokations</a></h2>
