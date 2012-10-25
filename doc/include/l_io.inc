@@ -6,18 +6,21 @@ the higher layer's output from the actual destination, terminal or gui
 log window.
 
 [list_begin definitions]
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle io}] [method setwidget] [arg w]]
 
 This command sets the text widget to use for output, redirecting all
 output made through [cmd {kettle io puts}] and [cmd {kettle io trace}]
 from the terminal to this widget.
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle io}] [method for-gui] [arg script]]
 [call [cmd {kettle io}] [method for-terminal] [arg script]]
 
 These two command execute the script in their calling context if the
 IO system is using text widget or terminal for output, respectively.
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle io}] [method puts] [arg arg]...]
 
 This command is an emulation of Tcl's builtin [cmd puts] which writes
@@ -30,6 +33,7 @@ only if such a widget was set with [cmd {kettle io set-widget}].
 all other channels given to the command will go to their proper files,
 sockets, etc.
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle io}] [method trace] [arg text]]
 
 This command is the tracing of kettle internals. It will not produce
@@ -40,16 +44,19 @@ the callers context), resolving variables and commands embedded into
 it. This allows the use of brace-quoting, preventing the execution of
 such embedded commands while tracing is disabled.
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle io}] [method trace-on]]
 
 This command activates the tracing of internals, enabling
 [cmd {kettle io trace}] to produce output.
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle io}] [method {animation begin}]]
 [call [cmd {kettle io}] [method {animation write}]]
 [call [cmd {kettle io}] [method {animation indent}]]
 [call [cmd {kettle io}] [method {animation last}]]
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle io}] [arg tag] [arg script]]
 
 This command activates the color named by [arg tag], then executes the
@@ -75,6 +82,7 @@ support the nesting of color activations.
 [def [const white]]
 [list_end]
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle io}] m[arg tag] [arg text]]
 
 This command is similar to the previous, except that all color tags
