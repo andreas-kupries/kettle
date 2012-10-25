@@ -43,9 +43,9 @@ For the remainder:
 [def recipe]    [sectref {Recipe database}]  
 [def status]    [sectref {Status management}]
 [def io]        [sectref {IO virtualization}]
-[def lambda]    [sectref {Anonymous Procedures}]
-[def try]       [sectref {Error Handling}]
-[def strutil]   [sectref {String Processing}]
+[def lambda]    [sectref {Anonymous procedures}]
+[def try]       [sectref {Error handling}]
+[def strutil]   [sectref {String processing}]
 [list_end]
 
 [para] Not convered in the above is [file standard.tcl]. This file
