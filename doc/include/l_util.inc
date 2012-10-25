@@ -1,13 +1,15 @@
 [comment {--- !doctools ---}]
-[comment { support :: kettle struutil et. al. :: }]
+[comment { support :: kettle strutil et. al. :: }]
 
 This, the lowest layer of the system contains general utility commands
 for string processing, anonymous procedures and error handling.
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [subsection {Anonymous procedures}]
 
 [list_begin definitions]
-[call [cmd lambda] [arg arguments] [arg body] [opt [arg arg]...]]
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd lambda]                  [arg arguments] [arg body] [opt [arg arg]...]]
 [call [cmd lambda@] [arg namespace] [arg arguments] [arg body] [opt [arg arg]...]]
 
 These commands are wrappers around Tcl 8.5's builtin [cmd apply]
@@ -25,12 +27,13 @@ exceptions.
 [enum]  The @-variant takes the name of the [arg namespace] the body
 	will be executed in.
 [list_end]
-
 [list_end]
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [subsection {Error handling}]
 
 [list_begin definitions]
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd try] [arg arg]...]
 
 This command is an implementation of Tcl 8.6's try/trap/finally
@@ -44,9 +47,11 @@ builtin, before it got re-implemented in C and byte-coded.
 
 [list_end]
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [subsection {String processing}]
 
 [list_begin definitions]
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle strutil}] [method indent] [arg text] [arg prefix]]
 
 This command splits the input [arg text] into lines, indents each line
@@ -56,6 +61,7 @@ using the [arg prefix] and then returns the re-joined text.
 only whitespace). Any whitespace in empty lines is actually completely
 eliminated.
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle strutil}] [method padl] [arg list]]
 [call [cmd {kettle strutil}] [method padr] [arg list]]
 
@@ -75,7 +81,10 @@ of the same length. Useful when having to print a table. Provide a
 column of the table as input, and the result is properly aligned for
 printing.
 
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle strutil}] [method reflow]]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle strutil}] [method undent] [arg text]]
 
 This command splits the input [arg text] into lines, computes longest

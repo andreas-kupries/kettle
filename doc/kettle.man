@@ -50,7 +50,7 @@ For the remainder:
 
 [para] Not convered in the above is [file standard.tcl]. This file
 does not export any commands to document. It unconditionally defines
-the standard recipes instead. These are recipes which are always
+the standard recipes instead. These are the recipes which are always
 available, in contrast to the recipes dynamically created by the
 declarations commands in response to their scanning of a package
 source directory.
