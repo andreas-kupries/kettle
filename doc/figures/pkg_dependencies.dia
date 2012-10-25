@@ -155,7 +155,7 @@ proc tclapp {} {
 }
 
 proc gui {} {
-    dsl gui
+    box gui color red
     group { east ; move ; app }
     group {
 	down ; --- ; l ; --- 3 ; r ; ---> ; # recipe
