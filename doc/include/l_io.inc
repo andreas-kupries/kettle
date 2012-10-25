@@ -52,9 +52,39 @@ This command activates the tracing of internals, enabling
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle io}] [method {animation begin}]]
-[call [cmd {kettle io}] [method {animation write}]]
-[call [cmd {kettle io}] [method {animation indent}]]
-[call [cmd {kettle io}] [method {animation last}]]
+
+This command is the first in a group of four implementing the
+foundations for text-based progress bars and the like.
+
+[para] When invoked it initializes the internal state for writing on
+the last line of the terminal without moving into the next line. This
+sets the maximum column used to [const 0], and the current prefix to
+the empty string.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd {kettle io}] [method {animation write}] [arg text]]
+
+This command writes the concatenation of the current prefix and input
+[arg text] to the current line, clearing and then overwriting the
+previous content of the same line. By writing different texts an
+animation effect can be generated, with only the prefix staying
+constant. The command takes care to track the largest column
+characters have been written to and to clear them even if the current
+string does not cover them.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd {kettle io}] [method {animation indent}] [arg text]]
+
+This command extends the current prefix with [arg text]. Nothing else
+happens.
+
+[comment {- - -- --- ----- -------- ------------- ---------------------}]
+[call [cmd {kettle io}] [method {animation last}] [arg text]]
+
+This command is the last in the group of four handling animation
+effects. It first [method write]s the [arg text] as usual and then
+moves the terminal to the next line, making [arg text] the last
+shown string of the animation and that which is kept shown.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle io}] [arg tag] [arg script]]
