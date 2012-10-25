@@ -22,7 +22,7 @@ exceptions.
 
 [list_begin enumerated]
 [enum]	There is no procedure name. Obviously.
-[enum]	After the procedure body we user can pre-specify some or all
+[enum]	After the procedure body we can pre-specify some or all
 	of the procedure arguments, i.e. perform currying.
 [enum]  The @-variant takes the name of the [arg namespace] the body
 	will be executed in.

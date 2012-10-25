@@ -30,7 +30,7 @@ set movelength  [5 mm]
 
 set B [block {
     set C [area " Core Package: kettle" \
-	       width  [80 mm] \
+	       width  [100 mm] \
 	       height [25 mm]]
 
     block {
@@ -40,6 +40,8 @@ set B [block {
 
 	east
 	xbox tcl
+	move
+	xbox critcl3
 	move
 	xbox tclapp
 	move

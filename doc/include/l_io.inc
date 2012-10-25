@@ -17,7 +17,7 @@ from the terminal to this widget.
 [call [cmd {kettle io}] [method for-gui] [arg script]]
 [call [cmd {kettle io}] [method for-terminal] [arg script]]
 
-These two command execute the script in their calling context if the
+These two commands execute the script in their calling context if the
 IO system is using text widget or terminal for output, respectively.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
