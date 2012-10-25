@@ -82,7 +82,14 @@ column of the table as input, and the result is properly aligned for
 printing.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
-[call [cmd {kettle strutil}] [method reflow]]
+[call [cmd {kettle strutil}] [method reflow] [arg text] [opt [arg prefix]]]
+
+This command strips empty header and footer lines from the input
+[arg text], undents it and then re-indents using the [arg prefix]. If
+the latter is not specified it will default to 4 spaces.
+
+[para] The result of all the modifications is then returned as the
+result of the command.
 
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
 [call [cmd {kettle strutil}] [method undent] [arg text]]

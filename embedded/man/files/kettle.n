@@ -428,97 +428,45 @@ package require \fBTcl  8.5\fR
 .sp
 \fBkettle status\fR \fBclear\fR
 .sp
-\fBkettle io\fR \fBsetwidget\fR
+\fBkettle io\fR \fBsetwidget\fR \fIw\fR
 .sp
-\fBkettle io\fR \fBfor-gui\fR
+\fBkettle io\fR \fBfor-gui\fR \fIscript\fR
 .sp
-\fBkettle io\fR \fBfor-terminal\fR
+\fBkettle io\fR \fBfor-terminal\fR \fIscript\fR
 .sp
-\fBkettle io\fR \fBputs\fR
+\fBkettle io\fR \fBputs\fR \fIarg\fR...
 .sp
-\fBkettle io\fR \fBtrace\fR
+\fBkettle io\fR \fBtrace\fR \fItext\fR
 .sp
 \fBkettle io\fR \fBtrace-on\fR
 .sp
 \fBkettle io\fR \fBanimation begin\fR
 .sp
-\fBkettle io\fR \fBanimation write\fR
+\fBkettle io\fR \fBanimation write\fR \fItext\fR
 .sp
-\fBkettle io\fR \fBanimation indent\fR
+\fBkettle io\fR \fBanimation indent\fR \fItext\fR
 .sp
-\fBkettle io\fR \fBanimation last\fR
+\fBkettle io\fR \fBanimation last\fR \fItext\fR
 .sp
-\fBkettle io\fR \fBfail\fR
+\fBkettle io\fR \fItag\fR \fIscript\fR
 .sp
-\fBkettle io\fR \fBok\fR
+\fBkettle io\fR m\fItag\fR \fItext\fR
 .sp
-\fBkettle io\fR \fBwarn\fR
+\fBlambda\fR \fIarguments\fR \fIbody\fR ?\fIarg\fR...?
 .sp
-\fBkettle io\fR \fBerr\fR
+\fBlambda@\fR \fInamespace\fR \fIarguments\fR \fIbody\fR ?\fIarg\fR...?
 .sp
-\fBkettle io\fR \fBnote\fR
+\fBtry\fR \fIarg\fR...
 .sp
-\fBkettle io\fR \fBdebug\fR
+\fBkettle strutil\fR \fBindent\fR \fItext\fR \fIprefix\fR
 .sp
-\fBkettle io\fR \fBred\fR
+\fBkettle strutil\fR \fBpadl\fR \fIlist\fR
 .sp
-\fBkettle io\fR \fBgreen\fR
+\fBkettle strutil\fR \fBpadr\fR \fIlist\fR
 .sp
-\fBkettle io\fR \fByellow\fR
+\fBkettle strutil\fR \fBreflow\fR \fItext\fR ?\fIprefix\fR?
 .sp
-\fBkettle io\fR \fBblue\fR
-.sp
-\fBkettle io\fR \fBmagenta\fR
-.sp
-\fBkettle io\fR \fBcyan\fR
-.sp
-\fBkettle io\fR \fBwhite\fR
-.sp
-\fBkettle io\fR \fBreset\fR
-.sp
-\fBkettle io\fR \fBmfail\fR
-.sp
-\fBkettle io\fR \fBmok\fR
-.sp
-\fBkettle io\fR \fBmwarn\fR
-.sp
-\fBkettle io\fR \fBmerr\fR
-.sp
-\fBkettle io\fR \fBmnote\fR
-.sp
-\fBkettle io\fR \fBmdebug\fR
-.sp
-\fBkettle io\fR \fBmred\fR
-.sp
-\fBkettle io\fR \fBmgreen\fR
-.sp
-\fBkettle io\fR \fBmyellow\fR
-.sp
-\fBkettle io\fR \fBmblue\fR
-.sp
-\fBkettle io\fR \fBmmagenta\fR
-.sp
-\fBkettle io\fR \fBmcyan\fR
-.sp
-\fBkettle io\fR \fBmwhite\fR
-.sp
-\fBkettle io\fR \fBmreset\fR
-.sp
-\fBlambda\fR
-.sp
-\fBlambda@\fR
-.sp
-\fBtry\fR
-.sp
-\fBkettle strutil\fR \fBindent\fR
-.sp
-\fBkettle strutil\fR \fBpadl\fR
-.sp
-\fBkettle strutil\fR \fBpadr\fR
-.sp
-\fBkettle strutil\fR \fBreflow\fR
-.sp
-\fBkettle strutil\fR \fBundent\fR
+\fBkettle strutil\fR \fBundent\fR \fItext\fR
 .sp
 .BE
 .SH DESCRIPTION
@@ -530,6 +478,146 @@ build code for Tcl packages.
 Please read the document \fIKettle - Introduction to Kettle\fR,
 if you have not done so already, to get an overview of the whole system.
 .PP
+This document is the reference to all commands provided by the kettle
+package, from the user-visible declarations to the lowest utilities.
+.PP
+It is intended for both power-users wishing to write their own
+high-level commands linking into the existing foundations and
+developers and maintainers of kettle itself.
+.PP
+A basic user should read
+\fIKettle - Application - Build Interpreter\fR
+and \fIKettle - Build Declarations\fR instead.
+.SH OVERVIEW
+The high-level architecture is shown in the image below:
+.PP
+.PS
+.nf
++-------------------------------------------------------------------------------+
+| build.tcl                                                                     |
++-------------------------------------------------------------------------------+
++-------------------------------------------------------------------------------+
+| kettle                                                                        |
+|        +----------------------------------------------------------------------+
+|        | +-------------+ +----------------+ +-------------+ +-----------------+
+|        | | kettle::tcl | | kettle::tclapp | | kettle::doc | | kettle::figures |
++--------+ +-------------+ +----------------+ +-------------+ +-----------------+
++-------------------------------------------------------------------------------+
+| kettle, kettle::util                                                          |
++-------------------------------------------------------------------------------+
+
+.fi
+.PE
+.PP
+This document is concerned with the lowest level shown, the core
+kettle package itself. The inner boxes of that architectural box show
+the parts which are user-visible, i.e. providing the DSL commands
+explained in \fIKettle - Build Declarations\fR.
+For the details we have
+.PP
+.PS
+.nf
+
+*critcl    <- doc, testsuite, recipes, tool, options, path, io, try
+*tcl       <- doc, testsuite, recipes, path, try
+
+standard  <- recipes, options, gui, strutil
+*doc       <- figures, recipes, tool, options, path, io
+
+*testsuite <- recipes, invoke, options, path, status, (io), strutil, try
+*figures   <- recipes, tool, path, io
+*tclapp    <- recipes, path, io
+app       <- recipes, options, path, status, (io), try
+gui       <- options, (ovalidate), recipes, status, (io)
+
+*depend    <- options
+tool      <- options, io
+invoke    <- options, path, status, (io), try
+recipes   <- status, (io), strutil, try, lambda
+
+options   <- path, status, ovalidate, (io), strutil, lambda
+ovalidate <- /option/, path, lambda
+path      <- /option/, status, (io), try
+status    <- /option/, /path/, io
+
+io
+strutil
+try
+lambda
+
+.fi
+.PE
+.PP
+In this image we now see all the components found inside of the kettle
+package, their organization into layers and their dependencies. The
+latter is actually a bit simplified, showing only the dependencies
+between adjacent layers and leaving out the dependencies crossing
+layers. Adding them would make the image quite a bit more crowded.
+.PP
+The green boxes are again the user-visible parts, either for
+the build declarations. The rest is internal. Note how and that the
+components found in the blue box are all dependent on each other,
+i.e. these are in circular dependencies.
+.PP
+The names in the boxes directly refer to the file names
+containing the code of the component, without the extension,
+"\fI.tcl\fR".
+The only file not mentioned is "\fIkettle.tcl\fR" which is the
+entrypoint to the package and sources all the others.
+Each component C is generally served by a single ensemble command,
+"\fBkettle\fR \fBC\fR". The exceptions are the components exporting
+the user-visible declaration commands. Their commands, while still
+named "\fBkettle\fR \fBC\fR", are not ensembles, but the one
+command in that component.
+.PP
+The following sections go through the components from the top
+down to the bottom, starting with the user visible commands described
+in \fIKettle - Build Declarations\fR, covering all the green boxes.
+For the remainder:
+.TP
+gui
+\fBGraphical Interface Support\fR
+.TP
+tool
+\fBTool handling\fR
+.TP
+invoke
+\fBRecursive invokations\fR
+.TP
+option
+\fBOption database\fR
+.TP
+ovalidate
+\fBOption Types and Validation\fR
+.TP
+path
+\fBPath utilities\fR
+.TP
+recipe
+\fBRecipe database\fR
+.TP
+status
+\fBStatus management\fR
+.TP
+io
+\fBIO virtualization\fR
+.TP
+lambda
+\fBAnonymous procedures\fR
+.TP
+try
+\fBError handling\fR
+.TP
+strutil
+\fBString processing\fR
+.PP
+.PP
+Not convered in the above is "\fIstandard.tcl\fR". This file
+does not export any commands to document. It unconditionally defines
+the standard recipes instead. These are the recipes which are always
+available, in contrast to the recipes dynamically created by the
+declarations commands in response to their scanning of a package
+source directory.
 .SH "BUILD DECLARATIONS"
 .TP
 \fBkettle tcl\fR
@@ -1367,106 +1455,197 @@ This section describes the IO virtualization layer used to decouple
 the higher layer's output from the actual destination, terminal or gui
 log window.
 .TP
-\fBkettle io\fR \fBsetwidget\fR
+\fBkettle io\fR \fBsetwidget\fR \fIw\fR
+This command sets the text widget to use for output, redirecting all
+output made through \fBkettle io puts\fR and \fBkettle io trace\fR
+from the terminal to this widget.
 .TP
-\fBkettle io\fR \fBfor-gui\fR
+\fBkettle io\fR \fBfor-gui\fR \fIscript\fR
 .TP
-\fBkettle io\fR \fBfor-terminal\fR
+\fBkettle io\fR \fBfor-terminal\fR \fIscript\fR
+These two command execute the script in their calling context if the
+IO system is using text widget or terminal for output, respectively.
 .TP
-\fBkettle io\fR \fBputs\fR
+\fBkettle io\fR \fBputs\fR \fIarg\fR...
+This command is an emulation of Tcl's builtin \fBputs\fR which writes
+to either a terminal (default), or a text widget. The latter happens
+only if such a widget was set with \fBkettle io set-widget\fR.
+.sp
+The full syntax of the builtin \fBputs\fR is implemented.
+.sp
+This redirection affects only the standard channels however,
+all other channels given to the command will go to their proper files,
+sockets, etc.
 .TP
-\fBkettle io\fR \fBtrace\fR
+\fBkettle io\fR \fBtrace\fR \fItext\fR
+This command is the tracing of kettle internals. It will not produce
+output until \fBkettle io trace-on\fR is invoked.
+The specified \fItext\fR is run through a round of substitution (in
+the callers context), resolving variables and commands embedded into
+it. This allows the use of brace-quoting, preventing the execution of
+such embedded commands while tracing is disabled.
 .TP
 \fBkettle io\fR \fBtrace-on\fR
+This command activates the tracing of internals, enabling
+\fBkettle io trace\fR to produce output.
 .TP
 \fBkettle io\fR \fBanimation begin\fR
+This command is the first in a group of four implementing the
+foundations for text-based progress bars and the like.
+.sp
+When invoked it initializes the internal state for writing on
+the last line of the terminal without moving into the next line. This
+sets the maximum column used to \fB0\fR, and the current prefix to
+the empty string.
 .TP
-\fBkettle io\fR \fBanimation write\fR
+\fBkettle io\fR \fBanimation write\fR \fItext\fR
+This command writes the concatenation of the current prefix and input
+\fItext\fR to the current line, clearing and then overwriting the
+previous content of the same line. By writing different texts an
+animation effect can be generated, with only the prefix staying
+constant. The command takes care to track the largest column
+characters have been written to and to clear them even if the current
+string does not cover them.
 .TP
-\fBkettle io\fR \fBanimation indent\fR
+\fBkettle io\fR \fBanimation indent\fR \fItext\fR
+This command extends the current prefix with \fItext\fR. Nothing else
+happens.
 .TP
-\fBkettle io\fR \fBanimation last\fR
+\fBkettle io\fR \fBanimation last\fR \fItext\fR
+This command is the last in the group of four handling animation
+effects. It first \fBwrite\fRs the \fItext\fR as usual and then
+moves the terminal to the next line, making \fItext\fR the last
+shown string of the animation and that which is kept shown.
 .TP
-\fBkettle io\fR \fBfail\fR
+\fBkettle io\fR \fItag\fR \fIscript\fR
+This command activates the color named by \fItag\fR, then executes the
+\fIscript\fR and lastly resets the output to the standard colors.
+.sp
+This means that output generated by IO commands in the script
+have the activated color. Note that the command does \fInot\fR
+support the nesting of color activations.
+.sp
+The allowed color tags are:
+.RS
 .TP
-\fBkettle io\fR \fBok\fR
+\fBok\fR
 .TP
-\fBkettle io\fR \fBwarn\fR
+\fBwarn\fR
 .TP
-\fBkettle io\fR \fBerr\fR
+\fBerr\fR
 .TP
-\fBkettle io\fR \fBnote\fR
+\fBnote\fR
 .TP
-\fBkettle io\fR \fBdebug\fR
+\fBdebug\fR
 .TP
-\fBkettle io\fR \fBred\fR
+\fBred\fR
 .TP
-\fBkettle io\fR \fBgreen\fR
+\fBgreen\fR
 .TP
-\fBkettle io\fR \fByellow\fR
+\fByellow\fR
 .TP
-\fBkettle io\fR \fBblue\fR
+\fBblue\fR
 .TP
-\fBkettle io\fR \fBmagenta\fR
+\fBmagenta\fR
 .TP
-\fBkettle io\fR \fBcyan\fR
+\fBcyan\fR
 .TP
-\fBkettle io\fR \fBwhite\fR
+\fBwhite\fR
+.RE
 .TP
-\fBkettle io\fR \fBreset\fR
-.TP
-\fBkettle io\fR \fBmfail\fR
-.TP
-\fBkettle io\fR \fBmok\fR
-.TP
-\fBkettle io\fR \fBmwarn\fR
-.TP
-\fBkettle io\fR \fBmerr\fR
-.TP
-\fBkettle io\fR \fBmnote\fR
-.TP
-\fBkettle io\fR \fBmdebug\fR
-.TP
-\fBkettle io\fR \fBmred\fR
-.TP
-\fBkettle io\fR \fBmgreen\fR
-.TP
-\fBkettle io\fR \fBmyellow\fR
-.TP
-\fBkettle io\fR \fBmblue\fR
-.TP
-\fBkettle io\fR \fBmmagenta\fR
-.TP
-\fBkettle io\fR \fBmcyan\fR
-.TP
-\fBkettle io\fR \fBmwhite\fR
-.TP
-\fBkettle io\fR \fBmreset\fR
+\fBkettle io\fR m\fItag\fR \fItext\fR
+This command is similar to the previous, except that all color tags
+are prefixed with \fBm\fR (for markup) and the argument is a string,
+not a script. The string is extended with color control commands
+activating and deactivating the chosen color at beginning and end, and
+then returned as the result of the command.
 .PP
 .SH "GENERAL UTILITIES"
 This, the lowest layer of the system contains general utility commands
 for string processing, anonymous procedures and error handling.
 .SS "ANONYMOUS PROCEDURES"
 .TP
-\fBlambda\fR
+\fBlambda\fR \fIarguments\fR \fIbody\fR ?\fIarg\fR...?
 .TP
-\fBlambda@\fR
+\fBlambda@\fR \fInamespace\fR \fIarguments\fR \fIbody\fR ?\fIarg\fR...?
+These commands are wrappers around Tcl 8.5's builtin \fBapply\fR
+command, making the creation of anonymous procedures a bit
+easier. Apply uses nested lists, the API here flattens that, matching
+the API of \fBproc\fR.
+.sp
+The command arguments are like for \fBproc\fR, with three
+exceptions.
+.RS
+.IP [1]
+There is no procedure name. Obviously.
+.IP [2]
+After the procedure body we user can pre-specify some or all
+of the procedure arguments, i.e. perform currying.
+.IP [3]
+The @-variant takes the name of the \fInamespace\fR the body
+will be executed in.
+.RE
 .PP
 .SS "ERROR HANDLING"
 .TP
-\fBtry\fR
+\fBtry\fR \fIarg\fR...
+This command is an implementation of Tcl 8.6's try/trap/finally
+command in pure Tcl, providing forward-compatibility with 8.6 in this
+respect. (Iit is just too useful when it comes to erro handling,
+especially cleanup of transient things like temp files).
+.sp
+Syntax and semantics fully match the Tcl 8.6 command. The code
+was written by Donal Fellows, it is the initial implementation of the
+builtin, before it got re-implemented in C and byte-coded.
 .PP
 .SS "STRING PROCESSING"
 .TP
-\fBkettle strutil\fR \fBindent\fR
+\fBkettle strutil\fR \fBindent\fR \fItext\fR \fIprefix\fR
+This command splits the input \fItext\fR into lines, indents each line
+using the \fIprefix\fR and then returns the re-joined text.
+.sp
+Note that the prefix is not applied to empty lines (containing
+only whitespace). Any whitespace in empty lines is actually completely
+eliminated.
 .TP
-\fBkettle strutil\fR \fBpadl\fR
+\fBkettle strutil\fR \fBpadl\fR \fIlist\fR
 .TP
-\fBkettle strutil\fR \fBpadr\fR
+\fBkettle strutil\fR \fBpadr\fR \fIlist\fR
+These two commands take a list of strings, compute the maximum length
+and then pads all shorter strings to this length (using spaces),
+returning the modified list. The order of the strings in the result is
+not changed. The commands differ in where the padding is
+applied.
+.sp
+\fBpadr\fR adds the spaces at the end of the string (to the
+right) yielding a left-aligned result.  Whereas \fBpadl\fR adds the
+spaces at the beginning of the string (to the left) yielding a
+right-aligned result.
+.sp
+Regardless of the differences, the result is a list of strings
+of the same length. Useful when having to print a table. Provide a
+column of the table as input, and the result is properly aligned for
+printing.
 .TP
-\fBkettle strutil\fR \fBreflow\fR
+\fBkettle strutil\fR \fBreflow\fR \fItext\fR ?\fIprefix\fR?
+This command strips empty header and footer lines from the input
+\fItext\fR, undents it and then re-indents using the \fIprefix\fR. If
+the latter is not specified it will default to 4 spaces.
+.sp
+The result of all the modifications is then returned as the
+result of the command.
 .TP
-\fBkettle strutil\fR \fBundent\fR
+\fBkettle strutil\fR \fBundent\fR \fItext\fR
+This command splits the input \fItext\fR into lines, computes longest
+common prefix of whitespace over all lines, removes that prefix and
+then returns the re-joined text.
+.sp
+The effect is an un-indenting of the lines in the \fItext\fR
+which preserves the general shape of the left margin.
+.sp
+Note that empty lines (containing only whitespace) do not take
+part in the prefix calculation. Any whitespace in empty lines is
+actually completely eliminated.
 .PP
 .SH LICENSE
 This package, written by Andreas Kupries, is BSD licensed.
