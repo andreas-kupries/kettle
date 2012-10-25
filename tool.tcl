@@ -11,6 +11,7 @@ namespace eval ::kettle::tool {
 
     namespace import ::kettle::io
     namespace import ::kettle::option
+    namespace import ::kettle::status
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -25,6 +26,13 @@ proc ::kettle::tool::declare {names {validator {}}} {
     option no-work-key --with-$primary
 
     foreach name $names {
+
+	# TODO : Use our own search command here, switch to the next
+	# name only if the list of paths is exhausted. Right now a
+	# validation failure immediately switches to the next name,
+	# cutton of possible instances of the failing name in
+	# not-yet-searched paths of the list.
+
 	set cmd [auto_execok $name]
 	option set-default --with-$primary $cmd
 
@@ -52,6 +60,7 @@ proc ::kettle::tool::get {name} {
 	    io puts "Tool $name required, but not found in PATH"
 	    io puts "Please specify its location through option --with-$name"
 	}
+	status fail
     }
     return $cmd
 }
