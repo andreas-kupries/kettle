@@ -33,6 +33,7 @@ namespace eval ::kettle {
 ## @owns: recipes.tcl
 ## @owns: standard.tcl
 ## @owns: status.tcl
+## @owns: stream.tcl
 ## @owns: strutil.tcl
 ## @owns: tcl.tcl
 ## @owns: tclapp.tcl
@@ -85,6 +86,7 @@ namespace eval ::kettle {
     source $selfdir/recipes.tcl    ; # Recipe management.
     source $selfdir/invoke.tcl     ; # Goal recursion via sub-processes.
     source $selfdir/tool.tcl       ; # Manage tool requirements.
+    source $selfdir/stream.tcl     ; # Log streams
     # # ## ### ##### ######## ############# #####################
     source $selfdir/gui.tcl        ; # GUI support.
     source $selfdir/app.tcl        ; # Application core.

@@ -307,6 +307,7 @@ apply {{} {
 	set-default --lib-dir     $new/lib
     }
 
+    # - -- --- ----- -------- -------------
     define --bin-dir {
 	Path to binary applications.
 	Default is the directory of the tclsh running kettle.
@@ -314,6 +315,8 @@ apply {{} {
 	defined by the user.
     } {} directory
     onchange --bin-dir {} { set! --bin-dir [path norm $new] }
+
+    # - -- --- ----- -------- -------------
     define --lib-dir {
 	Path to binary libraries.
 	Default is [info library] of the tclsh running kettle.
@@ -322,6 +325,7 @@ apply {{} {
     } {} directory
     onchange --lib-dir {} { set! --lib-dir [path norm $new] }
 
+    # - -- --- ----- -------- -------------
     define --prefix {
 	Path to the root directory for the installation of any files.
 	Default is the twice parent directory of [info library] of the
@@ -337,29 +341,34 @@ apply {{} {
 	set-default --include-dir $new/include
     }
 
+    # - -- --- ----- -------- -------------
     define --man-dir {
 	Path to the root directory to install manpages into.
 	Default is $(--prefix)/man.
     } {} directory
     onchange --man-dir     {} { set! --man-dir [path norm $new] }
 
+    # - -- --- ----- -------- -------------
     define --html-dir {
 	Path to the root directory to install HTML documentation into.
 	Default is $(--prefix)/html.
     } {} directory
     onchange --html-dir    {} { set! --html-dir [path norm $new] }
 
+    # - -- --- ----- -------- -------------
     define --include-dir {
 	Path to the root directory to install C header files into.
 	Default is $(--prefix)/include.
     } {} directory
     onchange --include-dir {} { set! --include-dir [path norm $new] }
 
+    # - -- --- ----- -------- -------------
     set-default --prefix [file dirname [file dirname [info library]]]
     # -> man, html, exec-prefix -> bin, lib
     set-default --bin-dir [file dirname [path norm [info nameofexecutable]]]
     set-default --lib-dir [info library]
 
+    # - -- --- ----- -------- -------------
     define --ignore-glob {
 	Tcl list of glob patterns for files to ignore in directory scans.
 	Default is a list of patterns matching the special directories
@@ -433,6 +442,22 @@ apply {{} {
     } {} readable.file
     no-work-key --config
     onchange    --config {} { load $new }
+
+    # - -- --- ----- -------- -------------
+    # Path of the shell to use for Tcl sub-processes, like the
+    # execution of testsuites, and benchmarks. Irrelevant to work
+    # database keying.
+
+    define --with-shell {
+	Path of the shell to run tests, benchmarks, or similar
+	Tcl-based sub-processes with.
+	Defaults to the tclsh running the kettle build code.
+    } [path norm [info nameofexecutable]] readable.file
+
+    no-work-key --with-shell
+    onchange    --with-shell {} {
+	set! --with-shell [path norm $new]
+    }
 
     # - -- --- ----- -------- -------------
     # Default goals to use when invoked with none.
