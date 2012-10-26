@@ -91,10 +91,6 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 		io trace {TEST: $line}
 		ProcessLine $line
 	    } [option get --with-shell] $main $localprefix $test
-
-	    io for-terminal {
-		io puts "\r                                               "
-	    }
 	}
     }
 
@@ -120,7 +116,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     if {$en} { set e [io mmagenta $e] }
 
     # Show in terminal, always...
-    stream term always "Passed  $p of $t"
+    stream term always "\nPassed  $p of $t"
     stream term always "Skipped $s of $t"
     stream term always "Failed  $f of $t"
     stream term always "#Errors $e"
