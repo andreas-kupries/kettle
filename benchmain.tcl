@@ -62,13 +62,10 @@ kb::Note Tcl        [info patchlevel]
 
 source [file dirname [file normalize [info script]]]/try.tcl
 source [file dirname [file normalize [info script]]]/benchutilities.tcl
+source [file dirname [file normalize [info script]]]/libbench.tcl
 
 # # ## ### ##### ######## ############# #####################
 ## Run the benchmarks
-
-# Disable the use of exit inside of libbench.tcl
-rename exit __exit
-proc   exit {args} {}
 
 kb::Note Benchmark $kb::benchfile
 kb::Note Start [kb::Now]
@@ -77,7 +74,7 @@ if {[catch {
     # Read the main application file. This defines
     # bench commands, processes argv and runs the
     # bench file found there.
-    source [file dirname [file normalize [info script]]]/libbench.tcl
+    source $kb::benchfile
 } msg]} {
     # Transmit stack trace in capturable format.
     puts stdout "@+"
@@ -93,4 +90,4 @@ puts ""
 # Use of 'exit' ensures proper termination of the test system when
 # driven by a 'wish' instead of a 'tclsh'. Otherwise 'wish' would
 # enter its regular event loop and no tests would complete.
-__exit
+exit

@@ -5,6 +5,40 @@
 namespace eval ::kb {
     namespace export {[a-z]*}
     namespace ensemble create
+
+    # Directory the benchmark file is in.
+    variable benchDirectory
+
+    # Counter for 'bench_tmpfile'.
+    variable uniqid 0
+
+    # Global configuration settings for 'bench'.
+    variable  config 
+    array set config {
+	ERRORS		1
+	MATCH		{}
+	RMATCH		{}
+	FILES		{}
+	ITERS		1000
+    }
+
+    # 'config' contents:
+    #
+    # - ERRORS  : Boolean flag. If set benchmark output mismatches are
+    #             reported by throwing an error. Otherwise they are simply
+    #             listed as BAD_RES. Default true. Can be set/reset via
+    #             option -errors.
+    #
+    # - MATCH   : Match pattern, see -match, default empty, aka everything
+    #             matches.
+    #
+    # - RMATCH  : Match pattern, see -rmatch, default empty, aka
+    #             everything matches.
+    #
+    # - FILES   : List of benchmark files to run.
+    #
+    # - ITERS   : Number of iterations to run a benchmark body, default
+    #             1000. Can be overridden by the individual benchmarks.
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -101,6 +135,69 @@ namespace eval ::kb {
 	benchmark %
     }
 }
+
+# # ## ### ##### ######## ############# #####################
+## Benchmark API. Taken out of libbench, more package like.
+
+#
+# It claims all procedures starting with bench*
+#
+
+# bench_tmpfile --
+#
+#   Return a temp file name that can be modified at will
+#
+# Arguments:
+#   None
+#
+# Results:
+#   Returns file name
+#
+proc bench_tmpfile {} {
+    variable ::kb::uniqid
+    global tcl_platform env
+
+    set base "tclbench[incr uniqid].dat"
+
+    if {$tcl_platform(platform) eq "unix"} {
+	return "/tmp/$base"
+    } elseif {$tcl_platform(platform) eq "windows"} {
+	return [file join $env(TEMP) $base]
+    } else {
+	return $base
+    }
+}
+
+# bench_rm --
+#
+#   Remove a file silently (no complaining)
+#
+# Arguments:
+#   args	Files to delete
+#
+# Results:
+#   Returns nothing
+#
+proc bench_rm {args} {
+    foreach file $args {
+	catch {
+	    file delete $file
+	}
+    }
+    return
+}
+
+proc bench_puts {args} {
+    kb::Note Feedback $args
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+## Helper code.
+
+
+
+
 
 # # ## ### ##### ######## ############# #####################
 return
