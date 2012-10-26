@@ -92,7 +92,8 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
     }
 
     # Summary results...
-    stream to summary {[FormatTimings $state]}
+    stream to summary  {[FormatTimings $state]}
+    stream term always  [FormatResults $state]
 
     # Report ok/fail
     status [dict get $state status]
@@ -150,6 +151,43 @@ proc ::kettle::Bench::FormatTimings {state} {
     return [join $lines \n]
 }
 
+proc ::kettle::Bench::FormatResults {state} {
+    # Extract data ...
+    set results [dict get $state results]
+
+    # row = shell ver benchfile description time
+
+    # Sort by description.
+    set tmp {}
+    foreach k [lsort -index 3 -dict $results] {
+	lassign $k _ _ _ d t
+	lappend tmp [list $d $t]
+    }
+
+    # Transpose into columns. Add the header and footer lines.
+    lappend ds Description ===========
+    lappend ts Time        ====
+
+    foreach item $tmp {
+	lassign $item d t
+	lappend ds $d
+	lappend ts $t
+    }
+
+    lappend ds =========== Description
+    lappend ts ====	   Time
+
+    # Print the columns, each padded for vertical alignment.
+
+    lappend lines \nResults...
+    foreach \
+	d  [strutil padr $ds] \
+	t  [strutil padr $ts] {
+	    lappend lines "$d $t"
+	}
+
+    return \t[join $lines \n\t]
+}
 
 proc ::kettle::Bench::ProcessLine {line} {
     # Counters and other state in the calling environment.
@@ -383,8 +421,10 @@ proc ::kettle::Bench::BenchResult {} {
     set ver  [dict get $state tcl]
     set file [dict get $state file]
 
-    dict lappend state results \
-	[list $sh $ver $file $description $time]
+    set row [list $sh $ver $file $description $time]
+
+    dict lappend state results $row
+    stream to results  {"[join $row {","}]"}
 
     dict set state bench {}
     dict set state witer {}
