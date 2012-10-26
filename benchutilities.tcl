@@ -157,7 +157,7 @@ proc bench_tmpfile {} {
     variable ::kb::uniqid
     global tcl_platform env
 
-    set base "tclbench[incr uniqid].dat"
+    set base "tclbench[pid].[incr uniqid].dat"
 
     if {$tcl_platform(platform) eq "unix"} {
 	return "/tmp/$base"

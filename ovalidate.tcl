@@ -117,6 +117,22 @@ apply {{} {
 	return
     }
 
+    Def int0 {
+	if {[string is int -strict $v] && ($v >= 0)} return
+	Bad "Expected integer >= 0, but got \"$new\""
+    } {
+	# TODO option type int0 gui -- ttk::entry with validation, or spinbox
+	return
+    }
+
+    Def int {
+	if {[string is int -strict $v]} return
+	Bad "Expected integer, but got \"$new\""
+    } {
+	# TODO option type int gui -- ttk::entry with validation, or spinbox
+	return
+    }
+
     Def listsimple {
 	if {[string is list -strict $v]} return
 	Bad "Expected tcl list, got \"$v\""

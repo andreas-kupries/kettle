@@ -95,18 +95,19 @@ proc bench {args} {
     set opts(-iter) $BENCH(ITERS)
     while {[llength $args]} {
 	set key [lindex $args 0]
+	set val [lindex $args 1]
+
 	switch -glob -- $key {
-	    -res*	{ set opts(-res)   [lindex $args 1] }
-	    -pr*	{ set opts(-pre)   [lindex $args 1] }
-	    -po*	{ set opts(-post)  [lindex $args 1] }
-	    -ipr*	{ set opts(-ipre)  [lindex $args 1] }
-	    -ipo*	{ set opts(-ipost) [lindex $args 1] }
-	    -bo*	{ set opts(-body)  [lindex $args 1] }
-	    -de*	{ set opts(-desc)  [lindex $args 1] }
+	    -res*	{ set opts(-res)   $val }
+	    -pr*	{ set opts(-pre)   $val }
+	    -po*	{ set opts(-post)  $val }
+	    -ipr*	{ set opts(-ipre)  $val }
+	    -ipo*	{ set opts(-ipost) $val }
+	    -bo*	{ set opts(-body)  $val }
+	    -de*	{ set opts(-desc)  $val }
 	    -it*	{
 		# Only change the iterations when it is smaller than
 		# the requested default
-		set val [lindex $args 1]
 		if {$opts(-iter) > $val} { set opts(-iter) $val }
 	    }
 	    default {
@@ -119,12 +120,12 @@ proc bench {args} {
     bench_puts "Running <$opts(-desc)>"
     kb::Note StartBench [list $opts(-desc) $opts(-iter)]
 
-    if {($BENCH(MATCH) != "") && ![string match $BENCH(MATCH) $opts(-desc)]} {
+    if {($BENCH(MATCH) ne "") && ![string match $BENCH(MATCH) $opts(-desc)]} {
 	kb::Note Skipped $opts(-desc)
 	return
     }
 
-    if {($BENCH(RMATCH) != "") && ![regexp $BENCH(RMATCH) $opts(-desc)]} {
+    if {($BENCH(RMATCH) ne "") && ![regexp $BENCH(RMATCH) $opts(-desc)]} {
 	kb::Note Skipped $opts(-desc)
 	return
     }
@@ -133,7 +134,7 @@ proc bench {args} {
 	uplevel \#0 $opts(-pre)
     }
 
-    if {$opts(-body) != ""} {
+    if {$opts(-body) ne ""} {
 	# Always run it once to remove compile phase confusion
 	if {$opts(-ipre) ne ""} {
 	    uplevel \#0 $opts(-ipre)
@@ -156,7 +157,7 @@ proc bench {args} {
 	    kb::Note Result [list $opts(-desc) $res]
 
 	} else {
-	    if {1||($opts(-ipre) != "") || ($opts(-ipost) != "")} {
+	    if {($opts(-ipre) != "") || ($opts(-ipost) != "")} {
 		# We do the averaging on our own, to allow untimed
 		# pre/post execution per iteration. We catch and
 		# handle problems in the pre/post code as if
@@ -200,14 +201,18 @@ proc bench {args} {
 		}
 		# XXX Use 'min' instead of avg?
 		if {!$code} {
-		    set res [list [expr {int ($total/$opts(-iter))}] microseconds per iteration]
+		    #puts !!!A|$total|$opts(-iter)|[expr {int ($total/$opts(-iter))}]
+
+		    set res [list [expr {$total/$opts(-iter)}] microseconds per iteration]
 		    #set res $total
 		}
 	    } else {
-		error NO
+		kb::Note Progress [list $opts(-desc) ----]
+
 		set code [catch {
 		    uplevel \#0 [list time $opts(-body) $opts(-iter)]
 		} res]
+		#puts !!!B|$res|
 	    }
 
 	    if {$code == 0} {

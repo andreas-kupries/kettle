@@ -2,8 +2,28 @@
 # # ## ### ##### ######## ############# #####################
 ## Handle a tclbench-based benchmarks
 
-# Loaded after testsuite,tcl, we can assume the presence of the
-# options --with-shell, --log, and --log-mode.
+# # ## ### ##### ######## ############# #####################
+## Repetition setting. Number of repeats (beyond the regular run)
+## to perform. Default 0. Positive integer.
+## Irrelevant to work database keying.
+
+kettle option define --repeats {
+    Number of repeats to perform per bench file.
+    (NUmber of runs is 1 + repeats).
+} 0 int0
+kettle option no-work-key --repeats
+
+# # ## ### ##### ######## ############# #####################
+## Collation setting. How to coalesce the data from several
+## repeats into a single number.
+## Irrelevant to work database keying.
+
+kettle option define --collate {
+    Method for coalescing the data from multiple runs (repeats > 0).
+} min {enum {min max avg}}
+kettle option no-work-key --collate
+
+# # ## ### ##### ######## ############# #####################
 
 namespace eval ::kettle { namespace export benchmarks }
 
@@ -74,26 +94,29 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
     set main [path norm [option get @kettledir]/benchmain.tcl]
     InitState
 
+    set repeats [option get --repeats]
+
     path in $srcdir {
 	foreach bench $benchfiles {
-	    # change next to log/log
-	    #io note { io puts ${bench}... }
 	    stream aopen
 
-	    path pipe line {
-		io trace {BENCH: $line}
-		ProcessLine $line
-	    } [option get --with-shell] $main $localprefix $bench
+	    for {set round 0} {$round <= $repeats} {incr round} {
+		dict set state round $round
 
-	    io for-terminal {
-		io puts "\r                                               "
+		path pipe line {
+		    io trace {BENCH: $line}
+		    ProcessLine $line
+		} [option get --with-shell] $main $localprefix [path norm $bench]
 	    }
 	}
     }
 
     # Summary results...
     stream to summary  {[FormatTimings $state]}
-    stream term always  [FormatResults $state]
+
+    set fr [FormatResults $state]\n
+    stream term always  $fr
+    stream to summary {$fr}
 
     # Report ok/fail
     status [dict get $state status]
@@ -155,12 +178,16 @@ proc ::kettle::Bench::FormatResults {state} {
     # Extract data ...
     set results [dict get $state results]
 
-    # row = shell ver benchfile description time
+    # results = dict (key -> list(time))
+    # key = list (shell ver benchfile description)
+    # [no round information, implied in the list of results]
 
-    # Sort by description.
+    # Sort by description, re-package into tuples.
     set tmp {}
-    foreach k [lsort -index 3 -dict $results] {
-	lassign $k _ _ _ d t
+    foreach k [lsort -dict -index 3 [dict keys $results]] {
+	set d [lindex $k 3]
+	set t [dict get $results $k]
+	set t [Collate_[option get --collate] $t]
 	lappend tmp [list $d $t]
     }
 
@@ -189,13 +216,41 @@ proc ::kettle::Bench::FormatResults {state} {
     return \t[join $lines \n\t]
 }
 
+proc ::kettle::Bench::Collate_min {times} {
+    foreach v [lassign $times min] {
+	# TODO: skip non-numeric times
+	if {$v >= $min} continue
+	set min $v
+    }
+    return $min
+}
+
+proc ::kettle::Bench::Collate_max {times} {
+    foreach v [lassign $times max] {
+	# TODO: skip non-numeric times
+	if {$v <= $max} continue
+	set max $v
+    }
+    return $max
+}
+
+proc ::kettle::Bench::Collate_avg {times} {
+    set total 0.0
+    foreach v $times {
+	# TODO: skip non-numeric times
+	set total [expr {$total + $v}]
+	incr n
+    }
+    return [expr { $total / $n }]
+}
+
 proc ::kettle::Bench::ProcessLine {line} {
     # Counters and other state in the calling environment.
     upvar 1 state state
 
     set line [string trimright $line]
 
-    if {![string match {TRACK *} $line]} {
+    if {![string match {@@ Progress *} $line]} {
 	stream term full $line
 	stream to log   {$line}
     }
@@ -375,8 +430,8 @@ proc ::kettle::Bench::Support {} {
 proc ::kettle::Bench::Benching {} {
     upvar 1 line line state state
     #stream awrite "T $package" /when caught
-    #if {[regexp "^SYSTEM % (.*)$" $line -> package]} {stream term compact "Ts $package";return -code return}
-    #if {[regexp "^LOCAL  % (.*)$" $line -> package]} {stream term compact "Tl $package";return -code return}
+    #if {[regexp "^SYSTEM % (.*)$" $line -> package]} {stream term compact "Bs $package";return -code return}
+    #if {[regexp "^LOCAL  % (.*)$" $line -> package]} {stream term compact "Bl $package";return -code return}
     if {[regexp "^SYSTEM % (.*)$" $line -> package]} {return -code return}
     if {[regexp "^LOCAL  % (.*)$" $line -> package]} {return -code return}
     return
@@ -417,14 +472,18 @@ proc ::kettle::Bench::BenchResult {} {
     lassign [lindex $data 0] description time
     #stream awrite "$description = $time"
 
-    set sh   [dict get $state shell]
-    set ver  [dict get $state tcl]
-    set file [dict get $state file]
+    set sh    [dict get $state shell]
+    set ver   [dict get $state tcl]
+    set file  [dict get $state file]
+    set round [dict get $state round]
 
-    set row [list $sh $ver $file $description $time]
+    set row [list $sh $ver $file $round $description $time]
+    stream to results {"[join $row {","}]"}
 
-    dict lappend state results $row
-    stream to results  {"[join $row {","}]"}
+    set key [list $sh $ver $file $description]
+    dict update state results r {
+	dict lappend r $key $time
+    }
 
     dict set state bench {}
     dict set state witer {}
