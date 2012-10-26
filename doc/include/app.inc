@@ -43,9 +43,10 @@ the necessary recipes, at last the recipes on the command line are
 run.
 
 [para] The application understands one dot-file for configuration,
-[file ~/.kettle]. This file is expected to contain user-specific
-standard options to use. Its contents are processed as part of the
-option processing, before the options found on the command line.
+[file ~/.kettle/config]. This file is expected to contain
+user-specific standard options to use. Its contents are processed as
+part of the option processing, before the options found on the command
+line.
 
 For all other extensibility the user is reminded that build file are
 Tcl files, with the full power of the language behind them. Which
