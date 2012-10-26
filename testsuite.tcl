@@ -5,46 +5,6 @@
 namespace eval ::kettle { namespace export testsuite }
 
 # # ## ### ##### ######## ############# #####################
-## Shell to run the tests with.
-## Irrelevant to work database keying.
-
-kettle option define --with-shell {
-    'test' option. Path of the shell to run the tests with.
-    Defaults to the tclsh running the kettle build code.
-} [kettle path norm [info nameofexecutable]] readable.file
-
-kettle option no-work-key --with-shell
-kettle option onchange    --with-shell {} {
-    set! --with-shell [path norm $new]
-}
-
-# # ## ### ##### ######## ############# #####################
-## Mode and file/channel for logging of test output.
-## Irrelevant to work database keying.
-
-# We have two different log systems here, actually.
-#
-# 1. Logging to the terminal (= stdout).
-#    This can be done in compact and full modes.
-#    The option to set this is --log-mode.
-#
-# 2. Logging to a set of files, for multiple log 'streams'.
-#    The option --log specifies their (path) stem.
-#    If no stem is specified no streams are generated.
-
-kettle option define --log-mode {
-    'test' option. Verbosity of the logging on the terminal.
-} compact {enum {compact full}}
-kettle option no-work-key --log-mode
-
-kettle option define --log {
-    'test' option. Path (stem) for a set of files to log to
-    (independent of logging to the terminal).
-} {} path
-kettle option onchange    --log {} { set! --log [path norm $new] }
-kettle option no-work-key --log
-
-# # ## ### ##### ######## ############# #####################
 ## API.
 
 proc ::kettle::testsuite {{testsrcdir tests}} {
@@ -95,14 +55,7 @@ namespace eval ::kettle::Test {
     namespace import ::kettle::status
     namespace import ::kettle::option
     namespace import ::kettle::strutil
-
-    # Dictionary of log streams. Maps names to write command.
-    variable stream {}
-    # Names of our streams.
-    variable streams {
-	log summary failures aborted none
-	stacktrace faildetails timings
-    }
+    namespace import ::kettle::stream
 
     # Map from testsuite states to readable labels. These include
     # trailing whitespace to align the following text vertically.
@@ -123,8 +76,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     # assumption allows us to run it directly, using our own
     # tcl executable as interpreter.
 
-    StreamsBegin
-    Stream log ============================================================
+    stream to log ============================================================
 
     set main [path norm [option get @kettledir]/testmain.tcl]
     InitState
@@ -133,7 +85,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 	foreach test $testfiles {
 	    # change next to log/log
 	    #io note { io puts ${test}... }
-	    Aopen
+	    stream aopen
 
 	    path pipe line {
 		io trace {TEST: $line}
@@ -168,71 +120,73 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     if {$en} { set e [io mmagenta $e] }
 
     # Show in terminal, always...
-    Log* "Passed  $p of $t"
-    Log* "Skipped $s of $t"
-    Log* "Failed  $f of $t"
-    Log* "#Errors $e"
+    stream term always "Passed  $p of $t"
+    stream term always "Skipped $s of $t"
+    stream term always "Failed  $f of $t"
+    stream term always "#Errors $e"
 
     # And in the main stream...
-    Stream log "Passed  $p of $t"
-    Stream log "Skipped $s of $t"
-    Stream log "Failed  $f of $t"
-    Stream log "#Errors $e"
+    stream to log {Passed  $p of $t}
+    stream to log {Skipped $s of $t}
+    stream to log {Failed  $f of $t}
+    stream to log {#Errors $e}
 
-    if {[Streams]} {
-	# Extract data ...
-	set times [dict get $state times]
-
-	# Sort by shell and testsuite, re-package into tuples.
-	set tmp {}
-	foreach k [lsort -dict [dict keys $times]] {
-	    lassign $k                   shell suite
-	    lassign [dict get $times $k] ntests sec usec
-	    lappend tmp [list $shell $suite $ntests $sec $usec]
-	}
-
-	# Sort tuples by time per test, and transpose into
-	# columns. Add the header and footer lines.
-
-	lappend sh Shell     =====
-	lappend ts Testsuite =========
-	lappend nt Tests     =====
-	lappend ns Seconds   =======
-	lappend us uSec/Test =========
-
-	foreach item [lsort -index 4 -decreasing $tmp] {
-	    lassign $item shell suite ntests sec usec
-	    lappend sh $shell
-	    lappend ts $suite
-	    lappend nt $ntests
-	    lappend ns $sec
-	    lappend us $usec
-	}
-
-	lappend sh =====
-	lappend ts =========
-	lappend nt =====
-	lappend ns =======
-	lappend us =========
-
-	# Print the columns, each padded for vertical alignment.
-
-	Stream summary \nTimings...
-	foreach \
-	    shell  [strutil padr $sh] \
-	    suite  [strutil padr $ts] \
-	    ntests [strutil padr $nt] \
-	    sec    [strutil padr $ns] \
-	    usec   [strutil padr $us] {
-	    Stream summary "$shell $suite $ntests $sec $usec"
-	}
-    }
-
-    StreamsDone
+    stream to summary {[FormatTimings $state]}
 
     # Report ok/fail
     status [dict get $state status]
     return
+}
+
+proc ::kettle::Test::FormatTimings {state} {
+    # Extract data ...
+    set times [dict get $state times]
+
+    # Sort by shell and testsuite, re-package into tuples.
+    set tmp {}
+    foreach k [lsort -dict [dict keys $times]] {
+	lassign $k                   shell suite
+	lassign [dict get $times $k] ntests sec usec
+	lappend tmp [list $shell $suite $ntests $sec $usec]
+    }
+
+    # Sort tuples by time per test, and transpose into
+    # columns. Add the header and footer lines.
+
+    lappend sh Shell     =====
+    lappend ts Testsuite =========
+    lappend nt Tests     =====
+    lappend ns Seconds   =======
+    lappend us uSec/Test =========
+
+    foreach item [lsort -index 4 -decreasing $tmp] {
+	lassign $item shell suite ntests sec usec
+	lappend sh $shell
+	lappend ts $suite
+	lappend nt $ntests
+	lappend ns $sec
+	lappend us $usec
+    }
+
+    lappend sh =====
+    lappend ts =========
+    lappend nt =====
+    lappend ns =======
+    lappend us =========
+
+    # Print the columns, each padded for vertical alignment.
+
+    lappend lines \nTimings...
+    foreach \
+	shell  [strutil padr $sh] \
+	suite  [strutil padr $ts] \
+	ntests [strutil padr $nt] \
+	sec    [strutil padr $ns] \
+	usec   [strutil padr $us] {
+	    lappend lines "$shell $suite $ntests $sec $usec"
+	}
+
+    return [join $lines \n]
 }
 
 proc ::kettle::Test::ProcessLine {line} {
@@ -241,8 +195,8 @@ proc ::kettle::Test::ProcessLine {line} {
 
     set line [string trimright $line]
 
-    LogF       $line
-    Stream log $line
+    stream term full $line
+    stream to log   {$line}
 
     set rline $line
     set line [string trim $line]
@@ -275,132 +229,9 @@ proc ::kettle::Test::ProcessLine {line} {
     Match||Skip||Sourced
 
     # Unknown lines are printed
-    LogC !$line
+    stream term compact !$line
     return
 }
-
-# # ## ### ##### ######## ############# #####################
-## Terminal log.
-##
-## F Write on full.
-## C Write on compact
-## * Write always
-##
-
-proc ::kettle::Test::LogF {text} {
-    if {[option get --log-mode] ne "full"} return
-    io puts $text
-    return
-}
-
-proc ::kettle::Test::LogC {text} {
-    if {[option get --log-mode] ne "compact"} return
-    io puts $text
-    return
-}
-
-proc ::kettle::Test::Log* {text} {
-    io puts $text
-    return
-}
-
-proc ::kettle::Test::Aopen {} {
-    if {[option get --log-mode] ne "compact"} return
-    io animation begin
-    return
-}
-
-proc ::kettle::Test::Aclose {text} {
-    upvar 1 state state
-
-    if {[option get --log-mode] eq "compact"} {
-	io animation last $text
-    }
-
-    if {![Streams]} return
-
-    set file [file tail [dict get $state file]]
-    set text "\[$file\] $text"
-
-    Stream summary $text
-    # Maybe use a mapping table here instead, status to stream.
-    switch -exact -- [dict get $state suite/status] {
-	error   -
-	fail    { Stream failures $text }
-	none    { Stream none     $text }
-	aborted { Stream aborted  $text }
-    }
-    return
-}
-
-proc ::kettle::Test::Aextend {text} {
-    if {[option get --log-mode] ne "compact"} return
-    io animation indent $text
-    io animation write  ""
-    return
-    
-}
-
-proc ::kettle::Test::Awrite {text} {
-    if {[option get --log-mode] ne "compact"} return
-    io animation write $text
-    return
-}
-
-# # ## ### ##### ######## ############# #####################
-# Log streams ....
-
-proc ::kettle::Test::Streams {} {
-    expr {[option get --log] ne {}}
-}
-
-proc ::kettle::Test::Stream {name text} {
-    variable stream
-    {*}[dict get $stream $name] $text
-    return
-}
-
-proc ::kettle::Test::StreamsBegin {} {
-    variable stream
-    variable streams
-
-    if {[option get --log] ne {}} {
-	# Log file (stem) specified, generate all log streams.
-	# Creation is defered until actual use.
-	set stem [option get --log]
-	foreach name $streams {
-	    dict set stream $name \
-		[list ::kettle::Test::StreamsMake $stem $name]
-	}
-    } else {
-	# Without stem we generate no streams.
-	dict set stream log ::kettle::io::puts
-	foreach name $streams {
-	    dict set stream $name ::kettle::Test::StreamsNull
-	}
-    }
-}
-
-proc ::kettle::Test::StreamsDone {} {
-    variable stream
-    dict for {name cmd} $stream {
-	if {[lindex $cmd 0] ne "::puts"} continue
-	close [lindex $cmd 1]
-    }
-    return
-}
-
-# Writer for log streams. Create on demand, on first write.
-proc ::kettle::Test::StreamsMake {stem name text} {
-    variable stream
-    file mkdir [file dirname $stem.$name]
-    dict set stream $name [list ::puts [open $stem.$name w]]
-    Stream $name $text
-    return
-}
-
-# Writer for disabled streams, doing nothing.
-proc ::kettle::Test::StreamsNull {args} {}
 
 # # ## ### ##### ######## ############# #####################
 
@@ -437,8 +268,8 @@ proc ::kettle::Test::InitState {} {
 proc ::kettle::Test::Host {} {
     upvar 1 line line state state
     if {![regexp "^@@ Host (.*)$" $line -> host]} return
-    #Aextend $host
-    #LogC "Host     $host"
+    #stream aextend $host
+    #stream term compact "Host     $host"
     dict set state host $host
     # FUTURE: Write tests results to a storage back end for analysis.
     return -code return
@@ -447,16 +278,16 @@ proc ::kettle::Test::Host {} {
 proc ::kettle::Test::Platform {} {
     upvar 1 line line state state
     if {![regexp "^@@ Platform (.*)$" $line -> platform]} return
-    #LogC "Platform $platform"
+    #stream term compact "Platform $platform"
     dict set state platform $platform
-    #Aextend ($platform)
+    #stream aextend ($platform)
     return -code return
 }
 
 proc ::kettle::Test::Cwd {} {
     upvar 1 line line state state
     if {![regexp "^@@ TestCWD (.*)$" $line -> cwd]} return
-    #LogC "Cwd      [path relativecwd $cwd]"
+    #stream term compact "Cwd      [path relativecwd $cwd]"
     dict set state cwd $cwd
     return -code return
 }
@@ -464,18 +295,18 @@ proc ::kettle::Test::Cwd {} {
 proc ::kettle::Test::Shell {} {
     upvar 1 line line state state
     if {![regexp "^@@ Shell (.*)$" $line -> shell]} return
-    #LogC "Shell    $shell"
+    #stream term compact "Shell    $shell"
     dict set state shell $shell
-    #Aextend [file tail $shell]
+    #stream aextend [file tail $shell]
     return -code return
 }
 
 proc ::kettle::Test::Tcl {} {
     upvar 1 line line state state
     if {![regexp "^@@ Tcl (.*)$" $line -> tcl]} return
-    #LogC "Tcl      $tcl"
+    #stream term compact "Tcl      $tcl"
     dict set state tcl $tcl
-    Aextend "\[$tcl\] "
+    stream aextend "\[$tcl\] "
     return -code return
 }
 
@@ -496,7 +327,7 @@ proc ::kettle::Test::Match||Skip||Sourced {} {
 proc ::kettle::Test::Start {} {
     upvar 1 line line state state
     if {![regexp "^@@ Start (.*)$" $line -> start]} return
-    #LogC "Start    [clock format $start]"
+    #stream term compact "Start    [clock format $start]"
     dict set state start $start
     dict set state testnum 0
     return -code return
@@ -511,8 +342,8 @@ proc ::kettle::Test::End {} {
     set file  [dict get $state file]
     set num   [dict get $state testnum]
 
-    #LogC "Started  [clock format $start]"
-    #LogC "End      [clock format $end]"
+    #stream term compact "Started  [clock format $start]"
+    #stream term compact "End      [clock format $end]"
 
     set delta [expr {$end - $start}]
     if {$num == 0} {
@@ -526,7 +357,7 @@ proc ::kettle::Test::End {} {
 
     dict lappend state times $key [list $num $delta $score]
 
-    Stream timings [list TIME $key $num $delta $score]
+    stream to timings {[list TIME $key $num $delta $score]}
     #variable xshell
     #sak::registry::local set $xshell End $end
     return -code return
@@ -535,9 +366,9 @@ proc ::kettle::Test::End {} {
 proc ::kettle::Test::Testsuite {} {
     upvar 1 line line state state ; variable xfile
     if {![regexp "^@@ Testsuite (.*)$" $line -> file]} return
-    #LogC "Test $file"
+    #stream term compact "Test $file"
     dict set state file $file
-    Aextend "[file tail $file] "
+    stream aextend "[file tail $file] "
     return -code return
 }
 
@@ -545,15 +376,15 @@ proc ::kettle::Test::NoTestsuite {} {
     upvar 1 line line state state
     if {![string match "Error:  No test files remain after*" $line]} return
     dict set state suite/status none
-    Aclose {No tests}
+    stream aclose {No tests}
     return -code return
 }
 
 proc ::kettle::Test::Support {} {
     upvar 1 line line state state
-    #Awrite "S $package" /when caught
-    #if {[regexp "^SYSTEM - (.*)$" $line -> package]} {LogC "Ss $package";return -code return}
-    #if {[regexp "^LOCAL  - (.*)$" $line -> package]} {LogC "Sl $package";return -code return}
+    #stream awrite "S $package" /when caught
+    #if {[regexp "^SYSTEM - (.*)$" $line -> package]} {stream term compact "Ss $package";return -code return}
+    #if {[regexp "^LOCAL  - (.*)$" $line -> package]} {stream term compact "Sl $package";return -code return}
     if {[regexp "^SYSTEM - (.*)$" $line -> package]} {return -code return}
     if {[regexp "^LOCAL  - (.*)$" $line -> package]} {return -code return}
     return
@@ -562,9 +393,9 @@ proc ::kettle::Test::Support {} {
 
 proc ::kettle::Test::Testing {} {
     upvar 1 line line state state
-    #Awrite "T $package" /when caught
-    #if {[regexp "^SYSTEM % (.*)$" $line -> package]} {LogC "Ts $package";return -code return}
-    #if {[regexp "^LOCAL  % (.*)$" $line -> package]} {LogC "Tl $package";return -code return}
+    #stream awrite "T $package" /when caught
+    #if {[regexp "^SYSTEM % (.*)$" $line -> package]} {stream term compact "Ts $package";return -code return}
+    #if {[regexp "^LOCAL  % (.*)$" $line -> package]} {stream term compact "Tl $package";return -code return}
     if {[regexp "^SYSTEM % (.*)$" $line -> package]} {return -code return}
     if {[regexp "^LOCAL  % (.*)$" $line -> package]} {return -code return}
     return
@@ -573,7 +404,7 @@ proc ::kettle::Test::Testing {} {
 proc ::kettle::Test::Summary {} {
     upvar 1 line line state state
     variable statelabel
-    #LogC S?$line
+    #stream term compact S?$line
     if {![regexp "(Total(.*)Passed(.*)Skipped(.*)Failed(.*))$" $line -> line]} return
 
     lassign [string trim $line] _ total _ passed _ skipped _ failed
@@ -599,7 +430,7 @@ proc ::kettle::Test::Summary {} {
 
     if {$thestate eq "ok"} {
 	# Quick return for ok suite.
-	Aclose "~~ $st T $total P $passed S $skipped F $failed"
+	stream aclose "~~ $st T $total P $passed S $skipped F $failed"
 	return -code return
     }
 
@@ -607,12 +438,12 @@ proc ::kettle::Test::Summary {} {
     # Prevents the char count from being off. This is followed by
     # construction and display of the highlighted version.
 
-    Awrite "   $st T $total P $passed S $skipped F $failed"
+    stream awrite "   $st T $total P $passed S $skipped F $failed"
     switch -exact -- $thestate {
-	none    { Aclose "~~ [io myellow "$st T $total"] P $passed S $skipped F $failed" }
-	aborted { Aclose "~~ [io mwhite   $st] T $total P $passed S $skipped F $failed" }
-	error   { Aclose "~~ [io mmagenta $st] T $total P $passed S $skipped F $failed" }
-	fail    { Aclose "~~ [io mred     $st] T $total P $passed S $skipped [io mred "F $failed"]" }
+	none    { stream aclose "~~ [io myellow "$st T $total"] P $passed S $skipped F $failed" }
+	aborted { stream aclose "~~ [io mwhite   $st] T $total P $passed S $skipped F $failed" }
+	error   { stream aclose "~~ [io mmagenta $st] T $total P $passed S $skipped F $failed" }
+	fail    { stream aclose "~~ [io mred     $st] T $total P $passed S $skipped [io mred "F $failed"]" }
     }
 
     if {$thestate eq "error"} { dict incr state cerrors }
@@ -623,7 +454,7 @@ proc ::kettle::Test::TestStart {} {
     upvar 1 line line state state
     if {![string match {---- * start} $line]} return
     set testname [string range $line 5 end-6]
-    Awrite "---- $testname"
+    stream awrite "---- $testname"
     dict set state test $testname
     dict incr state testnum
     return -code return
@@ -634,7 +465,7 @@ proc ::kettle::Test::TestSkipped {} {
     if {![string match {++++ * SKIPPED:*} $line]} return
     regexp {^[^ ]* (.*)SKIPPED:.*$} $line -> testname
     set testname [string trim $testname]
-    Awrite "SKIP $testname"
+    stream awrite "SKIP $testname"
     dict set state test {}
     return -code return
 }
@@ -643,7 +474,7 @@ proc ::kettle::Test::TestPassed {} {
     upvar 1 line line state state
     if {![string match {++++ * PASSED} $line]} return
     set testname [string range $line 5 end-7]
-    Awrite "PASS $testname"
+    stream awrite "PASS $testname"
     dict set state test {}
     return -code return
 }
@@ -652,7 +483,7 @@ proc ::kettle::Test::TestFailed {} {
     upvar 1 line line state state
     if {![string match {==== * FAILED} $line]} return
     set testname [lindex [split [string range $line 5 end-7]] 0]
-    Awrite "FAIL $testname"
+    stream awrite "FAIL $testname"
     dict set state suite/status fail
 
     ## Initialize state machine to capture the test result.
@@ -723,20 +554,20 @@ proc ::kettle::Test::CaptureFailureCollectExpected {} {
 	return -code return
     }
 
-    if {[Streams]} {
+    if {[stream active]} {
 	set test     [dict get $state test]
 	set body     [dict get $state cap body]
 	set actual   [dict get $state cap actual]
 	set expected [dict get $state cap expected]
 
-	Stream faildetails "==== [lrange $test end-1 end] FAILED ========="
-	Stream faildetails "==== Contents of test case:\n"		       
-	Stream faildetails $body					       
-	Stream faildetails "---- Result was:"			       
-	Stream faildetails [string range $actual 0 end-1]		       
-	Stream faildetails "---- Result should have been:"		       
-	Stream faildetails [string range $expected 0 end-1]		       
-	Stream faildetails "==== [lrange $test end-1 end] ====\n\n"
+	stream to faildetails {==== [lrange $test end-1 end] FAILED =========}
+	stream to faildetails {==== Contents of test case:\n}
+	stream to faildetails {$body}
+	stream to faildetails {---- Result was:}
+	stream to faildetails {[string range $actual 0 end-1]}
+	stream to faildetails {---- Result should have been:}
+	stream to faildetails {[string range $expected 0 end-1]}
+	stream to faildetails {==== [lrange $test end-1 end] ====\n\n}
     }
 
     dict unset state cap
@@ -770,7 +601,7 @@ proc ::kettle::Test::CaptureStackStart {} {
     dict set state suite/status error
     dict incr state cerrors
 
-    Aextend "[io mred {Caught Error}] "
+    stream aextend "[io mred {Caught Error}] "
     return -code return
 }
 
@@ -784,24 +615,24 @@ proc ::kettle::Test::CaptureStack {} {
 	return -code return
     }
 
-    if {[Streams]} {
-	Aextend ([io mblue {Stacktrace saved}])
+    if {[stream active]} {
+	stream aextend ([io mblue {Stacktrace saved}])
 
 	set file  [dict get $state file]
 	set stack [dict get $state stack]
 
-	Stream stacktrace "[lindex $file end] StackTrace"
-	Stream stacktrace "========================================"
-	Stream stacktrace $stack
-	Stream stacktrace "========================================\n\n"
+	stream to stacktrace {[lindex $file end] StackTrace}
+	stream to stacktrace ========================================
+	stream to stacktrace {$stack}
+	stream to stacktrace ========================================\n\n
     } else {
-	Aextend "([io mred {Stacktrace not saved}]. [io mblue {Use --log}])"
+	stream aextend "([io mred {Stacktrace not saved}]. [io mblue {Use --log}])"
     }
 
     dict set   state cap/stack off
     dict unset state stack
 
-    Aclose ""
+    stream aclose ""
     return -code return
 }
 
@@ -813,7 +644,7 @@ proc ::kettle::Test::Aborted {} {
     if {[dict get $state suite/status] eq "ok"} {
 	dict set state suite/status aborted
     }
-    Aextend "[io mred Aborted:] "
+    stream aextend "[io mred Aborted:] "
     return -code return
 }
 
@@ -824,7 +655,7 @@ proc ::kettle::Test::AbortCause {} {
 	![string match {Error in *} $line]
     } return ; # {}
 
-    Aclose $line
+    stream aclose $line
     return -code return
 }
 

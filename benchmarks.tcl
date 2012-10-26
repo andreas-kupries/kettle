@@ -58,14 +58,7 @@ namespace eval ::kettle::Bench {
     namespace import ::kettle::status
     namespace import ::kettle::option
     namespace import ::kettle::strutil
-
-    # Dictionary of log streams. Maps names to write command.
-    variable stream {}
-    # Names of our streams.
-    variable streams {
-	log summary aborted
-	stacktrace timings
-    }
+    namespace import ::kettle::stream
 }
 
 proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
@@ -76,8 +69,7 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
     # assumption allows us to run it directly, using our own
     # tcl executable as interpreter.
 
-    StreamsBegin
-    Stream log ============================================================
+    stream to log ============================================================
 
     set main [path norm [option get @kettledir]/benchmain.tcl]
     InitState
@@ -86,7 +78,7 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
 	foreach bench $benchfiles {
 	    # change next to log/log
 	    #io note { io puts ${bench}... }
-	    Aopen
+	    stream aopen
 
 	    path pipe line {
 		io trace {BENCH: $line}
@@ -100,12 +92,7 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
     }
 
     # Summary results...
-
-    if {[Streams]} {
-	Stream summary [FormatTimings $state]
-    }
-
-    StreamsDone
+    stream to summary {[FormatTimings $state]}
 
     # Report ok/fail
     status [dict get $state status]
@@ -171,8 +158,8 @@ proc ::kettle::Bench::ProcessLine {line} {
     set line [string trimright $line]
 
     if {![string match {TRACK *} $line]} {
-	LogF       $line
-	Stream log $line
+	stream term full $line
+	stream to log   {$line}
     }
 
     set rline $line
@@ -198,131 +185,9 @@ proc ::kettle::Bench::ProcessLine {line} {
     Misc
 
     # Unknown lines are printed
-    LogC !$line
+    stream term compact !$line
     return
 }
-
-# # ## ### ##### ######## ############# #####################
-## Terminal log.
-##
-## F Write on full.
-## C Write on compact
-## * Write always
-##
-
-proc ::kettle::Bench::LogF {text} {
-    if {[option get --log-mode] ne "full"} return
-    io puts $text
-    return
-}
-
-proc ::kettle::Bench::LogC {text} {
-    if {[option get --log-mode] ne "compact"} return
-    io puts $text
-    return
-}
-
-proc ::kettle::Bench::Log* {text} {
-    io puts $text
-    return
-}
-
-proc ::kettle::Bench::Aopen {} {
-    if {[option get --log-mode] ne "compact"} return
-    io animation begin
-    return
-}
-
-proc ::kettle::Bench::Aclose {text} {
-    upvar 1 state state
-
-    if {[option get --log-mode] eq "compact"} {
-	io animation last $text
-    }
-
-    if {![Streams]} return
-
-    set file [file tail [dict get $state file]]
-    set text "\[$file\] $text"
-
-    Stream summary $text
-    # Maybe use a mapping table here instead, status to stream.
-    switch -exact -- [dict get $state suite/status] {
-	error   -
-	fail    { Stream failures $text }
-	aborted { Stream aborted  $text }
-    }
-    return
-}
-
-proc ::kettle::Bench::Aextend {text} {
-    if {[option get --log-mode] ne "compact"} return
-    io animation indent $text
-    io animation write  ""
-    return
-    
-}
-
-proc ::kettle::Bench::Awrite {text} {
-    if {[option get --log-mode] ne "compact"} return
-    io animation write $text
-    return
-}
-
-# # ## ### ##### ######## ############# #####################
-# Log streams ....
-
-proc ::kettle::Bench::Streams {} {
-    expr {[option get --log] ne {}}
-}
-
-proc ::kettle::Bench::Stream {name text} {
-    variable stream
-    {*}[dict get $stream $name] $text
-    return
-}
-
-proc ::kettle::Bench::StreamsBegin {} {
-    variable stream
-    variable streams
-
-    if {[option get --log] ne {}} {
-	# Log file (stem) specified, generate all log streams.
-	# Creation is defered until actual use.
-	set stem [option get --log]
-	foreach name $streams {
-	    dict set stream $name \
-		[list ::kettle::Bench::StreamsMake $stem $name]
-	}
-    } else {
-	# Without stem we generate no streams.
-	dict set stream log ::kettle::io::puts
-	foreach name $streams {
-	    dict set stream $name ::kettle::Bench::StreamsNull
-	}
-    }
-}
-
-proc ::kettle::Bench::StreamsDone {} {
-    variable stream
-    dict for {name cmd} $stream {
-	if {[lindex $cmd 0] ne "::puts"} continue
-	close [lindex $cmd 1]
-    }
-    return
-}
-
-# Writer for log streams. Create on demand, on first write.
-proc ::kettle::Bench::StreamsMake {stem name text} {
-    variable stream
-    file mkdir [file dirname $stem.$name]
-    dict set stream $name [list ::puts [open $stem.$name w]]
-    Stream $name $text
-    return
-}
-
-# Writer for disabled streams, doing nothing.
-proc ::kettle::Bench::StreamsNull {args} {}
 
 # # ## ### ##### ######## ############# #####################
 
@@ -355,8 +220,8 @@ proc ::kettle::Bench::InitState {} {
 proc ::kettle::Bench::Host {} {
     upvar 1 line line state state
     if {![regexp "^@@ Host (.*)$" $line -> host]} return
-    #Aextend $host
-    #LogC "Host     $host"
+    #stream aextend $host
+    #stream term compact "Host     $host"
     dict set state host $host
     # FUTURE: Write bench results to a storage back end for analysis.
     return -code return
@@ -365,16 +230,16 @@ proc ::kettle::Bench::Host {} {
 proc ::kettle::Bench::Platform {} {
     upvar 1 line line state state
     if {![regexp "^@@ Platform (.*)$" $line -> platform]} return
-    #LogC "Platform $platform"
+    #stream term compact "Platform $platform"
     dict set state platform $platform
-    #Aextend ($platform)
+    #stream aextend ($platform)
     return -code return
 }
 
 proc ::kettle::Bench::Cwd {} {
     upvar 1 line line state state
     if {![regexp "^@@ BenchCWD (.*)$" $line -> cwd]} return
-    #LogC "Cwd      [path relativecwd $cwd]"
+    #stream term compact "Cwd      [path relativecwd $cwd]"
     dict set state cwd $cwd
     return -code return
 }
@@ -382,18 +247,18 @@ proc ::kettle::Bench::Cwd {} {
 proc ::kettle::Bench::Shell {} {
     upvar 1 line line state state
     if {![regexp "^@@ Shell (.*)$" $line -> shell]} return
-    #LogC "Shell    $shell"
+    #stream term compact "Shell    $shell"
     dict set state shell $shell
-    #Aextend [file tail $shell]
+    #stream aextend [file tail $shell]
     return -code return
 }
 
 proc ::kettle::Bench::Tcl {} {
     upvar 1 line line state state
     if {![regexp "^@@ Tcl (.*)$" $line -> tcl]} return
-    #LogC "Tcl      $tcl"
+    #stream term compact "Tcl      $tcl"
     dict set state tcl $tcl
-    Aextend "\[$tcl\] "
+    stream aextend "\[$tcl\] "
     return -code return
 }
 
@@ -407,7 +272,7 @@ proc ::kettle::Bench::Misc {} {
 proc ::kettle::Bench::Start {} {
     upvar 1 line line state state
     if {![regexp "^@@ Start (.*)$" $line -> start]} return
-    #LogC "Start    [clock format $start]"
+    #stream term compact "Start    [clock format $start]"
     dict set state start $start
     dict set state benchnum 0
     return -code return
@@ -423,15 +288,15 @@ proc ::kettle::Bench::End {} {
     set num   [dict get $state benchnum]
     set err   [dict get $state cerrors]
 
-    Awrite "~~    $num"
+    stream awrite "~~    $num"
     if {$err} {
-	Aclose "~~ [io mred ERR] $num"
+	stream aclose "~~ [io mred ERR] $num"
     } else {
-	Aclose "~~ OK  $num"
+	stream aclose "~~ OK  $num"
     }
 
-    #LogC "Started  [clock format $start]"
-    #LogC "End      [clock format $end]"
+    #stream term compact "Started  [clock format $start]"
+    #stream term compact "End      [clock format $end]"
 
     set delta [expr {$end - $start}]
     if {$num == 0} {
@@ -445,26 +310,24 @@ proc ::kettle::Bench::End {} {
 
     dict lappend state times $key [list $num $delta $score]
 
-    Stream timings [list TIME $key $num $delta $score]
-    #variable xshell
-    #sak::registry::local set $xshell End $end
+    stream to timings {[list TIME $key $num $delta $score]}
     return -code return
 }
 
 proc ::kettle::Bench::Benchmark {} {
     upvar 1 line line state state ; variable xfile
     if {![regexp "^@@ Benchmark (.*)$" $line -> file]} return
-    #LogC "Benchmark $file"
+    #stream term compact "Benchmark $file"
     dict set state file $file
-    Aextend "[file tail $file] "
+    stream aextend "[file tail $file] "
     return -code return
 }
 
 proc ::kettle::Bench::Support {} {
     upvar 1 line line state state
-    #Awrite "S $package" /when caught
-    #if {[regexp "^SYSTEM - (.*)$" $line -> package]} {LogC "Ss $package";return -code return}
-    #if {[regexp "^LOCAL  - (.*)$" $line -> package]} {LogC "Sl $package";return -code return}
+    #stream awrite "S $package" /when caught
+    #if {[regexp "^SYSTEM - (.*)$" $line -> package]} {stream term compact "Ss $package";return -code return}
+    #if {[regexp "^LOCAL  - (.*)$" $line -> package]} {stream term compact "Sl $package";return -code return}
     if {[regexp "^SYSTEM - (.*)$" $line -> package]} {return -code return}
     if {[regexp "^LOCAL  - (.*)$" $line -> package]} {return -code return}
     return
@@ -473,9 +336,9 @@ proc ::kettle::Bench::Support {} {
 
 proc ::kettle::Bench::Benching {} {
     upvar 1 line line state state
-    #Awrite "T $package" /when caught
-    #if {[regexp "^SYSTEM % (.*)$" $line -> package]} {LogC "Ts $package";return -code return}
-    #if {[regexp "^LOCAL  % (.*)$" $line -> package]} {LogC "Tl $package";return -code return}
+    #stream awrite "T $package" /when caught
+    #if {[regexp "^SYSTEM % (.*)$" $line -> package]} {stream term compact "Ts $package";return -code return}
+    #if {[regexp "^LOCAL  % (.*)$" $line -> package]} {stream term compact "Tl $package";return -code return}
     if {[regexp "^SYSTEM % (.*)$" $line -> package]} {return -code return}
     if {[regexp "^LOCAL  % (.*)$" $line -> package]} {return -code return}
     return
@@ -497,7 +360,7 @@ proc ::kettle::Bench::BenchStart {} {
     set w [string length $iter]
     dict set state witer $w
     dict set state iter  $iter
-    Awrite "\[[format %${w}s {}]\] $description"
+    stream awrite "\[[format %${w}s {}]\] $description"
     return -code return
 }
 
@@ -506,7 +369,7 @@ proc ::kettle::Bench::BenchTrack {} {
     if {![string match {TRACK *} $line]} return
     lassign $line _ description at
     set w [dict get $state witer]
-    Awrite "\[[format %${w}s $at]\] $description"
+    stream awrite "\[[format %${w}s $at]\] $description"
     return -code return
 }
 
@@ -514,7 +377,7 @@ proc ::kettle::Bench::BenchResult {} {
     upvar 1 line line state state
     if {![string match {RESULT *} $line]} return
     lassign $line _ description time
-    #Awrite "$description = $time"
+    #stream awrite "$description = $time"
 
     set sh   [dict get $state shell]
     set ver  [dict get $state tcl]
@@ -537,7 +400,7 @@ proc ::kettle::Bench::CaptureStackStart {} {
     dict set state suite/status error
     dict incr state cerrors
 
-    Aextend "[io mred {Caught Error}] "
+    stream aextend "[io mred {Caught Error}] "
     return -code return
 }
 
@@ -551,24 +414,24 @@ proc ::kettle::Bench::CaptureStack {} {
 	return -code return
     }
 
-    if {[Streams]} {
-	Aextend ([io mblue {Stacktrace saved}])
+    if {[stream active]} {
+	stream aextend ([io mblue {Stacktrace saved}])
 
-	set file  [dict get $state file]
+	set file  [lindex [dict get $state file] end]
 	set stack [dict get $state stack]
 
-	Stream stacktrace "[lindex $file end] StackTrace"
-	Stream stacktrace "========================================"
-	Stream stacktrace $stack
-	Stream stacktrace "========================================\n\n"
+	stream to stacktrace {$file StackTrace}
+	stream to stacktrace ========================================
+	stream to stacktrace {$stack}
+	stream to stacktrace ========================================\n\n
     } else {
-	Aextend "([io mred {Stacktrace not saved}]. [io mblue {Use --log}])"
+	stream aextend "([io mred {Stacktrace not saved}]. [io mblue {Use --log}])"
     }
 
     dict set   state cap/stack off
     dict unset state stack
 
-    Aclose ""
+    stream aclose ""
     return -code return
 }
 
@@ -580,7 +443,7 @@ proc ::kettle::Bench::Aborted {} {
     if {[dict get $state suite/status] eq "ok"} {
 	dict set state suite/status aborted
     }
-    Aextend "[io mred Aborted:] "
+    stream aextend "[io mred Aborted:] "
     return -code return
 }
 
@@ -591,7 +454,7 @@ proc ::kettle::Bench::AbortCause {} {
 	![string match {Error in *} $line]
     } return ; # {}
 
-    Aclose $line
+    stream aclose $line
     return -code return
 }
 
