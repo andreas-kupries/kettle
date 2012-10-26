@@ -17,13 +17,13 @@ catch {wm withdraw .}
 
 namespace eval ::kb {}
 
-set argv  [lassign $argv kb::localprefix kb::benchfile]
-set argv0 $kb::benchfile
+set argv [lassign $argv kb::localprefix kb::benchfile]
+set argv $kb::benchfile
 
 # # ## ### ##### ######## ############# #####################
-## Import tclbench.
-
-#package require tcltest
+## Import tclbench - Local copy. Snarfed from tcllib/bench.
+## Later, when running the bench file. This is the main script,
+## behaves like an application, not a package.
 
 # # ## ### ##### ######## ############# #####################
 ## Management utilities for communication with the 'benchmarks' recipe
@@ -38,17 +38,17 @@ proc kb::Note {k v} {
 proc kb::Now {} {return [clock seconds]}
 
 # Ensure an fully normalized absolute path to the benchmark location.
-#set ::tcltest::testsDirectory [file dirname [file normalize $::tcltest::testsDirectory]/___]
+set kb::benchDirectory [file dirname [file dirname [file normalize $kb::benchfile]/___]]
 
 # # ## ### ##### ######## ############# #####################
-## Start reporting, the environment in which the tests are run.
+## Start reporting, the environment in which the benchmarks are run.
 
 puts stdout ""
 kb::Note Host       [info hostname]
 kb::Note Platform   $tcl_platform(os)-$tcl_platform(osVersion)-$tcl_platform(machine)
-#kb::Note TestDir    $::tcltest::testsDirectory
+kb::Note BenchDir   $::kb::benchDirectory
 kb::Note LocalDir   $::kb::localprefix
-kb::Note TestCWD    [pwd]
+kb::Note BenchCWD   [pwd]
 kb::Note Shell      [info nameofexecutable]
 kb::Note Tcl        [info patchlevel]
 
@@ -63,16 +63,21 @@ kb::Note Tcl        [info patchlevel]
 source [file dirname [file normalize [info script]]]/try.tcl
 source [file dirname [file normalize [info script]]]/benchutilities.tcl
 
-#namespace import ::tcltest::*
-
 # # ## ### ##### ######## ############# #####################
 ## Run the benchmarks
 
-kb::Note Benchmarks $kb::benchfile
+# Disable the use of exit inside of libbench.tcl
+rename exit __exit
+proc   exit {args} {}
+
+kb::Note Benchmark $kb::benchfile
 kb::Note Start [kb::Now]
 
 if {[catch {
-    source $kb::benchfile
+    # Read the main application file. This defines
+    # bench commands, processes argv and runs the
+    # bench file found there.
+    source [file dirname [file normalize [info script]]]/libbench.tcl
 } msg]} {
     # Transmit stack trace in capturable format.
     puts stdout "@+"
@@ -83,7 +88,6 @@ if {[catch {
 kb::Note End [kb::Now]
 puts ""
 
-#::tcltest::cleanupTests 1
 # # ## ### ##### ######## ############# #####################
 # FRINK: nocheck
 # Use of 'exit' ensures proper termination of the test system when

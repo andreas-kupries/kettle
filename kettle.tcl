@@ -40,7 +40,9 @@ namespace eval ::kettle {
 ## @owns: tool.tcl
 ## @owns: try.tcl
 
-## These two files are not sourced as part of the kettle application.
+# # ## ### ##### ######## ############# #####################
+
+## The next two files are not sourced as part of the kettle application.
 ##
 # The first is the main entry point for the 'test' recipe, i.e. the
 # application running a specific .test file. It is used to communicate
@@ -50,6 +52,23 @@ namespace eval ::kettle {
 
 ## @owns: testmain.tcl
 ## @owns: testutilities.tcl
+
+## The next three files are not sourced as part of the kettle application.
+##
+# The first is the main entry point for the 'benchmark' recipe, i.e. the
+# application running a specific .bench file. It is used to communicate
+# build configuration data into the benchmarking environment.
+##
+# The second provides lots of utilities to make writing tests easier.
+##
+# The third is the actual application, snarfed from Tcllib, implementing
+# the benchmark commands and running files.
+
+## @owns: benchmain.tcl
+## @owns: benchutilities.tcl
+## @owns: libbench.tcl
+
+# # ## ### ##### ######## ############# #####################
 
 ::apply {{selfdir} {
     # # ## ### ##### ######## ############# ##################### Foundation

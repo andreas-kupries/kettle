@@ -24,7 +24,7 @@ proc ::kettle::benchmarks {{benchsrcdir bench}} {
 
     # Put the benchmarks into recipes.
 
-    recipe define test {
+    recipe define bench {
 	Run the benchmarks
     } {benchsrcdir benchmarks} {
 	# Note: We build and install the package under profiling (and
@@ -100,85 +100,9 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
     }
 
     # Summary results...
-    # ... the numbers
-    set fn [dict get $state cfailed]
-    set en [dict get $state cerrors]
-    set tn [dict get $state ctotal]
-    set pn [dict get $state cpassed]
-    set sn [dict get $state cskipped]
-
-    # ... formatted
-    set t $tn;#[format %6d $tn]
-    set p [format %6d $pn]
-    set s [format %6d $sn]
-    set f [format %6d $fn]
-    set e [format %6d $en]
-
-    # ... and colorized where needed.
-    if {$pn} { set p [io mgreen   $p] }
-    if {$sn} { set s [io mblue    $s] }
-    if {$fn} { set f [io mred     $f] }
-    if {$en} { set e [io mmagenta $e] }
-
-    # Show in terminal, always...
-    Log* "Passed  $p of $t"
-    Log* "Skipped $s of $t"
-    Log* "Failed  $f of $t"
-    Log* "#Errors $e"
-
-    # And in the main stream...
-    Stream log "Passed  $p of $t"
-    Stream log "Skipped $s of $t"
-    Stream log "Failed  $f of $t"
-    Stream log "#Errors $e"
 
     if {[Streams]} {
-	# Extract data ...
-	set times [dict get $state times]
-
-	# Sort by shell and benchmark, re-package into tuples.
-	set tmp {}
-	foreach k [lsort -dict [dict keys $times]] {
-	    lassign $k                   shell suite
-	    lassign [dict get $times $k] nbench sec usec
-	    lappend tmp [list $shell $suite $nbench $sec $usec]
-	}
-
-	# Sort tuples by time per benchmark, and transpose into
-	# columns. Add the header and footer lines.
-
-	lappend sh Shell     =====
-	lappend ts Benchsuite =========
-	lappend nt Benchs     =====
-	lappend ns Seconds   =======
-	lappend us uSec/Bench =========
-
-	foreach item [lsort -index 4 -decreasing $tmp] {
-	    lassign $item shell suite nbench sec usec
-	    lappend sh $shell
-	    lappend ts $suite
-	    lappend nt $nbench
-	    lappend ns $sec
-	    lappend us $usec
-	}
-
-	lappend sh =====
-	lappend ts =========
-	lappend nt =====
-	lappend ns =======
-	lappend us =========
-
-	# Print the columns, each padded for vertical alignment.
-
-	Stream summary \nTimings...
-	foreach \
-	    shell  [strutil padr $sh] \
-	    suite  [strutil padr $ts] \
-	    nbench [strutil padr $nt] \
-	    sec    [strutil padr $ns] \
-	    usec   [strutil padr $us] {
-	    Stream summary "$shell $suite $nbench $sec $usec"
-	}
+	Stream summary [FormatTimings $state]
     }
 
     StreamsDone
@@ -188,14 +112,68 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
     return
 }
 
+proc ::kettle::Bench::FormatTimings {state} {
+    # Extract data ...
+    set times [dict get $state times]
+
+    # Sort by shell and benchmark, re-package into tuples.
+    set tmp {}
+    foreach k [lsort -dict [dict keys $times]] {
+	lassign $k                   shell suite
+	lassign [dict get $times $k] nbench sec usec
+	lappend tmp [list $shell $suite $nbench $sec $usec]
+    }
+
+    # Sort tuples by time per benchmark, and transpose into
+    # columns. Add the header and footer lines.
+
+    lappend sh Shell      =====
+    lappend ts Benchsuite ==========
+    lappend nb Benchmarks ==========
+    lappend ns Seconds    =======
+    lappend us uSec/Bench ==========
+
+    foreach item [lsort -index 4 -decreasing $tmp] {
+	lassign $item shell suite nbench sec usec
+	lappend sh $shell
+	lappend ts $suite
+	lappend nb $nbench
+	lappend ns $sec
+	lappend us $usec
+    }
+
+    lappend sh =====
+    lappend ts ==========
+    lappend nb ==========
+    lappend ns =======
+    lappend us ==========
+
+    # Print the columns, each padded for vertical alignment.
+
+    lappend lines \nTimings...
+    foreach \
+	shell  [strutil padr $sh] \
+	suite  [strutil padr $ts] \
+	nbench [strutil padr $nb] \
+	sec    [strutil padr $ns] \
+	usec   [strutil padr $us] {
+	    lappend lines "$shell $suite $nbench $sec $usec"
+	}
+
+    return [join $lines \n]
+}
+
+
 proc ::kettle::Bench::ProcessLine {line} {
     # Counters and other state in the calling environment.
     upvar 1 state state
 
     set line [string trimright $line]
 
-    LogF       $line
-    Stream log $line
+    if {![string match {TRACK *} $line]} {
+	LogF       $line
+	Stream log $line
+    }
 
     set rline $line
     set line [string trim $line]
@@ -206,19 +184,18 @@ proc ::kettle::Bench::ProcessLine {line} {
     # matchers are _not_ executed.
 
     Host;Platform;Cwd;Shell;Tcl
-    Start;End
+    Start;End;Benchmark
     Support;Benching
-    Summary
 
     CaptureStackStart
     CaptureStack
 
-    # BenchResult
+    BenchLog;BenchStart;BenchTrack;BenchResult
 
     Aborted
     AbortCause
 
-    Match||Skip||Sourced
+    Misc
 
     # Unknown lines are printed
     LogC !$line
@@ -273,7 +250,6 @@ proc ::kettle::Bench::Aclose {text} {
     switch -exact -- [dict get $state suite/status] {
 	error   -
 	fail    { Stream failures $text }
-	none    { Stream none     $text }
 	aborted { Stream aborted  $text }
     }
     return
@@ -355,7 +331,7 @@ proc ::kettle::Bench::InitState {} {
     # The counters are all updated in ProcessLine.
     # The status may change to 'fail' in ProcessLine.
     set state {
-	ctotal   0
+	cerrors  0
 	status   ok
 
 	host     {}
@@ -363,9 +339,10 @@ proc ::kettle::Bench::InitState {} {
 	cwd      {}
 	shell    {}
 	file     {}
-	test     {}
+	bench    {}
 	start    {}
 	times    {}
+	results  {}
 
 	suite/status ok
 
@@ -420,7 +397,7 @@ proc ::kettle::Bench::Tcl {} {
     return -code return
 }
 
-proc ::kettle::Bench::Match||Skip||Sourced {} {
+proc ::kettle::Bench::Misc {} {
     upvar 1 line line state state
     if {[string match "@@ BenchDir*" $line]} {return -code return}
     if {[string match "@@ LocalDir*" $line]} {return -code return}
@@ -432,7 +409,7 @@ proc ::kettle::Bench::Start {} {
     if {![regexp "^@@ Start (.*)$" $line -> start]} return
     #LogC "Start    [clock format $start]"
     dict set state start $start
-    dict set state testnum 0
+    dict set state benchnum 0
     return -code return
 }
 
@@ -443,7 +420,15 @@ proc ::kettle::Bench::End {} {
     set start [dict get $state start]
     set shell [dict get $state shell]
     set file  [dict get $state file]
-    set num   [dict get $state testnum]
+    set num   [dict get $state benchnum]
+    set err   [dict get $state cerrors]
+
+    Awrite "~~    $num"
+    if {$err} {
+	Aclose "~~ [io mred ERR] $num"
+    } else {
+	Aclose "~~ OK  $num"
+    }
 
     #LogC "Started  [clock format $start]"
     #LogC "End      [clock format $end]"
@@ -463,6 +448,15 @@ proc ::kettle::Bench::End {} {
     Stream timings [list TIME $key $num $delta $score]
     #variable xshell
     #sak::registry::local set $xshell End $end
+    return -code return
+}
+
+proc ::kettle::Bench::Benchmark {} {
+    upvar 1 line line state state ; variable xfile
+    if {![regexp "^@@ Benchmark (.*)$" $line -> file]} return
+    #LogC "Benchmark $file"
+    dict set state file $file
+    Aextend "[file tail $file] "
     return -code return
 }
 
@@ -487,52 +481,50 @@ proc ::kettle::Bench::Benching {} {
     return
 }
 
-proc ::kettle::Bench::Summary {} {
+proc ::kettle::Bench::BenchLog {} {
     upvar 1 line line state state
-    variable statelabel
-    #LogC S?$line
-    if {![regexp "(Total(.*)Passed(.*)Skipped(.*)Failed(.*))$" $line -> line]} return
+    if {![string match {LOG *} $line]} return
+    # Ignore unstructured feedback.
+    return -code return
+}
 
-    lassign [string trim $line] _ total _ passed _ skipped _ failed
+proc ::kettle::Bench::BenchStart {} {
+    upvar 1 line line state state
+    if {![string match {START *} $line]} return
+    lassign $line _ description iter
+    dict set state bench $description
+    dict incr state benchnum
+    set w [string length $iter]
+    dict set state witer $w
+    dict set state iter  $iter
+    Awrite "\[[format %${w}s {}]\] $description"
+    return -code return
+}
 
-    dict incr state ctotal   $total
-    dict incr state cpassed  $passed
-    dict incr state cskipped $skipped
-    dict incr state cfailed  $failed
+proc ::kettle::Bench::BenchTrack {} {
+    upvar 1 line line state state
+    if {![string match {TRACK *} $line]} return
+    lassign $line _ description at
+    set w [dict get $state witer]
+    Awrite "\[[format %${w}s $at]\] $description"
+    return -code return
+}
 
-    set total   [format %5d $total]
-    set passed  [format %5d $passed]
-    set skipped [format %5d $skipped]
-    set failed  [format %5d $failed]
+proc ::kettle::Bench::BenchResult {} {
+    upvar 1 line line state state
+    if {![string match {RESULT *} $line]} return
+    lassign $line _ description time
+    #Awrite "$description = $time"
 
-    set thestate [dict get $state suite/status]
+    set sh   [dict get $state shell]
+    set ver  [dict get $state tcl]
+    set file [dict get $state file]
 
-    if {!$total && ($thestate eq "ok")} {
-	dict set state suite/status none
-	set thestate         none
-    }
+    dict lappend state results \
+	[list $sh $ver $file $description $time]
 
-    set st [dict get $statelabel $thestate]
-
-    if {$thestate eq "ok"} {
-	# Quick return for ok suite.
-	Aclose "~~ $st T $total P $passed S $skipped F $failed"
-	return -code return
-    }
-
-    # Clean out progress display using a non-highlighted string.
-    # Prevents the char count from being off. This is followed by
-    # construction and display of the highlighted version.
-
-    Awrite "   $st T $total P $passed S $skipped F $failed"
-    switch -exact -- $thestate {
-	none    { Aclose "~~ [io myellow "$st T $total"] P $passed S $skipped F $failed" }
-	aborted { Aclose "~~ [io mwhite   $st] T $total P $passed S $skipped F $failed" }
-	error   { Aclose "~~ [io mmagenta $st] T $total P $passed S $skipped F $failed" }
-	fail    { Aclose "~~ [io mred     $st] T $total P $passed S $skipped [io mred "F $failed"]" }
-    }
-
-    if {$thestate eq "error"} { dict incr state cerrors }
+    dict set state bench {}
+    dict set state witer {}
     return -code return
 }
 
@@ -582,7 +574,7 @@ proc ::kettle::Bench::CaptureStack {} {
 
 proc ::kettle::Bench::Aborted {} {
     upvar 1 line line state state
-    if {![string match {Aborting the tests found *} $line]} return
+    if {![string match {Aborting the benchmarks found *} $line]} return
     # Ignore aborted status if we already have it, or some other error
     # status (like error, or fail). These are more important to show.
     if {[dict get $state suite/status] eq "ok"} {

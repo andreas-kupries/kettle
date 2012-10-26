@@ -11,12 +11,13 @@ namespace eval ::kb {
 ## API. Use of files relative to the test directory.
 
 proc ::kb::source {path} {
-    variable ::tcltest::testsDirectory
-    uplevel 1 [list ::source [file join $testsDirectory $path]]
+    variable benchDirectory
+    uplevel 1 [list ::source [file join $benchDirectory $path]]
 }
 
 proc ::kb::find {pattern} {
-    return [lsort -dict [glob -nocomplain -directory $::tcltest::testsDirectory $pattern]]
+    variable benchDirectory
+    return [lsort -dict [glob -nocomplain -directory $benchDirectory $pattern]]
 }
 
 proc ::kb::source* {pattern} {
@@ -27,7 +28,7 @@ proc ::kb::source* {pattern} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Use of packages. Support, and under test.
+## Use of packages. Support, and under profiling.
 
 proc ::kb::check {name version} {
     if {[package vsatisfies [package provide $name] $version]} {
@@ -35,7 +36,7 @@ proc ::kb::check {name version} {
 	return
     }
 
-    puts "    Aborting the tests found in \"[file tail [info script]]\""
+    puts "    Aborting the benchmarks found in \"[file tail [info script]]\""
     puts "    Requiring at least $name $version, have [package present $name]."
 
     # This causes a 'return' in the calling scope.
@@ -47,7 +48,7 @@ proc ::kb::require {type name args} {
     try {
 	package require $name {*}$args
     } on error {e o} {
-	puts "    Aborting the tests found in \"[file tail [info script]]\""
+	puts "    Aborting the benchmarks found in \"[file tail [info script]]\""
 	puts "    Required package $name not found: $e"
 	return -code return
     }
@@ -69,7 +70,7 @@ proc ::kb::local {type name args} {
 	package forget  $name
 	package require $name {*}$args
     } on error {e o} {
-	puts "    Aborting the tests found in \"[file tail [info script]]\""
+	puts "    Aborting the benchmarks found in \"[file tail [info script]]\""
 	puts "    Required local package $name not found: $e"
 	return -code return
     } finally {
@@ -94,10 +95,10 @@ proc ::kb::PU {name args} {
     return
 }
 
-namespace eval ::kt {
+namespace eval ::kb {
     variable tag {
-	support -
-	testing %
+	support   -
+	benchmark %
     }
 }
 
