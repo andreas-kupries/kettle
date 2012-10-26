@@ -384,15 +384,15 @@ proc ::kettle::Bench::Benching {} {
 
 proc ::kettle::Bench::BenchLog {} {
     upvar 1 line line state state
-    if {![string match {LOG *} $line]} return
+    if {![string match {@@ Feedback *} $line]} return
     # Ignore unstructured feedback.
     return -code return
 }
 
 proc ::kettle::Bench::BenchStart {} {
     upvar 1 line line state state
-    if {![string match {START *} $line]} return
-    lassign $line _ description iter
+    if {![regexp "^@@ StartBench (.*)$" $line -> data]} return
+    lassign [lindex $data 0] description iter
     dict set state bench $description
     dict incr state benchnum
     set w [string length $iter]
@@ -404,8 +404,8 @@ proc ::kettle::Bench::BenchStart {} {
 
 proc ::kettle::Bench::BenchTrack {} {
     upvar 1 line line state state
-    if {![string match {TRACK *} $line]} return
-    lassign $line _ description at
+    if {![regexp "^@@ Progress (.*)$" $line -> data]} return
+    lassign [lindex $data 0] description at
     set w [dict get $state witer]
     stream awrite "\[[format %${w}s $at]\] $description"
     return -code return
@@ -413,8 +413,8 @@ proc ::kettle::Bench::BenchTrack {} {
 
 proc ::kettle::Bench::BenchResult {} {
     upvar 1 line line state state
-    if {![string match {RESULT *} $line]} return
-    lassign $line _ description time
+    if {![regexp "^@@ Result (.*)$" $line -> data]} return
+    lassign [lindex $data 0] description time
     #stream awrite "$description = $time"
 
     set sh   [dict get $state shell]
