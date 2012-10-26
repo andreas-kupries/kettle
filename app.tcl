@@ -33,7 +33,7 @@ proc ::kettle::Application {} {
 
 	set goals {}
 
-	set dotfile ~/.kettle/x
+	set dotfile ~/.kettle/config
 	if {[file exists   $dotfile] &&
 	    [file isfile   $dotfile] &&
 	    [file readable $dotfile]} {
