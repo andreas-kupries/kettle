@@ -29,6 +29,11 @@ kettle option define --log {
 kettle option onchange    --log {} { set! --log [path norm $new] }
 kettle option no-work-key --log
 
+kettle option define --log-append {
+    Associate to --log. Open files in append mode.
+} off boolean
+kettle option no-work-key --log-append
+
 # # ## ### ##### ######## ############# #####################
 ## Verbosity setting for logging to the terminal.
 ## Irrelevant to work database keying.
@@ -57,9 +62,11 @@ proc ::kettle::stream::to {name text} {
 
 	file mkdir [file dirname $stem.$name]
 
-	# TODO # Stream start - append mode
-	set ch [open $stem.$name w]
+	set mode [expr {[option get --log-append]
+			? "a"
+			: "w"}]
 
+	set ch [open $stem.$name $mode]
 	dict set stream $name $ch
     } else {
 	set ch [dict get $stream $name]
