@@ -277,8 +277,10 @@ proc ::kettle::Bench::ProcessLine {line} {
 
     Misc
 
-    # Unknown lines are printed
+    # Unknown lines are simply shown (disturbing the animation, good
+    # for this situation, actually), also saved for review.
     stream term compact !$line
+    stream to unprocessed $line
     return
 }
 
