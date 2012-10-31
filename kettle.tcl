@@ -67,7 +67,7 @@ namespace eval ::kettle {
 
 ## @owns: benchmain.tcl
 ## @owns: benchutilities.tcl
-## @owns: libbench.tcl
+## @!owns: libbench.tcl
 
 # # ## ### ##### ######## ############# #####################
 

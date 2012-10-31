@@ -62,7 +62,7 @@ kb::Note Tcl        [info patchlevel]
 
 source [file dirname [file normalize [info script]]]/try.tcl
 source [file dirname [file normalize [info script]]]/benchutilities.tcl
-source [file dirname [file normalize [info script]]]/libbench.tcl
+#source [file dirname [file normalize [info script]]]/libbench.tcl
 
 # # ## ### ##### ######## ############# #####################
 ## Run the benchmarks
