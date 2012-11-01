@@ -439,6 +439,7 @@ proc ::kettle::path::copy-file {src dstdir} {
     dry-barrier
 
     if {[catch {
+	file mkdir $dstdir
 	file copy $src $dstdir/[file tail $src]
     } msg]} {
 	io err { io puts "FAIL ($msg)" }
