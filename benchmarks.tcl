@@ -9,8 +9,19 @@
 
 kettle option define --repeats {
     Number of repeats to perform per bench file.
-    (NUmber of runs is 1 + repeats).
+    (Number of runs is 1 + repeats).
 } 0 int0
+kettle option no-work-key --repeats
+
+# # ## ### ##### ######## ############# #####################
+## Iterations setting. Number of iterations to run for a benchmark, if
+## not overriden by the benchmark itself. Default 1000. Positive,
+## non-zero integer.
+## Irrelevant to work database keying.
+
+kettle option define --iters {
+    Number of iterations to perform per benchmark.
+} 1000 int1
 kettle option no-work-key --repeats
 
 # # ## ### ##### ######## ############# #####################
@@ -22,6 +33,26 @@ kettle option define --collate {
     Method for coalescing the data from multiple runs (repeats > 0).
 } min {enum {min max avg}}
 kettle option no-work-key --collate
+
+# # ## ### ##### ######## ############# #####################
+## Filter settings to select which benchmarks to run.
+## Irrelevant to work database keying.
+#
+# Note: If both --match and --rmatch are specified then _both_
+# apply. I.e. a benchmark will be run if and only if it matches both
+# patterns.
+
+kettle option define --match {
+    Run only tests matching the glob pattern.
+    Default is the empty string, disabling the filter.
+} {} string
+kettle option no-work-key --match
+
+kettle option define --rmatch {
+    Run only tests matching the regexp pattern.
+    Default is the empty string, disabling the filter.
+} {} string
+kettle option no-work-key --rmatch
 
 # # ## ### ##### ######## ############# #####################
 
@@ -96,6 +127,12 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
 
     set repeats [option get --repeats]
 
+    # Filter and other settings for the child process.
+    lappend bconfig MATCH    [option get --match]
+    lappend bconfig RMATCH   [option get --rmatch]
+    lappend bconfig ITERS    [option get --iters]
+    lappend bconfig prefix   $localprefix
+
     path in $srcdir {
 	foreach bench $benchfiles {
 	    stream aopen
@@ -106,7 +143,7 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
 		path pipe line {
 		    io trace {BENCH: $line}
 		    ProcessLine $line
-		} [option get --with-shell] $main $localprefix [path norm $bench]
+		} [option get --with-shell] $main $bconfig [path norm $bench]
 	    }
 	}
     }
@@ -270,7 +307,7 @@ proc ::kettle::Bench::ProcessLine {line} {
     CaptureStackStart
     CaptureStack
 
-    BenchLog;BenchStart;BenchTrack;BenchResult
+    BenchLog;BenchSkipped;BenchStart;BenchTrack;BenchResult
 
     Aborted
     AbortCause
@@ -370,6 +407,7 @@ proc ::kettle::Bench::Start {} {
     #stream term compact "Start    [clock format $start]"
     dict set state start $start
     dict set state benchnum 0
+    dict set state benchskip 0
     return -code return
 }
 
@@ -381,13 +419,14 @@ proc ::kettle::Bench::End {} {
     set shell [dict get $state shell]
     set file  [dict get $state file]
     set num   [dict get $state benchnum]
+    set skip  [dict get $state benchskip]
     set err   [dict get $state cerrors]
 
-    stream awrite "~~    $num"
+    stream awrite "~~    $num SKIP $skip"
     if {$err} {
-	stream aclose "~~ [io mred ERR] $num"
+	stream aclose "~~ [io mred ERR] $num SKIP $skip"
     } else {
-	stream aclose "~~ OK  $num"
+	stream aclose "~~ OK  $num SKIP $skip"
     }
 
     #stream term compact "Started  [clock format $start]"
@@ -443,6 +482,16 @@ proc ::kettle::Bench::BenchLog {} {
     upvar 1 line line state state
     if {![string match {@@ Feedback *} $line]} return
     # Ignore unstructured feedback.
+    return -code return
+}
+
+proc ::kettle::Bench::BenchSkipped {} {
+    upvar 1 line line state state
+    if {![regexp "^@@ Skipped (.*)$" $line -> data]} return
+    lassign [lindex $data 0] description
+    dict incr state benchskip
+    dict set state bench {}
+    stream awrite "SKIP $description"
     return -code return
 }
 

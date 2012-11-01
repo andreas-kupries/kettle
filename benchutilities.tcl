@@ -35,8 +35,6 @@ namespace eval ::kb {
     # - RMATCH  : Match pattern, see -rmatch, default empty, aka
     #             everything matches.
     #
-    # - FILES   : List of benchmark files to run.
-    #
     # - ITERS   : Number of iterations to run a benchmark body, default
     #             1000. Can be overridden by the individual benchmarks.
 }

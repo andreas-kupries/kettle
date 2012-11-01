@@ -73,6 +73,7 @@ proc ::kettle::stream::to {name text} {
     }
 
     ::puts $ch $text
+    flush  $ch
     return
 }
 

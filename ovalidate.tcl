@@ -125,6 +125,14 @@ apply {{} {
 	return
     }
 
+    Def int1 {
+	if {[string is int -strict $v] && ($v > 0)} return
+	Bad "Expected integer > 0, but got \"$new\""
+    } {
+	# TODO option type int1 gui -- ttk::entry with validation, or spinbox
+	return
+    }
+
     Def int {
 	if {[string is int -strict $v]} return
 	Bad "Expected integer, but got \"$new\""
