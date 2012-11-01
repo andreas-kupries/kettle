@@ -59,6 +59,9 @@ kb::Note Tcl        [info patchlevel]
 # Shell => Tcl      |
 # CWD               | Identity of the package getting profiles.
 
+if {[llength [set v [dict get $::kb::uconfig MATCH]]]}  { kb::Note MatchTestsG $v }
+if {[llength [set v [dict get $::kb::uconfig RMATCH]]]} { kb::Note MatchTestsR $v }
+
 # # ## ### ##### ######## ############# #####################
 ## Import kettle provided utility commands (kb:: namespace)
 ## the benchmarks can use. And a try/finally for ourselves.

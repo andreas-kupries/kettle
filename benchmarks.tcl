@@ -398,6 +398,7 @@ proc ::kettle::Bench::Misc {} {
     upvar 1 line line state state
     if {[string match "@@ BenchDir*" $line]} {return -code return}
     if {[string match "@@ LocalDir*" $line]} {return -code return}
+    if {[string match "@@ Match*"    $line]} {return -code return}
     return
 }
 
