@@ -19,6 +19,9 @@ proc ::kettle::ovalidate::Def {name script guiscript {label {}}} {
 	namespace export help check gui
 	namespace ensemble create
     }
+
+    interp alias {} ::kettle::ovalidate::${name}::Bad {} ::kettle::ovalidate::Bad
+
     proc ::kettle::ovalidate::${name}::check {v} $script
     proc ::kettle::ovalidate::${name}::help  {} [list return $label]
     proc ::kettle::ovalidate::${name}::gui   {win option} $guiscript
@@ -32,7 +35,11 @@ proc ::kettle::ovalidate::enum {choices cmd args} {
     Enum::${cmd} $choices {*}$args
 }
 
-namespace eval ::kettle::ovalidate::Enum {}
+namespace eval ::kettle::ovalidate::Enum {
+    namespace import ::kettle::ovalidate::Bad
+}
+
+interp alias {} ::kettle::ovalidate::Enum::Bad {} ::kettle::ovalidate::Bad
 
 proc ::kettle::ovalidate::Enum::check {choices v} {
     if {$v in $choices} return
@@ -52,6 +59,69 @@ proc ::kettle::ovalidate::Enum::gui {choices win option} {
 	kettle option set $option [$win get]
     } $win $option]
 }
+
+# # ## ### ##### ######## ############# #####################
+
+proc ::kettle::ovalidate::range {min max cmd args} {
+    Range::${cmd} $min $max {*}$args
+}
+
+namespace eval ::kettle::ovalidate::Range {
+    namespace import ::kettle::ovalidate::Bad
+}
+
+interp alias {} ::kettle::ovalidate::Range::Bad {} ::kettle::ovalidate::Bad
+
+proc ::kettle::ovalidate::Range::check {min max v} {
+    if {[string is int -strict $v] && ($min <= $v) && ($v <= $max)} return
+    Bad "Expected integer in \[$min...$max\], but got \"$v\""
+}
+
+proc ::kettle::ovalidate::Range::help {min max} {
+    return "$min $max"
+}
+
+proc ::kettle::ovalidate::Range::gui {min max win option} {
+    variable last
+
+    ttk::spinbox $win \
+	-wrap 0 -from $min -to $max -increment 1 \
+	-format %0.0f \
+	-validate focusout \
+	-validatecommand \
+	[lambda@ ::kettle::ovalidate::Range {win option} {
+	    variable last
+	    set v [$win get]
+	    if {[catch {
+		kettle option set $option $v
+	    }]} {
+		$win set [dict get $last $win]
+		return 0
+	    } else {
+		dict set last $win $v
+		return 1
+	    }
+	} $win $option] \
+	-command \
+	[lambda@ ::kettle::ovalidate::Range {win option args} {
+	    variable last
+	    dict set last $win [$win get]
+	    return
+	} $win $option]
+
+    set v [kettle option get $option]
+    $win set $v
+    $win validate
+    dict set last $win $v
+
+    kettle option onchange $option {win} {
+	$win set [kettle option get $option]
+	$win validate
+    } $win
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
 
 apply {{} {
     Def any {
@@ -114,30 +184,6 @@ apply {{} {
 		$win state !selected
 	    }
 	} $win
-	return
-    }
-
-    Def int0 {
-	if {[string is int -strict $v] && ($v >= 0)} return
-	Bad "Expected integer >= 0, but got \"$new\""
-    } {
-	# TODO option type int0 gui -- ttk::entry with validation, or spinbox
-	return
-    }
-
-    Def int1 {
-	if {[string is int -strict $v] && ($v > 0)} return
-	Bad "Expected integer > 0, but got \"$new\""
-    } {
-	# TODO option type int1 gui -- ttk::entry with validation, or spinbox
-	return
-    }
-
-    Def int {
-	if {[string is int -strict $v]} return
-	Bad "Expected integer, but got \"$new\""
-    } {
-	# TODO option type int gui -- ttk::entry with validation, or spinbox
 	return
     }
 
