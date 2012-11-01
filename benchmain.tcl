@@ -17,8 +17,11 @@ catch {wm withdraw .}
 
 namespace eval ::kb {}
 
-set argv [lassign $argv kb::localprefix kb::benchfile]
+set argv [lassign $argv kb::uconfig kb::benchfile]
 set argv $kb::benchfile
+
+set ::kb::localprefix [dict get $::kb::uconfig prefix]
+dict unset $kb::uconfig prefix
 
 # # ## ### ##### ######## ############# #####################
 ## Import tclbench - Local copy. Snarfed from tcllib/bench.
@@ -63,6 +66,9 @@ kb::Note Tcl        [info patchlevel]
 source [file dirname [file normalize [info script]]]/try.tcl
 source [file dirname [file normalize [info script]]]/benchutilities.tcl
 #source [file dirname [file normalize [info script]]]/libbench.tcl
+
+# Override the global configuration defaults with the user's choices.
+array set kb::config $kb::uconfig
 
 # # ## ### ##### ######## ############# #####################
 ## Run the benchmarks
