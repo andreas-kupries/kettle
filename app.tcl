@@ -41,6 +41,8 @@ proc ::kettle::Application {} {
 	    set argv [list {*}[path cat $dotfile] {*}$argv]
 	}
 
+	io trace {cmdline = ([join $argv {) (}])}
+
 	while {[llength $argv]} {
 	    set o [lindex $argv 0]
 	    switch -glob -- $o {
