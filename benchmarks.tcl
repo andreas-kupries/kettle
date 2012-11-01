@@ -10,7 +10,7 @@
 kettle option define --repeats {
     Number of repeats to perform per bench file.
     (Number of runs is 1 + repeats).
-} 0 int0
+} 0 {range 0 Inf}
 kettle option no-work-key --repeats
 
 # # ## ### ##### ######## ############# #####################
@@ -21,7 +21,7 @@ kettle option no-work-key --repeats
 
 kettle option define --iters {
     Number of iterations to perform per benchmark.
-} 1000 int1
+} 1000 {range 1 Inf}
 kettle option no-work-key --repeats
 
 # # ## ### ##### ######## ############# #####################
