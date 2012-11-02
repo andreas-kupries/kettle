@@ -406,6 +406,12 @@ proc ::kettle::path::tmpfile {{prefix tmp_}} {
     return .kettle_$prefix[pid]_[clock seconds]_[clock milliseconds]_[info hostname]_$tcl_platform(user)
 }
 
+proc ::kettle::path::ensure-cleanup {path} {
+    ::atexit [lambda {path} {
+	file delete -force $path
+    } [norm $path]]
+}
+
 proc ::kettle::path::cat {path args} {
     set c [open $path r]
     if {[llength $args]} { fconfigure $c {*}$args }
@@ -659,6 +665,7 @@ proc ::kettle::path::exec {args} {
 proc ::kettle::path::pipe {lv script args} {
     upvar 1 $lv line
     set stderr [tmpfile pipe_stderr_]
+    ensure-cleanup $stderr
 
     io trace {  PIPE: [T $args]}
 

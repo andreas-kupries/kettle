@@ -8,7 +8,24 @@ namespace eval ::kettle {}
 ## API commands.
 
 proc ::kettle::Application {} {
-    global argv
+    global argv tcl_platform
+
+    # Handle ^C (int, term signals) by cleanly exiting.
+    # This will invoke all handlers registered with atexit.
+    # Especially 'path ensure-cleanup' runs here.
+
+    if {![catch {
+	package require Tclx
+    }]} {
+	set flags {}
+	if {$tcl_platform(platform) ne "windows"} {
+	    lappend flags -restart
+	}
+	signal {*}$flags trap {TERM INT} {
+	    puts "\nInterrupted\n"
+	    exit 1
+	}
+    }
 
     try {
 	# Process arguments: -f, -trace, --* options, and goals

@@ -42,6 +42,8 @@ proc ::kettle::TclSetup {root files pn pv} {
 		file mkdir  $tmpdir
 		set tmpfile $tmpdir/pkgIndex.tcl
 
+		path ensure-cleanup $tmpdir
+
 		set primary [lindex $files 0]
 		path write $tmpfile \
 		    "package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
