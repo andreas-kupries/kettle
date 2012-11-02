@@ -235,6 +235,8 @@ proc ::kettle::option::save {} {
 
     path write $path $serial
     io trace {options saved to    $path}
+
+    path ensure-cleanup $path
     return $path
 }
 

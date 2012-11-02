@@ -125,6 +125,7 @@ proc ::kettle::status::save {{path {}}} {
     variable work
     if {$path eq {}} {
 	set path [kettle path tmpfile state_]
+	kettle path ensure-cleanup $path
     }
     kettle path write $path $work
 

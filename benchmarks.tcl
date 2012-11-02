@@ -84,6 +84,7 @@ proc ::kettle::benchmarks {{benchsrcdir bench}} {
 	# and if that fails a regular one.
 
 	set tmp [path norm [path tmpfile bench_install_]]
+	path ensure-cleanup $tmp
 	try {
 	    if {![invoke self debug   --prefix $tmp] &&
 		![invoke self install --prefix $tmp]

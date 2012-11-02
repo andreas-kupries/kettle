@@ -18,6 +18,7 @@ namespace eval ::kettle {
 
 # # ## ### ##### ######## ############# #####################
 ## @owns: app.tcl
+## @owns: atexit.tcl
 ## @owns: benchmarks.tcl
 ## @owns: critcl.tcl
 ## @owns: depend.tcl
@@ -73,6 +74,7 @@ namespace eval ::kettle {
 
 ::apply {{selfdir} {
     # # ## ### ##### ######## ############# ##################### Foundation
+    source $selfdir/atexit.tcl     ; # Application shutdown handlers.
     source $selfdir/lambda.tcl     ; # Nicer way of writing apply
     source $selfdir/try.tcl        ; # try/finally coded in Tcl, snarfed from 8.6
     source $selfdir/strutil.tcl    ; # String utilities.

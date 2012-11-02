@@ -30,6 +30,7 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 	# that fails a regular one.
 
 	set tmp [path norm [path tmpfile test_install_]]
+	path ensure-cleanup $tmp
 	try {
 	    if {![invoke self debug   --prefix $tmp] &&
 		![invoke self install --prefix $tmp]
