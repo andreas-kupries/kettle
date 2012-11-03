@@ -10,6 +10,7 @@ namespace eval ::kettle::recipe {
     namespace ensemble create
 
     namespace import ::kettle::strutil
+    namespace import ::kettle::path
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -78,7 +79,7 @@ proc ::kettle::recipe::names {} {
 proc ::kettle::recipe::help {prefix} {
     global   argv0
     variable recipe
-    append prefix $argv0 " "
+    append prefix $argv0 " -f " [path relativecwd [path script]] " "
 
     foreach goal [lsort -dict [dict keys $recipe]] {
 	io puts ""
