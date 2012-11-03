@@ -404,6 +404,19 @@ apply {{} {
     }
 
     # - -- --- ----- -------- -------------
+
+    # Disable printing of things for human benefit and interfering
+    # with machine communication. Default off.
+
+    define --machine {
+	Disable human specific output.
+    } off boolean
+    no-work-key --machine
+    onchange    --machine {} {
+	if {$new} { set-default --color off }
+    }
+
+    # - -- --- ----- -------- -------------
     # Output colorization. Default platform dependent.
 
     define --color {

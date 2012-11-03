@@ -67,7 +67,8 @@ proc ::kettle::gui::make {} {
 proc ::kettle::gui::Options {win} {
     set top $win ; if {$top eq {}} { set top . }
 
-    # TODO: Have this information directly attached to the option itself.
+    # TODO: Attach the 'ignore-by-gui-flag' to the option itself in
+    # some way.
     set ignore {--state --config}
 
     foreach o [lsort -dict [option names]] {
@@ -108,7 +109,7 @@ proc ::kettle::gui::Actions {win} {
 
     # TODO: Extend recipe definitions to carry this information.
     set special {help help-recipes help-options show show-configuration show-state}
-    set ignore  {gui null list list-recipes list-options}
+    set ignore  {gui null forever list list-recipes list-options help-dump}
 
     foreach r $special {
 	# treat a few recipes out of order to have them at the top.

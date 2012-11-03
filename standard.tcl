@@ -12,6 +12,14 @@ kettle recipe define null {
     No operation. Debugging helper (use with -trace).
 } {} {}
 
+kettle recipe define forever {
+    No operation, infinite loop. Debugging helper (use with -trace).
+} {} {
+    file mkdir [set x [path tmpfile x]]
+    puts $x
+    while {1} {}
+}
+
 # # ## ### ##### ######## ############# #####################
 
 kettle recipe define list-recipes {
@@ -24,6 +32,12 @@ kettle recipe define help-recipes {
     Print the help.
 } {} {
     recipe help {Usage: }
+}
+
+kettle recipe define help-dump {
+    Print the help in Tcl format.
+} {} {
+    recipe help-dump
 }
 
 kettle recipe parent help-recipes help

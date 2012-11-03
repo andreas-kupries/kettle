@@ -42,31 +42,38 @@ proc ::kettle::recurse {} {
     # database for their work, so don't have to go directly to the
     # builds.
 
+    set map  {}
+    set hmap {}
     foreach sub $tmp {
+	set help [invoke-return $sub help-dump]
 	foreach r [invoke-return $sub list-recipes] {
-	    dict lappend map $r $sub
-
-	    # Get per-recipe help texts.
-	    if 0 {foreach r [invoke-return $sub help-recipes] {
-		dict lappend map $r $sub
-	    }}
+	    dict lappend map  $r $sub
+	    dict lappend hmap $r [dict get $help $r]
 	}
     }
 
-    # XXX pull the recipes to suppress directly out of the database
-    # somehow (tags). see also gui for similar issues.
+    # XXX Pull the recipes to suppress directly out of the database
+    # XXX somehow (tags?!). See also gui (ignore, special) for similar
+    # XXX issues.
     foreach r {
 	null gui
-	help-recipes help-options help
+	help-recipes help-options help help-dump
 	list-recipes list-options list
 	show-configuration show-state show
     } {
-	dict unset map $r
+	dict unset map  $r
+	dict unset hmap $r
     }
 
     dict for {recipe builders} $map {
 	option set @($recipe) $builders
-	recipe define $recipe "Recursive..." {r} {
+
+	set help [join \
+	      [lsort -dict [lsort -unique \
+		[dict get $hmap $recipe]]] \
+	      \n]
+
+	recipe define $recipe $help {r} {
 	    invoke @($r) $r
 	} $recipe
     }
@@ -216,7 +223,7 @@ proc ::kettle::invoke {other args} {
 		[option get @kettle] \
 		-f $buildscript \
 		--config $config --state $work {*}$overrides \
-		--color 0 {*}$goals]
+		--machine on {*}$goals]
 	    set iresult [string trim $iresult]
 	} else {
 	    path exec \

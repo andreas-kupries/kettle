@@ -11,6 +11,7 @@ namespace eval ::kettle::recipe {
 
     namespace import ::kettle::strutil
     namespace import ::kettle::path
+    namespace import ::kettle::option
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -99,6 +100,27 @@ proc ::kettle::recipe::help {prefix} {
     return
 }
 
+proc ::kettle::recipe::help-dump {} {
+    variable recipe
+    foreach goal [lsort -dict [dict keys $recipe]] {
+	set children [Children $goal]
+	set help     [dict get $recipe $goal help]
+
+	set lines {}
+	if {[llength $children]} {
+	    lappend lines "\t==> [join [lsort -dict $children] "\n\t==> "]"
+	}
+	if {[llength $help]} {
+	    lappend lines [join $help \n]
+	}
+
+	lappend result $goal [join $lines \n]
+    }
+
+    io puts $result
+    return
+}
+
 proc ::kettle::recipe::run {args} {
     io trace {}
     foreach goal $args {
@@ -154,7 +176,9 @@ proc ::kettle::recipe::Run {name} {
     }
 
     foreach cmd $commands {
-	io note { io puts -nonewline "\n${name}: " }
+	if {![option get --machine]} {
+	    io note { io puts -nonewline "\n${name}: " }
+	}
 	try {
 	    eval $cmd
 	    status ok
