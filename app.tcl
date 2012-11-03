@@ -22,7 +22,7 @@ proc ::kettle::Application {} {
 	    lappend flags -restart
 	}
 	signal {*}$flags trap {TERM INT} {
-	    puts "\nInterrupted\n"
+	    puts "\n[kettle io mred Interrupted]\n"
 	    exit 1
 	}
     }
