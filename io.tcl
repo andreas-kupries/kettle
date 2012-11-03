@@ -133,6 +133,7 @@ proc ::kettle::io::puts {args} {
 		$textw insert end-1c $line [Tag] \n {}
 	    }
 	    $textw insert end-1c $last [Tag]
+	    $textw see end-1c
 	}
     }
     update
