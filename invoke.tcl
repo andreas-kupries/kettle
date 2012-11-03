@@ -33,18 +33,61 @@ proc ::kettle::recurse {} {
 	lappend tmp $s
     }
 
-    option set @recurse $tmp
-    foreach goal [option get @goals] {
-	invoke @recurse $goal
-    }
-    option unset @recurse
+    # We now have a list of sub directories containing a kettle build
+    # script we can use. Our next step is to query these build systems
+    # for the supported recipes. This information is merged into a map
+    # of recipes to supporting build systems from which we then create
+    # our high-level recipes which invoke them as needed. The leave
+    # the standard recipes out of that, because they query the recipe
+    # database for their work, so don't have to go directly to the
+    # builds.
 
-    io cyan { io puts "Main..." }
+    foreach sub $tmp {
+	foreach r [invoke-return $sub list-recipes] {
+	    dict lappend map $r $sub
+
+	    # Get per-recipe help texts.
+	    if 0 {foreach r [invoke-return $sub help-recipes] {
+		dict lappend map $r $sub
+	    }}
+	}
+    }
+
+    # XXX pull the recipes to suppress directly out of the database
+    # somehow (tags). see also gui for similar issues.
+    foreach r {
+	null gui
+	help-recipes help-options help
+	list-recipes list-options list
+	show-configuration show-state show
+    } {
+	dict unset map $r
+    }
+
+    dict for {recipe builders} $map {
+	option set @($recipe) $builders
+	recipe define $recipe "Recursive..." {r} {
+	    invoke @($r) $r
+	} $recipe
+    }
+
     return
 }
 
+proc ::kettle::invoke-return {args} {
+    variable IRETURN 1
+    try {
+	set result [invoke {*}$args]
+    } finally {
+	unset IRETURN
+    }
+    return $result
+}
 
 proc ::kettle::invoke {other args} {
+    variable IRETURN
+    if {![info exists IRETURN]} { set IRETURN 0 }
+
     # Special syntax. Access to named lists of other packages in the
     # option database. Recurse call on each entry.
     if {[string match @* $other]} {
@@ -149,7 +192,9 @@ proc ::kettle::invoke {other args} {
     if {![llength $goals]} return
 
     io trace {entering $rother $goals $overrides}
-    io cyan { io puts "Enter \"$rother\": $goals ..." }
+    if {!$IRETURN} {
+	io cyan { io puts "Enter \"$rother\": $goals ..." }
+    }
 
     # The current configuration (options) is directly specified on the
     # command line, which then might be overridden by the goal's
@@ -165,17 +210,29 @@ proc ::kettle::invoke {other args} {
     set work   [status save]
     set config [option save]
     try {
-	path exec \
-	    [info nameofexecutable] \
-	    [option get @kettle] \
-	    -f $buildscript \
-	    --config $config --state $work {*}$overrides \
-	    {*}$goals
-	status load $work
+	if {$IRETURN} {
+	    set iresult [exec \
+		[info nameofexecutable] \
+		[option get @kettle] \
+		-f $buildscript \
+		--config $config --state $work {*}$overrides \
+		--color 0 {*}$goals]
+	    set iresult [string trim $iresult]
+	} else {
+	    path exec \
+		[info nameofexecutable] \
+		[option get @kettle] \
+		-f $buildscript \
+		--config $config --state $work {*}$overrides \
+		{*}$goals
+	    status load $work
+	}
     } finally {
 	file delete $work
 	file delete $config
     }
+
+    if {$IRETURN} { return $iresult }
 
     # ok/fail is based on the work database we got back.
     # All goals must be ok.
