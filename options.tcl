@@ -208,6 +208,16 @@ proc ::kettle::option::type {o} {
     return [dict get $def $o type]
 }
 
+proc ::kettle::option::userdefined {o} {
+    variable def
+
+    if {![dict exists $def $o]} {
+	return -code error "Unable to retrieve user-status of unknown option $o."
+    }
+
+    return [dict get $def $o user]
+}
+
 proc ::kettle::option::reportchange {type o old new} {
     variable def
     if {![dict exists $def $o setter]} return
