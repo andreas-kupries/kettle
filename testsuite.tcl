@@ -28,9 +28,21 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 	# dependencies) into a local directory (in the current working
 	# directory). We try to install a debug variant first, and if
 	# that fails a regular one.
+	#
+	# Note 2: If the user explicitly specified a location to build
+	# to we use that, and do not clean it up aftre the test. This
+	# makes it easy to investigate a core dump generated during
+	# test.
 
-	set tmp [path norm [path tmpfile test_install_]]
-	path ensure-cleanup $tmp
+	if {[option userdefined --prefix]} {
+	    set tmp [option get --prefix]
+	    set cleanup 0
+	} else {
+	    set tmp [path norm [path tmpfile test_install_]]
+	    path ensure-cleanup $tmp
+	    set cleanup 1
+	}
+
 	try {
 	    if {![invoke self debug   --prefix $tmp] &&
 		![invoke self install --prefix $tmp]
@@ -40,7 +52,9 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
 
 	    Test::Run $testsrcdir $testsuite $tmp
 	} finally {
-	    file delete -force $tmp
+	    if {$cleanup} {
+		file delete -force $tmp
+	    }
 	}
     } $root $testsuite
 
