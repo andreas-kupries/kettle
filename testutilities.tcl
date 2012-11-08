@@ -144,7 +144,7 @@ proc ::kt::dictsort {dict} {
 if {[package vsatisfies [package provide Tcl] 8.6]} {
     # 8.6+
     proc ::tcltest::wrongNumArgs {functionName argList missingIndex} {
-	if {[string match args [lindex $argList end]]} {
+	if {[lindex $argList end] eq "args"} {
 	    set argList [lreplace $argList end end ?arg ...?]
 	}
 	if {$argList != {}} {set argList " $argList"}
@@ -155,7 +155,7 @@ if {[package vsatisfies [package provide Tcl] 8.6]} {
     proc ::tcltest::tooManyArgs {functionName argList} {
 	# create a different message for functions with no args
 	if {[llength $argList]} {
-	    if {[string match args [lindex $argList end]]} {
+	    if {[lindex $argList end] eq "args"} {
 		set argList [lreplace $argList end end ?arg ...?]
 	    }
 	    set msg "wrong # args: should be \"$functionName $argList\""
@@ -167,8 +167,8 @@ if {[package vsatisfies [package provide Tcl] 8.6]} {
 } else {
     # 8.5
     proc ::tcltest::wrongNumArgs {functionName argList missingIndex} {
-	if {[string match args [lindex $argList end]]} {
-	    set argList [lreplace $argList end end ...]
+	if {[lindex $argList end] eq "args"} {
+	    set argList [lreplace $argList end end ?argument ...?]
 	}
 	if {$argList != {}} {set argList " $argList"}
 	set msg "wrong # args: should be \"$functionName$argList\""
@@ -178,7 +178,7 @@ if {[package vsatisfies [package provide Tcl] 8.6]} {
     proc ::tcltest::tooManyArgs {functionName argList} {
 	# create a different message for functions with no args
 	if {[llength $argList]} {
-	    if {[string match args [lindex $argList end]]} {
+	    if {[lindex $argList end] eq "args"} {
 		set argList [lreplace $argList end end ...]
 	    }
 	    set msg "wrong # args: should be \"$functionName $argList\""
