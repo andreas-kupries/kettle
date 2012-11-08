@@ -64,6 +64,9 @@ proc ::kettle::Application {} {
 	    set o [lindex $argv 0]
 	    switch -glob -- $o {
 		--* {
+		    if {![option known $o]} {
+			error "Unable to process unknown option $o." {} KETTLE
+		    }
 		    option set $o [lindex $argv 1]
 		    set argv [lrange $argv 2 end]
 		}
