@@ -198,6 +198,11 @@ proc ::kettle::option::get {o} {
     return [dict get $config $o]
 }
 
+proc ::kettle::option::known {o} {
+    variable def
+    return [dict exists $def $o]
+}
+
 proc ::kettle::option::type {o} {
     variable def
 
