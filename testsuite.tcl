@@ -75,7 +75,7 @@ namespace eval ::kettle::Test {
     # Map from testsuite states to readable labels. These include
     # trailing whitespace to align the following text vertically.
     variable statelabel {
-	ok      {     }
+	ok      {OK   }
 	none    {None }
 	aborted {Skip }
 	error   {ERR  }
@@ -96,11 +96,28 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     set main [path norm [option get @kettledir]/testmain.tcl]
     InitState
 
+    # Generate map of padded test file names to ensure vertical
+    # alignment of output across the test files.
+
+
+    foreach t $testfiles {
+	lappend short [file tail $t]
+    }
+
+    foreach t $testfiles pt [strutil padr $short] {
+	dict set state fmap $t $pt
+    }
+
     path in $srcdir {
 	foreach test $testfiles {
 	    # change next to log/log
 	    #io note { io puts ${test}... }
 	    stream aopen
+
+	    # Per file initialization...
+	    dict set state summary 0
+	    dict set state suite/status ok
+	    #dict set state 
 
 	    path pipe line {
 		io trace {TEST: $line}
@@ -342,7 +359,14 @@ proc ::kettle::Test::Start {} {
     if {![regexp "^@@ Start (.*)$" $line -> start]} return
     #stream term compact "Start    [clock format $start]"
     dict set state start $start
-    dict set state testnum 0
+
+    # Counters per test file. We use them in End to fake reasonable
+    # summary information if the test file itself did not provide that
+    # information.
+    dict set state testnum  0
+    dict set state testskip 0
+    dict set state testpass 0
+    dict set state testfail 0
     return -code return
 }
 
@@ -373,6 +397,24 @@ proc ::kettle::Test::End {} {
     stream to timings {[list TIME $key $num $delta $score]}
     #variable xshell
     #sak::registry::local set $xshell End $end
+
+    if {![dict get $state summary]} {
+	 # We have to fake a summary, as the test file did not
+	 # generate one. We use our own per-file counters to make a
+	 # reasonable guess of the values. The code below works
+	 # because the Summary processing in the caller, ProcessLine,
+	 # is done this procedure. We manipulate the current line and
+	 # then proceed as if we had not captured the current line,
+	 # letting the Summary processing capture it.
+
+	set t [dict get $state testnum]
+	set s [dict get $state testskip]
+	set p [dict get $state testpass]
+	set f [dict get $state testfail]
+	set line "Total $t Passed $p Skipped $s Failed $f"
+	return
+    }
+
     return -code return
 }
 
@@ -381,7 +423,9 @@ proc ::kettle::Test::Testsuite {} {
     if {![regexp "^@@ Testsuite (.*)$" $line -> file]} return
     #stream term compact "Test $file"
     dict set state file $file
-    stream aextend "[file tail $file] "
+    # map from full path to short, and padded for alignment.
+    set padded [dict get $state fmap $file]
+    stream aextend "$padded "
     return -code return
 }
 
@@ -422,6 +466,7 @@ proc ::kettle::Test::Summary {} {
 
     lassign [string trim $line] _ total _ passed _ skipped _ failed
 
+    dict set state summary 1
     dict incr state ctotal   $total
     dict incr state cpassed  $passed
     dict incr state cskipped $skipped
@@ -443,7 +488,7 @@ proc ::kettle::Test::Summary {} {
 
     if {$thestate eq "ok"} {
 	# Quick return for ok suite.
-	stream aclose "~~ $st T $total P $passed S $skipped F $failed"
+	stream aclose "~~ [io mgreen $st] T $total P $passed S $skipped F $failed"
 	return -code return
     }
 
@@ -480,6 +525,7 @@ proc ::kettle::Test::TestSkipped {} {
     set testname [string trim $testname]
     stream awrite "SKIP $testname"
     dict set state test {}
+    dict incr state testskip
     return -code return
 }
 
@@ -489,6 +535,7 @@ proc ::kettle::Test::TestPassed {} {
     set testname [string range $line 5 end-7]
     stream awrite "PASS $testname"
     dict set state test {}
+    dict incr state testpass
     return -code return
 }
 
@@ -498,6 +545,7 @@ proc ::kettle::Test::TestFailed {} {
     set testname [lindex [split [string range $line 5 end-7]] 0]
     stream awrite "FAIL $testname"
     dict set state suite/status fail
+    dict incr state testfail
 
     ## Initialize state machine to capture the test result.
     ## states: none, sync, body, actual, expected, done, error
