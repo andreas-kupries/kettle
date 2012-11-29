@@ -25,19 +25,28 @@ if {![catch {
 	    critcl critcl.kit critcl.tcl critcl.exe
     } {
 	# Implied argument: cmd
+	# Implied argument: msgvar
+	upvar 1 $msgvar msg
 
 	# Proper native path needed, especially on windows. On windows
 	# this also works (best) with a starpack for critcl, instead
 	# of a starkit.
-	set cmd [file nativename [lindex $cmd 0]]
+
+	#set cmd [file nativename [lindex $cmd 0]]
+	# -- Apparently windows is ok with the path I have, and the
+	# -- native path actually fails to be executed.
+	set cmd [lindex $cmd 0]
 
 	# Ignore applications which are too old to support
 	# -v|--version, or are too old as per their returned
 	# version.
 	if {[catch {
 	    set v [exec {*}$cmd --version]
-	}]} { return 0 }
-	if {[package vcompare $v 3] < 0} { return 0 }
+	} msg]} { return 0 }
+	if {[package vcompare $v 3] < 0} {
+	    set msg "Have $v, require 3"
+	    return 0
+	}
 	return 1
     }
 }
