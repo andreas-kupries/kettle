@@ -12,18 +12,30 @@ namespace eval ::kettle::tool {
     namespace import ::kettle::io
     namespace import ::kettle::option
     namespace import ::kettle::status
+
+    # Dictionary. Error information for tools which were not found.
+    variable err {}
 }
 
 # # ## ### ##### ######## ############# #####################
 ## API.
 
 proc ::kettle::tool::declare {names {validator {}}} {
+    variable err
+
     set primary [lindex $names 0]
+    dict set err primary {}
+
     option define --with-$primary [subst {
 	Path to the tool '$primary'.
 	Overides kettle's search on the PATH.
     }] {} readable.file
     option no-work-key --with-$primary
+
+    set sep [expr {$::tcl_platform(platform) eq "windows" ? ";" : ":"}]
+    foreach p [split $::env(PATH) $sep] {
+	dict lappend err $primary "Searching $p"
+    }
 
     foreach name $names {
 
@@ -45,7 +57,10 @@ proc ::kettle::tool::declare {names {validator {}}} {
 	if {$validator eq ""} break
 
 	# Validate. If ok, stop search.
-	if {[apply [list {cmd} $validator] $cmd]} break
+	set msg {}
+	if {[apply [list {cmd msgvar} $validator] $cmd msg]} break
+
+	dict lappend err $primary "Rejected: $cmd ($msg)"
 
 	# Validation failed, revert, continue search.
 	option set-default --with-$primary {}
@@ -56,9 +71,11 @@ proc ::kettle::tool::declare {names {validator {}}} {
 proc ::kettle::tool::get {name} {
     set cmd [option get --with-$name]
     if {![llength $cmd]} {
+	variable err
 	io err {
 	    io puts "Tool $name required, but not found in PATH"
 	    io puts "Please specify its location through option --with-$name"
+	    io puts \n[join [dict get $err $name] \n]
 	}
 	status fail
     }
