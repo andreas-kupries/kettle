@@ -1,4 +1,4 @@
-# -*- tcl -*- Copyright (c) 2012 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2012-2013 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
 ## Kettle package
 
@@ -102,7 +102,7 @@ namespace eval ::kettle {
     source $selfdir/testsuite.tcl  ; # testsuite     (tcltest)
     source $selfdir/benchmarks.tcl ; # benchmarks    (tclbench)
     # # ## ### ##### ######## ############# #####################
-    source $selfdir/doc.tcl        ; # documentation (doctools)
+    source $selfdir/doc.tcl        ; # documentation (doctools, gh-pages)
     # # ## ### ##### ######## ############# #####################
     source $selfdir/tcl.tcl        ; # tcl packages
     source $selfdir/critcl.tcl     ; # critcl v3 packages
