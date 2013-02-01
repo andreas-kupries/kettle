@@ -378,6 +378,16 @@ proc ::kettle::path::scan {label root predicate} {
     set result {}
     foreach-file $nroot path {
 	set spath [strip $path $nroot]
+
+	# General checking, outside of the custom predicates.
+	# Skip core files: core, and core.\d+
+
+	set n [file tail $spath]
+	if {$n eq "core" || [regexp {^core\.\d+$} $n]} {
+	    io trace {    SKIP core dump: $spath}
+	    continue
+	}
+
 	try {
 	    kettle option unset @predicate
 	    if {![uplevel 1 [list {*}$predicate $path]]} continue
