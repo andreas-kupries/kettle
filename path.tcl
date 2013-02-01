@@ -1,4 +1,4 @@
-# -*- tcl -*- Copyright (c) 2012 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2012-2013 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
 ## Path utility commands.
 
@@ -414,6 +414,53 @@ proc ::kettle::path::scan {label root predicate} {
 proc ::kettle::path::tmpfile {{prefix tmp_}} {
     global tcl_platform
     return .kettle_$prefix[pid]_[clock seconds]_[clock milliseconds]_[info hostname]_$tcl_platform(user)
+}
+
+proc ::kettle::path::tmpdir {} {
+    # Taken from tcllib fileutil.
+    global tcl_platform env
+
+    set attempdirs [list]
+    set problems   {}
+
+    foreach tmp {TMPDIR TEMP TMP} {
+	if { [info exists env($tmp)] } {
+	    lappend attempdirs $env($tmp)
+	} else {
+	    lappend problems "No environment variable $tmp"
+	}
+    }
+
+    switch $tcl_platform(platform) {
+	windows {
+	    lappend attempdirs "C:\\TEMP" "C:\\TMP" "\\TEMP" "\\TMP"
+	}
+	macintosh {
+	    lappend attempdirs $env(TRASH_FOLDER)  ;# a better place?
+	}
+	default {
+	    lappend attempdirs \
+		[file join / tmp] \
+		[file join / var tmp] \
+		[file join / usr tmp]
+	}
+    }
+
+    lappend attempdirs [pwd]
+
+    foreach tmp $attempdirs {
+	if { [file isdirectory $tmp] &&
+	     [file writable $tmp] } {
+	    return [file normalize $tmp]
+	} elseif { ![file isdirectory $tmp] } {
+	    lappend problems "Not a directory: $tmp"
+	} else {
+	    lappend problems "Not writable: $tmp"
+	}
+    }
+
+    # Fail if nothing worked.
+    return -code error "Unable to determine a proper directory for temporary files\n[join $problems \n]"
 }
 
 proc ::kettle::path::ensure-cleanup {path} {
