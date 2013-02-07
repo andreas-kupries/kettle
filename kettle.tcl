@@ -113,7 +113,7 @@ namespace eval ::kettle {
 # # ## ### ##### ######## ############# #####################
 ## Ready
 
-package provide kettle 0
+package provide kettle 1
 return
 
 # # ## ### ##### ######## ############# #####################

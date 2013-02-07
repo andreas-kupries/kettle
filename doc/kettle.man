@@ -1,5 +1,5 @@
 [comment {-*- tcl -*- --- doctools ---}]
-[manpage_begin kettle n 0]
+[manpage_begin kettle n 1]
 [include include/general.inc]
 [titledesc {Kettle - Core}]
 [description]
