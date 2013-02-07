@@ -155,6 +155,8 @@ proc ::kettle::gh-pages {} {
     # Overwrite self, we run only once for effect.
     proc ::kettle::gh-pages args {}
 
+    doc
+
     # No need to handle a gh-pages documentation branch if there is no
     # documentation to work with.
     if {![recipe exists doc]} {
