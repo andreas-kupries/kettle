@@ -1,5 +1,5 @@
 '\"
-'\" Generated from file '/home/aku/Projects/Kettle/kettle/embedded/man/files/kettle.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file '/net/nas/data/andreask/Dev/Kettle/kettle/embedded/man/files/kettle.n' by tcllib/doctools with format 'nroff'
 '\"
 '\" The definitions below are for supplemental macros used in Tcl/Tk
 '\" manual entries.
@@ -257,6 +257,8 @@ package require \fBTcl  8.5\fR
 \fBkettle doc\fR ?\fIdocroot\fR?
 .sp
 \fBkettle figures\fR ?\fIfigroot\fR?
+.sp
+\fBkettle gh-pages\fR
 .sp
 \fBkettle testsuite\fR ?\fItestroot\fR?
 .sp
@@ -1010,8 +1012,9 @@ If not specified \fIdocroot\fR defaults to "\fIdoc\fR".
 While this command can be invoked multiple times, only the
 first invokation will have an effect. Every invokation after that is
 ignored.
-The commands \fBkettle tcl\fR and \fBkettle critcl3\fR run this
-command implicitly, with the default paths.
+The commands \fBkettle tcl\fR, \fBkettle critcl3\fR, and
+\fBkettle gh-pages\fR run this command implicitly, with the default
+paths.
 This means that if documentation is stored in a non-standard location
 \fBkettle doc\fR must be run explicitly before them, with the proper path.
 .sp
@@ -1184,6 +1187,32 @@ The default value is the path to the first of
 "\fIdia.exe\fR"
 found on the \fBPATH\fR.
 .RE
+.TP
+\fBkettle gh-pages\fR
+This command declares the presence of a \fIgh-pages\fR branch in the
+repository, as is used by, for example, \fIhttp://github.com\fR, to
+manage the web-site for a project in the rpeository of the project.
+.sp
+The command confirms the presence of documentation and that the
+local repository is \fBgit\fR-based. If neither is true nothing
+done.
+.sp
+While this command can be invoked multiple times, only the
+first invokation will have an effect. Every invokation after that is
+ignored.
+It runs the command \fBkettle doc\fR command implicitly, with the
+default paths, to ensure that its own check for documentation work
+properly.
+This means that if documentation is stored in a non-standard location
+\fBkettle doc\fR must be run explicitly before this command, with
+the proper path.
+.sp
+When the above tests pass the command will define a recipe
+named \fBgh-pages\fR, which performs all the automatable steps to
+copy the embedded documentation of the project into its
+\fIgh-pages\fR branch. Afterward the checkout is left at the
+\fIgh-pages\fR branch, for the user to review and commit. While the
+last step could be automated the review cannot, making the point moot.
 .TP
 \fBkettle testsuite\fR ?\fItestroot\fR?
 This command declares the presence of a \fBtcltest\fR-based
@@ -1499,7 +1528,7 @@ from the terminal to this widget.
 \fBkettle io\fR \fBfor-gui\fR \fIscript\fR
 .TP
 \fBkettle io\fR \fBfor-terminal\fR \fIscript\fR
-These two command execute the script in their calling context if the
+These two commands execute the script in their calling context if the
 IO system is using text widget or terminal for output, respectively.
 .TP
 \fBkettle io\fR \fBputs\fR \fIarg\fR...
@@ -1615,7 +1644,7 @@ exceptions.
 .IP [1]
 There is no procedure name. Obviously.
 .IP [2]
-After the procedure body we user can pre-specify some or all
+After the procedure body we can pre-specify some or all
 of the procedure arguments, i.e. perform currying.
 .IP [3]
 The @-variant takes the name of the \fInamespace\fR the body

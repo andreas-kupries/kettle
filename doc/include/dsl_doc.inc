@@ -36,8 +36,9 @@ relative to the source directory.
 first invokation will have an effect. Every invokation after that is
 ignored.
 
-The commands [cmd {kettle tcl}] and [cmd {kettle critcl3}] run this
-command implicitly, with the default paths.
+The commands [cmd {kettle tcl}], [cmd {kettle critcl3}], and
+[cmd {kettle gh-pages}] run this command implicitly, with the default
+paths.
 
 This means that if documentation is stored in a non-standard location
 [cmd {kettle doc}] must be run explicitly before them, with the proper path.
