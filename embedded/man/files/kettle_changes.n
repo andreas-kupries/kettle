@@ -237,7 +237,7 @@ Database Class:	\\fB\\$3\\fR
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "kettle_changes" n 0 doc "Kettle - The Quick Brew System"
+.TH "kettle_changes" n 1 doc "Kettle - The Quick Brew System"
 .BS
 .SH NAME
 kettle_changes \- Kettle Changes
@@ -257,8 +257,8 @@ if you have not done so already, to get an overview of the whole system.
 This document provides an overview of the changes \fBkettle\fR
 underwent from version to version.
 .SH CHANGES
-.SS "CHANGES FOR VERSION 0"
-This is the first release of kettle, packages and application.
+.SS "CHANGES FOR VERSION 1"
+This is the first release of kettle, package and application.
 The changes therefore describe the initial features of the system.
 .PP
 In detail:
@@ -274,8 +274,8 @@ This application can be used as the interpreter of a build
 declaration file as well. In that case option \fB-f\fR must
 be part of the \fB#!\fR-line.
 .IP [3]
-A core package \fBkettle\fR managing a database of recipes,
-plus standard code invoked automatically after the processing
+The core package \fBkettle\fR manages a database of recipes,
+and provides standard code invoked automatically after the processing
 of the build declarations to show help or run a recipe specified
 on the command line.
 .sp
@@ -292,9 +292,15 @@ Currently supported are
 .IP [2]
 (Un)installation of Tcl script applications.
 .IP [3]
-(Re)generation and (un)installation of (tcllib) doctools based manpages.
+(Un)installation of \fBcritcl\fR-based Tcl+C packages.
 .IP [4]
+(Re)generation and (un)installation of (tcllib) doctools based manpages.
+.IP [5]
 (Re)generation and display of (tklib) diagram based figures.
+.IP [6]
+Execution of \fBtcltest\fR-based testsuites.
+.IP [7]
+Execution of \fBtclbench\fR-based benchmarks.
 .RE
 .PP
 .SH "BUGS, IDEAS, FEEDBACK"
