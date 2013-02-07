@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Kettle/kettle/embedded/www/doc/files/kettle_dsl.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/net/nas/data/andreask/Dev/Kettle/kettle/embedded/www/doc/files/kettle_dsl.html' by tcllib/doctools with format 'html'
    -->
 <! -- CVS: $Id$ kettle_dsl.n
    -->
@@ -131,7 +131,8 @@
 <li><a href="#5"><b class="cmd">kettle doc-destination</b> <i class="arg">path</i></a></li>
 <li><a href="#6"><b class="cmd">kettle doc</b> <span class="opt">?<i class="arg">docroot</i>?</span></a></li>
 <li><a href="#7"><b class="cmd">kettle figures</b> <span class="opt">?<i class="arg">figroot</i>?</span></a></li>
-<li><a href="#8"><b class="cmd">kettle testsuite</b> <span class="opt">?<i class="arg">testroot</i>?</span></a></li>
+<li><a href="#8"><b class="cmd">kettle gh-pages</b></a></li>
+<li><a href="#9"><b class="cmd">kettle testsuite</b> <span class="opt">?<i class="arg">testroot</i>?</span></a></li>
 </ul>
 </div>
 </div>
@@ -449,8 +450,9 @@ relative to the source directory.</p>
 <p>While this command can be invoked multiple times, only the
 first invokation will have an effect. Every invokation after that is
 ignored.
-The commands <b class="cmd">kettle tcl</b> and <b class="cmd">kettle critcl3</b> run this
-command implicitly, with the default paths.
+The commands <b class="cmd">kettle tcl</b>, <b class="cmd">kettle critcl3</b>, and
+<b class="cmd">kettle gh-pages</b> run this command implicitly, with the default
+paths.
 This means that if documentation is stored in a non-standard location
 <b class="cmd">kettle doc</b> must be run explicitly before them, with the proper path.</p>
 <p>The package documentation directory is scanned to locate the
@@ -588,7 +590,29 @@ to perform the conversions, and GUI rendering.</p>
 	&quot;<b class="file">dia.exe</b>&quot;
 found on the <b class="variable">PATH</b>.</p></dd>
 </dl></dd>
-<dt><a name="8"><b class="cmd">kettle testsuite</b> <span class="opt">?<i class="arg">testroot</i>?</span></a></dt>
+<dt><a name="8"><b class="cmd">kettle gh-pages</b></a></dt>
+<dd><p>This command declares the presence of a <i class="term">gh-pages</i> branch in the
+repository, as is used by, for example, <a href="http://github.com">http://github.com</a>, to
+manage the web-site for a project in the rpeository of the project.</p>
+<p>The command confirms the presence of documentation and that the
+local repository is <b class="syscmd">git</b>-based. If neither is true nothing
+done.</p>
+<p>While this command can be invoked multiple times, only the
+first invokation will have an effect. Every invokation after that is
+ignored.
+It runs the command <b class="cmd">kettle doc</b> command implicitly, with the
+default paths, to ensure that its own check for documentation work
+properly.
+This means that if documentation is stored in a non-standard location
+<b class="cmd">kettle doc</b> must be run explicitly before this command, with
+the proper path.</p>
+<p>When the above tests pass the command will define a recipe
+named <b class="const">gh-pages</b>, which performs all the automatable steps to
+copy the embedded documentation of the project into its
+<i class="term">gh-pages</i> branch. Afterward the checkout is left at the
+<i class="term">gh-pages</i> branch, for the user to review and commit. While the
+last step could be automated the review cannot, making the point moot.</p></dd>
+<dt><a name="9"><b class="cmd">kettle testsuite</b> <span class="opt">?<i class="arg">testroot</i>?</span></a></dt>
 <dd><p>This command declares the presence of a <b class="package">tcltest</b>-based
 testsuite under the directory <i class="arg">testroot</i>, which is a path relative
 to the source directory.</p>

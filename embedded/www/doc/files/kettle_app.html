@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/home/aku/Projects/Kettle/kettle/embedded/www/doc/files/kettle_app.html' by tcllib/doctools with format 'html'
+<! -- Generated from file '/net/nas/data/andreask/Dev/Kettle/kettle/embedded/www/doc/files/kettle_app.html' by tcllib/doctools with format 'html'
    -->
 <! -- CVS: $Id$ kettle_app.n
    -->
@@ -177,9 +177,10 @@ first, then the build file is used to scan the sources and initialize
 the necessary recipes, at last the recipes on the command line are
 run.</p>
 <p>The application understands one dot-file for configuration,
-&quot;<b class="file">~/.kettle</b>&quot;. This file is expected to contain user-specific
-standard options to use. Its contents are processed as part of the
-option processing, before the options found on the command line.
+&quot;<b class="file">~/.kettle/config</b>&quot;. This file is expected to contain
+user-specific standard options to use. Its contents are processed as
+part of the option processing, before the options found on the command
+line.
 For all other extensibility the user is reminded that build file are
 Tcl files, with the full power of the language behind them. Which
 includes the builtin command <b class="cmd">source</b>.</p>

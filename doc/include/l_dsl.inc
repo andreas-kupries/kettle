@@ -9,6 +9,7 @@
     [include dsl_depends.inc]
     [include dsl_doc.inc]
     [include dsl_figures.inc]
+    [include dsl_ghpages.inc]
     [include dsl_test.inc]
 [list_end]
 [comment {- - -- --- ----- -------- ------------- ---------------------}]
