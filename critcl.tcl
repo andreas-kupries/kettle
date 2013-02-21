@@ -15,6 +15,70 @@ kettle option define --target {
 
 if {![catch {
     package require critcl::app 3
+
+    proc ::critcl::print {args} {
+	#puts <<<$args>>>
+	#return
+
+	# Intercept all critcl output.
+	# Available since critcl 3.1.7.
+	# No harm if not available.
+
+	switch -exact -- [llength $args] {
+	    1 {
+		# print text
+		set m [lindex $args 0]
+		puts  stdout [::kettle::CI stdout $m 1]
+		flush stdout
+	    }
+	    2 {
+		lassign $args detail m
+		if {$detail ne "-nonewline"} {
+		    # print chan text
+		    puts $detail [::kettle::CI $detail $m 1]
+		} else {
+		    # print -nonewline text
+		    puts -nonewline stdout [::kettle::CI stdout $m 0]
+		    flush stdout
+		}
+	    }
+	    3 {
+		# print -nonewline chan text
+		lassign $args o chan m
+		if {$o ne "-nonewline"} {
+		    return -code error "wrong\#args, expected: ?-nonewline? ?chan? msg"
+		}
+		puts -nonewline $chan [::kettle::CI $chan $m 0]
+		flush stdout
+	    }
+	    default {
+		return -code error "wrong\#args, expected: ?-nonewline? msg"
+	    }
+	}
+	return
+    }
+
+    # Actual transformer for the interceptor.
+    set ::kettle::startofline { stdout 1 stderr 1 }
+    proc ::kettle::CI {chan text newsol} {
+	variable startofline ; # dict: chan -> flag
+	set sol [dict get $startofline $chan]
+	if {[string match *\n $text]} {
+	    set newsol 1
+	}
+	set result {}
+	foreach line [split $text \n] {
+	    if {$sol && [string match Warning* $line]} {
+		set line [io mmagenta $line]
+	    }
+	    #if {$sol} { set line "CRITCL: $line" }
+	    lappend result $line
+	    set sol 1
+	}
+
+	dict set startofline $chan $newsol
+	return [join $result \n]
+    }
 }]} {
     kettle option set @critcl internal
 } else {
@@ -182,9 +246,19 @@ proc ::kettle::CritclRun {cmd} {
 
     io puts {}
     if {[option get @critcl] eq "internal"} {
+	io trace {  critcl: internal}
+	io trace {[package ifneeded critcl::app [package present critcl::app]]}
+
 	critcl::app::main $cmd
     } else {
-	path exec {*}[tool get critcl3] {*}$cmd
+	io trace {  critcl: external}
+	path pipe line {
+	    if {[string match Warning* $line]} {
+		set line [io mmagenta $line]
+	    }
+	    # line ends in \n, except possibly at eof.
+	    io puts -nonewline $line
+	} {*}[tool get critcl3] {*}$cmd
     }
     return
 }
