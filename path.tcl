@@ -775,6 +775,57 @@ proc ::kettle::path::in {path script} {
     }
 }
 
+proc ::kettle::path::scanup {path cmd} {
+    io trace {scan up $path ($cmd)}
+
+    set path [file normalize $path]
+    while {1} {
+	io trace {    testing $path}
+
+	# Found the proper directory, per the predicate.
+	if {[{*}$cmd $path]} { return $path }
+
+	# Not found, walk to parent
+	set new [file dirname $path]
+
+	# Stop when reaching the root.
+	if {$new eq $path} { return {} }
+	if {$new eq {}} { return {} }
+
+	# Ok, truly walk up.
+	set path $new
+    }
+    return {}
+}
+
+# # ## ### ##### ######## ############# #####################
+## Repository type detection
+
+proc ::kettle::path::find.git {path} {
+    scanup $path ::kettle::path::is.git
+}
+
+proc ::kettle::path::find.fossil {path} {
+    scanup $path ::kettle::path::is.fossil
+}
+
+proc ::kettle::path::is.git {path} {
+    set control $path/.git
+    expr {[file exists $control] && [file isdirectory $control]}
+}
+
+proc ::kettle::path::is.fossil {path} {
+    foreach control {
+	_FOSSIL_
+	.fslckout
+	.fos
+    } {
+	set control $path/$control
+	if {[file exists $control] && [file isfile $control]} {return 1}
+    }
+    return 0
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Internal
 
