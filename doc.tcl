@@ -157,6 +157,8 @@ proc ::kettle::gh-pages {} {
 
     doc
 
+    io trace {Testing for gh-pages}
+
     # No need to handle a gh-pages documentation branch if there is no
     # documentation to work with.
     if {![recipe exists doc]} {
@@ -165,9 +167,8 @@ proc ::kettle::gh-pages {} {
     }
 
     # Ditto if this is not a git-based project.
-    set git [path sourcedir .git]
-    if {![file exists $git] ||
-	![file isdirectory $git]} {
+
+    if {[path find.git [path sourcedir]] eq {}} {
 	io trace {  No gh-pages: Not git based}
 	return
     }
