@@ -167,12 +167,22 @@ proc ::kettle::gh-pages {} {
     }
 
     # Ditto if this is not a git-based project.
-
     if {[path find.git [path sourcedir]] eq {}} {
 	io trace {  No gh-pages: Not git based}
 	return
     }
  
+    # Now we check if the branch we need is present. Note that if we
+    # can't find the tool, i.e. "git", we assume that the branch is
+    # present and let the recipe error out on the missing tool.
+
+    if {![catch {
+	path grep *gh-pages* [exec {*}[tool get git] branch -a]
+    } res] && ![llength $res]} {
+	io trace {  No gh-pages: branch not present}
+	return
+    }
+
     recipe define gh-pages {
 	Install embedded documentation into a gh-pages
 	branch of the local git repository.
