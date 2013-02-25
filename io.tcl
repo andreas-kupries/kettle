@@ -194,31 +194,25 @@ namespace eval ::kettle::io::animation {
 
     # Unchanging prefix written before each actual line.
     variable prefix
-
-    # Max number of characters seen so far in output
-    variable maxn 0
 }
 
 proc ::kettle::io::animation::begin {} {
-    variable maxn 0
     variable prefix {}
     return
 }
 
 proc ::kettle::io::animation::write {text} {
     variable prefix
-    variable maxn
 
-    set text $prefix$text
-    set n    [string length $text]
-    set len  [L $text]
+    # EL (Erase Line)
+    #    Sequence: ESC [ n K
+    # ** Effect: if n is 0 or missing, clear from cursor to end of line
+    #    Effect: if n is 1, clear from beginning of line to cursor
+    #    Effect: if n is 2, clear entire line
 
-    if {$n > $maxn} { set maxn $n }
-    while {$len < $maxn} {
-	append text { } ; incr len
-    }
+    set eeol \033\[K
 
-    puts -nonewline \r$text
+    puts -nonewline \r$prefix$text$eeol
     for-terminal { flush stdout }
 
     return
@@ -238,8 +232,8 @@ proc ::kettle::io::animation::indent {text} {
 }
 
 proc ::kettle::io::animation::last {text} {
-    write $text\n
-    variable maxn 0
+    # No eeol here
+    puts -nonewline \r$prefix$text\n
     variable prefix {}
     return
 }
