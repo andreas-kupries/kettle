@@ -11,14 +11,24 @@ kettle option define --with-doc-destination {
     documentation is placed in. If a relative path is specified it is
     taken relative to the overall source directory.
 } embedded directory
+
 kettle option no-work-key --with-doc-destination
 
 kettle tool declare {
-    dtplite dtplite.kit dtplite.tcl dtplite.exe
+    git
 }
 
-kettle tool declare {
-    git
+if {![catch {
+    package require dtplite 1.0.5
+    # dtplite as package
+}]} {
+    kettle option set @dtplite internal
+} else {
+    kettle option set @dtplite external
+
+    kettle tool declare {
+	dtplite dtplite.kit dtplite.tcl dtplite.exe
+    }
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -63,36 +73,17 @@ proc ::kettle::doc {{docsrcdir doc}} {
     set mandst  [path mandir  mann]
     set htmldst [path htmldir [file tail [path sourcedir]]]
 
+    set isfossil [expr {[path find.fossil [path sourcedir]] ne {}}]
+
     recipe define doc {
 	(Re)generate the documentation embedded in the repository.
-    } {root dst} {
-	path in $root {
+    } {root dst isfossil} {
+	if {[option get @dtplite] eq "external"} {
 	    # Validate tool presence before actually doing anything
 	    tool get dtplite
-
-	    io puts "Removing old documentation..."
-	    file delete -force $dst
-
-	    file mkdir $dst/man
-	    file mkdir $dst/www
-
-	    io puts "Generating man pages..."
-	    path exec {*}[tool get dtplite] -ext n -o $dst/man nroff .
-
-	    # Note: Might be better to run them separately.
-	    # Note @: Or we shuffle the results a bit more in the post processing stage.
-
-	    io puts "Generating HTML... Pass 1, draft..."
-	    path exec {*}[tool get dtplite] -merge -o $dst/www html .
-
-	    io puts "Generating HTML... Pass 2, resolving cross-references..."
-	    path exec {*}[tool get dtplite] -merge -o $dst/www html .
-
-	    # Remove some of the generated files, consider them transient.
-	    cd  $dst/man ; file delete -force .idxdoc .tocdoc
-	    cd  ../www   ; file delete -force .idxdoc .tocdoc
 	}
-    } $root $dd
+	DtpliteDo $root $dst $isfossil
+    } $root $dd $isfossil
 
     recipe define validate-doc {
 	Validate the documentation.
@@ -145,6 +136,60 @@ proc ::kettle::doc {{docsrcdir doc}} {
     recipe parent uninstall-doc uninstall
 
     recipe parent validate-doc validate
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+
+proc ::kettle::DtpliteDo {root dst isfossil} {
+    io trace {  do fossil=$isfossil}
+
+    path in $root {
+
+	io puts "Removing old documentation..."
+	file delete -force $dst
+
+	file mkdir $dst/man
+	file mkdir $dst/www
+
+	io puts "Generating man pages..."
+	DtpliteRun -ext n -o $dst/man nroff .
+
+	# Note: Might be better to run them separately.
+	# Note @: Or we shuffle the results a bit more in the post processing stage.
+
+	if {$isfossil} {
+	    set cmd [list -nav Home ../../../../home -merge -o $dst/www html .]
+	} else {
+	    set cmd [list -merge -o $dst/www html .]
+	}
+
+	io puts "\nGenerating HTML... Pass 1, draft..."
+	DtpliteRun {*}$cmd
+
+	io puts "\nGenerating HTML... Pass 2, resolving cross-references..."
+	DtpliteRun {*}$cmd
+
+	# Remove some of the generated files, consider them transient.
+	cd  $dst/man ; file delete -force .idxdoc .tocdoc
+	cd  ../www   ; file delete -force .idxdoc .tocdoc
+    }
+}
+
+proc ::kettle::DtpliteRun {args} {
+    io trace { dtplite [path::T $args]}
+    if {[option get --dry]} return
+
+    io puts {}
+    if {[option get @dtplite] eq "internal"} {
+	io trace {  dtplite: internal}
+	io trace {[package ifneeded dtplite [package present dtplite]]}
+
+	dtplite::do $args
+    } else {
+	io trace {  dtplite: external}
+	path exec {*}[tool get dtplite] {*}$args
+    }
     return
 }
 
@@ -244,22 +289,6 @@ proc ::kettle::gh-pages {} {
 	return
     }
 
-    return
-}
-
-proc tmpdir {} {
-    package require fileutil
-    set tmpraw [fileutil::tempfile critcl.]
-    set tmpdir $tmpraw.[pid]
-    file delete -force $tmpdir
-    file mkdir $tmpdir
-    file delete -force $tmpraw
-
-    puts "Assembly in: $tmpdir"
-    return $tmpdir
-}
-
-proc id {cv vv} {
     return
 }
 

@@ -242,17 +242,23 @@ Database Class:	\\fB\\$3\\fR
 doc
 .RS
 .TP
+\fBkettle\fR
+\fIfiles/kettle.n\fR: Kettle - Core
+.TP
 \fBkettle_app\fR
 \fIfiles/kettle_app.n\fR: Kettle - Application - Build Interpreter
+.TP
+\fBkettle_changes\fR
+\fIfiles/kettle_changes.n\fR: Kettle Changes
+.TP
+\fBkettle_devguide\fR
+\fIfiles/kettle_devguide.n\fR: Kettle - The Developer's Guide
 .TP
 \fBkettle_dsl\fR
 \fIfiles/kettle_dsl.n\fR: Kettle - Build Declarations
 .TP
-\fBkettle\fR
-\fIfiles/kettle.n\fR: Kettle - Core
-.TP
-\fBkettle_sources\fR
-\fIfiles/kettle_sources.n\fR: Kettle - How To Get The Sources
+\fBkettle_install_guide\fR
+\fIfiles/kettle_installer.n\fR: Kettle - The Installer's Guide
 .TP
 \fBkettle_introduction\fR
 \fIfiles/kettle_intro.n\fR: Kettle - Introduction to Kettle
@@ -260,14 +266,8 @@ doc
 \fBkettle_license\fR
 \fIfiles/kettle_license.n\fR: Kettle - License
 .TP
+\fBkettle_sources\fR
+\fIfiles/kettle_sources.n\fR: Kettle - How To Get The Sources
+.TP
 \fBkettle_test\fR
 \fIfiles/kettle_test.n\fR: Kettle - Testsuite Support
-.TP
-\fBkettle_devguide\fR
-\fIfiles/kettle_devguide.n\fR: Kettle - The Developer's Guide
-.TP
-\fBkettle_install_guide\fR
-\fIfiles/kettle_installer.n\fR: Kettle - The Installer's Guide
-.TP
-\fBkettle_changes\fR
-\fIfiles/kettle_changes.n\fR: Kettle Changes
