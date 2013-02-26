@@ -172,6 +172,7 @@ proc ::kettle::CritclSetup {root file pn pv} {
 	if {$t ne {}} { lappend cmd -target $t }
 
 	lappend cmd -debug      all
+	lappend cmd -keep
 	lappend cmd -includedir [path incdir]
 	lappend cmd -pkg $file
 
