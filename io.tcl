@@ -232,9 +232,10 @@ proc ::kettle::io::animation::indent {text} {
 }
 
 proc ::kettle::io::animation::last {text} {
+    variable prefix
     # No eeol here
     puts -nonewline \r$prefix$text\n
-    variable prefix {}
+    set prefix {}
     return
 }
 
