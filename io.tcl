@@ -193,7 +193,7 @@ namespace eval ::kettle::io::animation {
     namespace import ::kettle::io::for-terminal
 
     # Unchanging prefix written before each actual line.
-    variable prefix
+    variable prefix {}
 }
 
 proc ::kettle::io::animation::begin {} {
@@ -233,8 +233,9 @@ proc ::kettle::io::animation::indent {text} {
 
 proc ::kettle::io::animation::last {text} {
     # No eeol here
+    variable prefix
     puts -nonewline \r$prefix$text\n
-    variable prefix {}
+    set prefix {}
     return
 }
 
