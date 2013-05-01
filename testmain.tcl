@@ -17,7 +17,7 @@ catch {wm withdraw .}
 
 namespace eval ::kt {}
 
-set argv  [lassign $argv kt::localprefix kt::testfile]
+set argv  [lassign $argv kt::localprefix kt::testfile kt::mode]
 set argv0 $kt::testfile
 
 # # ## ### ##### ######## ############# #####################
@@ -31,6 +31,18 @@ package require tcltest
 # We can assume tcltest 2 or higher, due to our assumption of Tcl 8.5
 # or higher.
 
+# For scan mode forcibly disable execution of tests. We cannot use the
+# option -skip for this as it will also prevent output for the
+# matching tests, i.e. all of them, and for the scan we want to know
+# the test names. Therefore we get our desired behaviour by hacking
+# the tcltest internals to suit.
+if {$kt::mode eq "scan"} {
+    proc tcltest::test {name args} {
+	puts "---- $name DECL"
+	return
+    }
+}
+
 # The next command enables the execution of 'tk' constrained tests, if
 # Tk is present (for example when this code is run run by 'wish').
 
@@ -43,10 +55,15 @@ catch {
 ## Management utilities for communication with the 'test' recipe
 ## support code in our caller.
 
-proc kt::Note {k v} {
-    puts  stdout [list @@ $k $v]
-    flush stdout
-    return
+if {$kt::mode eq "scan"} {
+    # Reduce reporting in scan mode.
+    proc kt::Note {args} {}
+} else {
+    proc kt::Note {k v} {
+	puts  stdout [list @@ $k $v]
+	flush stdout
+	return
+    }
 }
 
 proc kt::Now {} {return [clock seconds]}

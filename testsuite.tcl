@@ -24,38 +24,14 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
     recipe define test {
 	Run the testsuite
     } {testsrcdir testsuite} {
-	# Note: We build and install the package under test (and its
-	# dependencies) into a local directory (in the current working
-	# directory). We try to install a debug variant first, and if
-	# that fails a regular one.
-	#
-	# Note 2: If the user explicitly specified a location to build
-	# to we use that, and do not clean it up aftre the test. This
-	# makes it easy to investigate a core dump generated during
-	# test.
+	Test::SetupAnd Run $testsrcdir $testsuite
+    } $root $testsuite
 
-	if {[option userdefined --prefix]} {
-	    set tmp [option get --prefix]
-	    set cleanup 0
-	} else {
-	    set tmp [path norm [path tmpfile test_install_]]
-	    path ensure-cleanup $tmp
-	    set cleanup 1
-	}
-
-	try {
-	    if {![invoke self debug   --prefix $tmp] &&
-		![invoke self install --prefix $tmp]
-	    } {
-		status fail "Unable to generate local test installation"
-	    }
-
-	    Test::Run $testsrcdir $testsuite $tmp
-	} finally {
-	    if {$cleanup} {
-		file delete -force $tmp
-	    }
-	}
+    recipe define test-scan {
+	Scan the testsuite and report the found
+	test cases.
+    } {testsrcdir testsuite} {
+	Test::SetupAnd Scan $testsrcdir $testsuite
     } $root $testsuite
 
     return
@@ -71,6 +47,7 @@ namespace eval ::kettle::Test {
     namespace import ::kettle::option
     namespace import ::kettle::strutil
     namespace import ::kettle::stream
+    namespace import ::kettle::invoke
 
     # Map from testsuite states to readable labels. These include
     # trailing whitespace to align the following text vertically.
@@ -81,6 +58,42 @@ namespace eval ::kettle::Test {
 	error   {ERR  }
 	fail    {FAILS}
     }
+}
+
+proc ::kettle::Test::SetupAnd {args} {
+    # Note: We build and install the package under test (and its
+    # dependencies) into a local directory (in the current working
+    # directory). We try to install a debug variant first, and if that
+    # fails a regular one.
+    #
+    # Note 2: If the user explicitly specified a location to build to
+    # we use that, and do not clean it up aftre the test. This makes
+    # it easy to investigate a core dump generated during test.
+
+    if {[option userdefined --prefix]} {
+	set tmp [option get --prefix]
+	set cleanup 0
+    } else {
+	set tmp [path norm [path tmpfile test_install_]]
+	path ensure-cleanup $tmp
+	set cleanup 1
+    }
+
+    try {
+	if {![invoke self debug   --prefix $tmp] &&
+	    ![invoke self install --prefix $tmp]
+	} {
+	    status fail "Unable to generate local test installation"
+	}
+
+	{*}$args $tmp
+    } finally {
+	if {$cleanup} {
+	    file delete -force $tmp
+	}
+    }
+
+    return
 }
 
 proc ::kettle::Test::Run {srcdir testfiles localprefix} {
@@ -94,7 +107,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     stream to log ============================================================
 
     set main [path norm [option get @kettledir]/testmain.tcl]
-    InitState
+    InitState run
 
     # Generate map of padded test file names to ensure vertical
     # alignment of output across them.
@@ -104,7 +117,8 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     }
 
     foreach t $testfiles pt [strutil padr $short] {
-	dict set state fmap $t $pt
+	dict set state fmap $t             $pt
+	dict set state fmap [file tail $t] $pt
     }
 
     path in $srcdir {
@@ -121,7 +135,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 	    path pipe line {
 		io trace {TEST: $line}
 		ProcessLine $line
-	    } [option get --with-shell] $main $localprefix $test
+	    } [option get --with-shell] $main $localprefix $test run
 	}
     }
 
@@ -159,6 +173,69 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     stream to log {#Errors $e}
 
     stream to summary {[FormatTimings $state]}
+
+    # Report ok/fail
+    status [dict get $state status]
+    return
+}
+
+proc ::kettle::Test::Scan {srcdir testfiles localprefix} {
+    # We are running each test file in a separate sub process, to
+    # catch crashes, etc. ... We assume that the test file is self
+    # contained in terms of loading all its dependencies, like
+    # tcltest itself, utility commands it may need, etc. This
+    # assumption allows us to run it directly, using our own
+    # tcl executable as interpreter.
+
+    # We disable actual test execution however, as we are only
+    # interested in the set of test cases, for reporting, and nothing
+    # else.
+
+    stream to log ============================================================
+
+    set main [path norm [option get @kettledir]/testmain.tcl]
+    InitState scan
+
+    # Generate map of padded test file names to ensure vertical
+    # alignment of output across them.
+
+    foreach t $testfiles {
+	lappend short [file tail $t]
+    }
+
+    foreach t $testfiles pt [strutil padr $short] {
+	dict set state fmap $t $pt
+    }
+
+    path in $srcdir {
+	foreach test $testfiles {
+	    # change next to log/log
+	    #io note { io puts ${test}... }
+	    stream aopen
+
+	    # Per file initialization...
+	    dict set state summary 0
+	    dict set state suite/status ok
+	    #dict set state 
+
+	    path pipe line {
+		io trace {TEST: $line}
+		ProcessLine $line
+	    } [option get --with-shell] $main $localprefix $test scan
+	}
+    }
+
+    set tn [dict get $state ctotal]
+    stream term always "\nTotal $tn"
+
+    # And in the main stream...
+    stream to log {Total $tn}
+
+    # Report the found tests.    
+    set found [join [lsort -dict [dict get $state tests]] \n]
+    stream term always  \n$found
+    stream to log       $found
+    stream to testcases $found
 
     # Report ok/fail
     status [dict get $state status]
@@ -248,7 +325,7 @@ proc ::kettle::Test::ProcessLine {line} {
     CaptureStackStart
     CaptureStack
 
-    TestStart;TestSkipped;TestPassed;TestFailed ; # cap/state => sync
+    TestDecl;TestStart;TestSkipped;TestPassed;TestFailed ; # cap/state => sync
 
     Aborted
     AbortCause
@@ -264,7 +341,7 @@ proc ::kettle::Test::ProcessLine {line} {
 
 # # ## ### ##### ######## ############# #####################
 
-proc ::kettle::Test::InitState {} {
+proc ::kettle::Test::InitState {mode} {
     upvar 1 state state
     # The counters are all updated in ProcessLine.
     # The status may change to 'fail' in ProcessLine.
@@ -291,6 +368,7 @@ proc ::kettle::Test::InitState {} {
 	cap/state none
 	cap/stack off
     }
+    dict set state operation $mode
     return
 }
 
@@ -373,29 +451,29 @@ proc ::kettle::Test::End {} {
     upvar 1 line line state state
     if {![regexp "^@@ End (.*)$" $line -> end]} return
 
-    set start [dict get $state start]
-    set shell [dict get $state shell]
-    set file  [dict get $state file]
-    set num   [dict get $state testnum]
+    if {[dict get $state operation] eq "run"} {
+	set start [dict get $state start]
+	set shell [dict get $state shell]
+	set file  [dict get $state file]
+	set num   [dict get $state testnum]
 
-    #stream term compact "Started  [clock format $start]"
-    #stream term compact "End      [clock format $end]"
+	#stream term compact "Started  [clock format $start]"
+	#stream term compact "End      [clock format $end]"
 
-    set delta [expr {$end - $start}]
-    if {$num == 0} {
-	set score $delta
-    } else {
-	# Get average number of microseconds per test.
-	set score [expr {int(($delta/double($num))*1000000)}]
+	set delta [expr {$end - $start}]
+	if {$num == 0} {
+	    set score $delta
+	} else {
+	    # Get average number of microseconds per test.
+	    set score [expr {int(($delta/double($num))*1000000)}]
+	}
+
+	set key [list $shell $file]
+	dict lappend state times $key [list $num $delta $score]
+	stream to timings {[list TIME $key $num $delta $score]}
+	#variable xshell
+	#sak::registry::local set $xshell End $end
     }
-
-    set key [list $shell $file]
-
-    dict lappend state times $key [list $num $delta $score]
-
-    stream to timings {[list TIME $key $num $delta $score]}
-    #variable xshell
-    #sak::registry::local set $xshell End $end
 
     if {![dict get $state summary]} {
 	 # We have to fake a summary, as the test file did not
@@ -463,7 +541,17 @@ proc ::kettle::Test::Summary {} {
     #stream term compact S?$line
     if {![regexp "(Total(.*)Passed(.*)Skipped(.*)Failed(.*))$" $line -> line]} return
 
-    lassign [string trim $line] _ total _ passed _ skipped _ failed
+    set op [dict get $state operation]
+
+    if {$op eq "run"} {
+	lassign [string trim $line] _ total _ passed _ skipped _ failed
+    } elseif {$op eq "scan"} {
+	# scan - semi-fake statistics
+	set total   [dict get $state testnum]
+	set passed  [dict get $state testnum]
+	set skipped 0
+	set failed  0
+    }
 
     dict set state summary 1
     dict incr state ctotal   $total
@@ -485,6 +573,12 @@ proc ::kettle::Test::Summary {} {
 
     set st [dict get $statelabel $thestate]
 
+    if {$op eq "scan"} {
+	# Quick return in scan mode.
+	stream aclose "~~ [io mgreen $st] T $total"
+	return -code return
+    }
+
     if {$thestate eq "ok"} {
 	# Quick return for ok suite.
 	stream aclose "~~ [io mgreen $st] T $total P $passed S $skipped F $failed"
@@ -504,6 +598,16 @@ proc ::kettle::Test::Summary {} {
     }
 
     if {$thestate eq "error"} { dict incr state cerrors }
+    return -code return
+}
+
+proc ::kettle::Test::TestDecl {} {
+    upvar 1 line line state state
+    if {![string match {---- * DECL} $line]} return
+    set testname [string range $line 5 end-5]
+    stream awrite "---- $testname"
+    dict lappend state tests $testname
+    dict incr state testnum
     return -code return
 }
 
