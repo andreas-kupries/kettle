@@ -97,8 +97,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     InitState
 
     # Generate map of padded test file names to ensure vertical
-    # alignment of output across the test files.
-
+    # alignment of output across them.
 
     foreach t $testfiles {
 	lappend short [file tail $t]
