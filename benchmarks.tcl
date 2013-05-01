@@ -140,6 +140,17 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
     set main [path norm [option get @kettledir]/benchmain.tcl]
     InitState
 
+    # Generate map of padded bench file names to ensure vertical
+    # alignment of output across them.
+
+    foreach b $benchfiles {
+	lappend short [file tail $b]
+    }
+
+    foreach b $benchfiles pb [strutil padr $short] {
+	dict set state fmap $b $pb
+    }
+
     set repeats [option get --repeats]
 
     # Filter and other settings for the child process.
@@ -469,7 +480,9 @@ proc ::kettle::Bench::Benchmark {} {
     if {![regexp "^@@ Benchmark (.*)$" $line -> file]} return
     #stream term compact "Benchmark $file"
     dict set state file $file
-    stream aextend "[file tail $file] "
+    # map from full path to short, and padded for alignment.
+    set padded [dict get $state fmap [file tail $file]]
+    stream aextend "$padded "
     return -code return
 }
 
