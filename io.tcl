@@ -194,6 +194,14 @@ namespace eval ::kettle::io::animation {
 
     # Unchanging prefix written before each actual line.
     variable prefix {}
+
+    # Erase to End Of Line
+    #    Sequence: ESC [ n K
+    # ** Effect: if n is 0 or missing, clear from cursor to end of line
+    #    Effect: if n is 1, clear from beginning of line to cursor
+    #    Effect: if n is 2, clear entire line
+
+    variable eeol \033\[K
 }
 
 proc ::kettle::io::animation::begin {} {
@@ -203,14 +211,7 @@ proc ::kettle::io::animation::begin {} {
 
 proc ::kettle::io::animation::write {text} {
     variable prefix
-
-    # EL (Erase Line)
-    #    Sequence: ESC [ n K
-    # ** Effect: if n is 0 or missing, clear from cursor to end of line
-    #    Effect: if n is 1, clear from beginning of line to cursor
-    #    Effect: if n is 2, clear entire line
-
-    set eeol \033\[K
+    variable eeol
 
     puts -nonewline \r$prefix$text$eeol
     for-terminal { flush stdout }
@@ -233,9 +234,8 @@ proc ::kettle::io::animation::indent {text} {
 
 proc ::kettle::io::animation::last {text} {
     variable prefix
-    # No eeol here
-    variable prefix
-    puts -nonewline \r$prefix$text\n
+    variable eeol
+    puts -nonewline \r$eeol\r$prefix$text\n
     set prefix {}
     return
 }
