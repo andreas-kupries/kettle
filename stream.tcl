@@ -103,7 +103,11 @@ proc ::kettle::stream::aclose {text} {
     if {![active]} return
 
     set file [file tail [dict get $state file]]
-    set text "\[$file\] $text"
+    if {[dict exists $state fmap $file]} {
+	set file [dict get $state fmap $file]
+    }
+
+    set text "$file $text"
 
     to summary {$text}
     # Maybe use a mapping table here instead, status to stream.

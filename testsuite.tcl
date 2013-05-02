@@ -4,6 +4,12 @@
 
 namespace eval ::kettle { namespace export testsuite }
 
+kettle option define --single {
+    Run each test case completely independent.
+} 0 boolean
+
+kettle option no-work-key --single
+
 # # ## ### ##### ######## ############# #####################
 ## API.
 
@@ -24,38 +30,19 @@ proc ::kettle::testsuite {{testsrcdir tests}} {
     recipe define test {
 	Run the testsuite
     } {testsrcdir testsuite} {
-	# Note: We build and install the package under test (and its
-	# dependencies) into a local directory (in the current working
-	# directory). We try to install a debug variant first, and if
-	# that fails a regular one.
-	#
-	# Note 2: If the user explicitly specified a location to build
-	# to we use that, and do not clean it up aftre the test. This
-	# makes it easy to investigate a core dump generated during
-	# test.
+	Test::SetupAnd Run $testsrcdir $testsuite
+    } $root $testsuite
 
-	if {[option userdefined --prefix]} {
-	    set tmp [option get --prefix]
-	    set cleanup 0
-	} else {
-	    set tmp [path norm [path tmpfile test_install_]]
-	    path ensure-cleanup $tmp
-	    set cleanup 1
-	}
+    recipe define testcases {
+	Report the names of all test cases found in the testsuites.
+    } {testsrcdir testsuite} {
+	Test::SetupAnd Scan $testsrcdir $testsuite
+    } $root $testsuite
 
-	try {
-	    if {![invoke self debug   --prefix $tmp] &&
-		![invoke self install --prefix $tmp]
-	    } {
-		status fail "Unable to generate local test installation"
-	    }
-
-	    Test::Run $testsrcdir $testsuite $tmp
-	} finally {
-	    if {$cleanup} {
-		file delete -force $tmp
-	    }
-	}
+    recipe define testcheck {
+	Report all duplicate test case names.
+    } {testsrcdir testsuite} {
+	Test::SetupAnd Check $testsrcdir $testsuite
     } $root $testsuite
 
     return
@@ -71,6 +58,7 @@ namespace eval ::kettle::Test {
     namespace import ::kettle::option
     namespace import ::kettle::strutil
     namespace import ::kettle::stream
+    namespace import ::kettle::invoke
 
     # Map from testsuite states to readable labels. These include
     # trailing whitespace to align the following text vertically.
@@ -81,6 +69,42 @@ namespace eval ::kettle::Test {
 	error   {ERR  }
 	fail    {FAILS}
     }
+}
+
+proc ::kettle::Test::SetupAnd {args} {
+    # Note: We build and install the package under test (and its
+    # dependencies) into a local directory (in the current working
+    # directory). We try to install a debug variant first, and if that
+    # fails a regular one.
+    #
+    # Note 2: If the user explicitly specified a location to build to
+    # we use that, and do not clean it up aftre the test. This makes
+    # it easy to investigate a core dump generated during test.
+
+    if {[option userdefined --prefix]} {
+	set tmp [option get --prefix]
+	set cleanup 0
+    } else {
+	set tmp [path norm [path tmpfile test_install_]]
+	path ensure-cleanup $tmp
+	set cleanup 1
+    }
+
+    try {
+	if {![invoke self debug   --prefix $tmp] &&
+	    ![invoke self install --prefix $tmp]
+	} {
+	    status fail "Unable to generate local test installation"
+	}
+
+	{*}$args $tmp
+    } finally {
+	if {$cleanup} {
+	    file delete -force $tmp
+	}
+    }
+
+    return
 }
 
 proc ::kettle::Test::Run {srcdir testfiles localprefix} {
@@ -104,24 +128,61 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     }
 
     foreach t $testfiles pt [strutil padr $short] {
-	dict set state fmap $t $pt
+	dict set state fmap $t             $pt
+	dict set state fmap [file tail $t] $pt
     }
 
     path in $srcdir {
-	foreach test $testfiles {
-	    # change next to log/log
-	    #io note { io puts ${test}... }
-	    stream aopen
+	if {[option get --single]} {
+	    dict set state singled 1 ;# Test::Summary
 
-	    # Per file initialization...
-	    dict set state summary 0
-	    dict set state suite/status ok
-	    #dict set state 
+	    foreach test $testfiles {
+		# change next to log/log
+		#io note { io puts ${test}... }
 
-	    path pipe line {
-		io trace {TEST: $line}
-		ProcessLine $line
-	    } [option get --with-shell] $main $localprefix $test
+		set cases [ScanFile $main $localprefix $test]
+
+		# Per file initialization...
+		dict set state suite/status ok
+		#dict set state 
+
+		dict set state numcases [llength $cases]
+		dict set state xtotal   0
+		dict set state xpassed  0
+		dict set state xskipped 0
+		dict set state xfailed  0
+
+		foreach testcase $cases {
+		    dict set state summary 0
+		    dict incr state numcases -1
+
+		    stream aopen
+		    path pipe line {
+			io trace {TEST: $line}
+			ProcessLine $line
+		    } [option get --with-shell] $main $localprefix $test run \
+			-match $testcase
+		}
+	    }
+	} else {
+	    dict set state singled 0 ;# Test::Summary
+
+	    foreach test $testfiles {
+		# change next to log/log
+		#io note { io puts ${test}... }
+
+		stream aopen
+
+		# Per file initialization...
+		dict set state summary 0
+		dict set state suite/status ok
+		#dict set state 
+
+		path pipe line {
+		    io trace {TEST: $line}
+		    ProcessLine $line
+		} [option get --with-shell] $main $localprefix $test run
+	    }
 	}
     }
 
@@ -163,6 +224,144 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     # Report ok/fail
     status [dict get $state status]
     return
+}
+
+proc ::kettle::Test::Scan {srcdir testfiles localprefix} {
+    stream to log ============================================================
+
+    set main [path norm [option get @kettledir]/testmain.tcl]
+
+    # Generate map of padded test file names to ensure vertical
+    # alignment of output across them.
+
+    foreach t $testfiles {
+	lappend short [file tail $t]
+    }
+
+    foreach t $testfiles pt [strutil padr $short] {
+	dict set state fmap $t $pt
+    }
+
+    dict set state suite/status ok ;# for aclose
+    set testcases {}
+    path in $srcdir {
+	foreach test $testfiles {
+	    # change next to log/log
+	    #io note { io puts ${test}... }
+
+	    set cases [ScanFile $main $localprefix $test]
+
+	    dict set state file $test ;# for aclose
+	    set msg   "~~ [llength $cases]"
+	    set test  [dict get $state fmap $test]
+	    stream aopen
+	    stream aextend "$test "
+	    stream aclose $msg
+	    stream to log {$test $msg}
+
+	    lappend testcases {*}$cases
+	}
+    }
+
+    set tn [llength $testcases]
+    stream to log {\#Testcases $tn}
+
+    # Report the found tests.    
+    set testcases [join [lsort -dict $testcases] \n]
+
+    if {![stream active]} {
+	stream term always \n$testcases
+    }
+    stream to log       $testcases
+    stream to testcases $testcases
+
+    status ok
+    return
+}
+
+
+proc ::kettle::Test::Check {srcdir testfiles localprefix} {
+    stream to log ============================================================
+
+    set main [path norm [option get @kettledir]/testmain.tcl]
+
+    # Generate map of padded test file names to ensure vertical
+    # alignment of output across them.
+
+    foreach t $testfiles {
+	lappend short [file tail $t]
+    }
+
+    foreach t $testfiles pt [strutil padr $short] {
+	dict set state fmap $t $pt
+    }
+
+    dict set state suite/status ok ;# for aclose
+
+    set testcases {}
+    path in $srcdir {
+	foreach test $testfiles {
+	    # change next to log/log
+	    #io note { io puts ${test}... }
+
+	    set cases [ScanFile $main $localprefix $test]
+
+	    dict set state file $test ;# for aclose
+	    set msg   "~~ [llength $cases]"
+	    set test  [dict get $state fmap $test]
+	    stream aopen
+	    stream aextend "$test "
+	    stream aclose $msg
+	    stream to log {$test $msg}
+
+	    foreach c $cases {
+		dict lappend testcases $c $test
+	    }
+	}
+    }
+
+    # Drop unique names, compress files recorded for duplicates
+    dict for {c files} $testcases {
+	if {[llength $files] < 2} {
+	    dict unset testcases $c
+	} else {
+	    dict set testcases $c [lsort -unique $files]
+	}
+    }
+
+    # Show the duplicates
+
+    if {![stream active]} {
+	stream term always "Duplicates: [dict size $testcases]"
+    } 
+    stream to log {Duplicates: [dict size $testcases]}
+
+    if {[dict size $testcases]} {
+	dict for {c files} $testcases {
+	    if {![stream active]} { stream term always ${c}: }
+	    stream to duplicates $c
+	    stream to dupmap $c
+	    foreach f $files {
+		if {![stream active]} { stream term always "\t$f" }
+		stream to dupmap "\t$f"
+	    }
+	}
+    }
+
+    status ok
+    return
+}
+
+proc ::kettle::Test::ScanFile {main localprefix testfile} {
+    set tests {}
+    path pipe line {
+	set line [string trimright $line]
+	io trace {TEST: $line}
+	if {![string match {---- * DECL} $line]} continue
+	set testname [string range $line 5 end-5]
+	lappend tests $testname
+    } [option get --with-shell] $main $localprefix $testfile scan
+    return $tests
 }
 
 proc ::kettle::Test::FormatTimings {state} {
@@ -390,9 +589,7 @@ proc ::kettle::Test::End {} {
     }
 
     set key [list $shell $file]
-
     dict lappend state times $key [list $num $delta $score]
-
     stream to timings {[list TIME $key $num $delta $score]}
     #variable xshell
     #sak::registry::local set $xshell End $end
@@ -464,8 +661,29 @@ proc ::kettle::Test::Summary {} {
     if {![regexp "(Total(.*)Passed(.*)Skipped(.*)Failed(.*))$" $line -> line]} return
 
     lassign [string trim $line] _ total _ passed _ skipped _ failed
-
     dict set state summary 1
+
+    if {[dict get $state singled]} {
+	set skipped 0
+	if {!$passed && !$failed} { set skipped 1 }
+	set total   1
+
+	dict incr state xtotal   $total
+	dict incr state xpassed  $passed
+	dict incr state xskipped $skipped
+	dict incr state xfailed  $failed
+
+	set last [expr {[dict get $state numcases] == 0}]
+	if {!$last} {
+	    return -code return
+	}
+
+	set total   [dict get $state xtotal]
+	set passed  [dict get $state xpassed]
+	set skipped [dict get $state xskipped]
+	set failed  [dict get $state xfailed]
+    }
+
     dict incr state ctotal   $total
     dict incr state cpassed  $passed
     dict incr state cskipped $skipped
@@ -495,7 +713,7 @@ proc ::kettle::Test::Summary {} {
     # Prevents the char count from being off. This is followed by
     # construction and display of the highlighted version.
 
-    stream awrite "   $st T $total P $passed S $skipped F $failed"
+    #stream awrite "   $st T $total P $passed S $skipped F $failed"
     switch -exact -- $thestate {
 	none    { stream aclose "~~ [io myellow "$st T $total"] P $passed S $skipped F $failed" }
 	aborted { stream aclose "~~ [io mwhite   $st] T $total P $passed S $skipped F $failed" }
@@ -505,6 +723,10 @@ proc ::kettle::Test::Summary {} {
 
     if {$thestate eq "error"} { dict incr state cerrors }
     return -code return
+}
+
+proc ::kettle::Test::TestDecl {} {
+    upvar 1 line line state state
 }
 
 proc ::kettle::Test::TestStart {} {
