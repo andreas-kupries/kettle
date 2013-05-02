@@ -272,8 +272,8 @@ proc ::kettle::Test::Scan {srcdir testfiles localprefix} {
     if {![stream active]} {
 	stream term always \n$testcases
     }
-    stream to log       $testcases
-    stream to testcases $testcases
+    stream to log       {$testcases}
+    stream to testcases {$testcases}
 
     status ok
     return
@@ -339,11 +339,11 @@ proc ::kettle::Test::Check {srcdir testfiles localprefix} {
     if {[dict size $testcases]} {
 	dict for {c files} $testcases {
 	    if {![stream active]} { stream term always ${c}: }
-	    stream to duplicates $c
-	    stream to dupmap $c
+	    stream to duplicates {$c}
+	    stream to dupmap {$c}
 	    foreach f $files {
 		if {![stream active]} { stream term always "\t$f" }
-		stream to dupmap "\t$f"
+		stream to dupmap {	$f}
 	    }
 	}
     }
@@ -457,7 +457,7 @@ proc ::kettle::Test::ProcessLine {line} {
     # Unknown lines are simply shown (disturbing the animation, good
     # for this situation, actually), also saved for review.
     stream term compact !$line
-    stream to unprocessed $line
+    stream to unprocessed {$line}
     return
 }
 
