@@ -343,7 +343,7 @@ proc ::kettle::Bench::ProcessLine {line} {
     # Unknown lines are simply shown (disturbing the animation, good
     # for this situation, actually), also saved for review.
     stream term compact !$line
-    stream to unprocessed $line
+    stream to unprocessed {$line}
     return
 }
 
