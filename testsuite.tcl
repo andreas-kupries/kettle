@@ -17,10 +17,11 @@ kettle option define --limitconstraints {
     constraints (see -constraints).
 } 0 boolean
 
-# Already defined by benchmarks.tcl
-if 0 {kettle option define --match {
-    Tcl list of glob patterns for tests to be run exclusively.
-} * listsimple}
+kettle option define --tmatch {
+    Tcl list of glob patterns.
+    Run only the tests matching at least one of the patterns.
+    Default is the * (match all), disabling the filter.
+} * listsimple
 
 kettle option define --notfile {
     Tcl list of glob patterns for test files to be skipped.
@@ -30,17 +31,17 @@ kettle option define --single {
     Run each test case completely independent.
 } 0 boolean
 
-kettle option define --skip {
+kettle option define --tskip {
     Tcl list of glob patterns for tests to be skipped.
 } {} listsimple
 
 kettle option no-work-key --constraints
 kettle option no-work-key --file
 kettle option no-work-key --limitconstraints
-kettle option no-work-key --match
+kettle option no-work-key --tmatch
 kettle option no-work-key --notfile
 kettle option no-work-key --single
-kettle option no-work-key --skip
+kettle option no-work-key --tskip
 
 # # ## ### ##### ######## ############# #####################
 ## API.
@@ -149,10 +150,15 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 
     # Translate kettle test options into tcltest options.
     set options {}
-    foreach {o} {
-	constraints limitconstraints match skip file notfile
+    foreach {o v} {
+	constraints      constraints
+	limitconstraints limitconstraints
+	tmatch		 match		 
+	tskip		 skip
+	file		 file
+	notfile		 notfile
     } {
-	lappend options -$o [option get --$o]
+	lappend options -$v [option get --$o]
     }
 
     stream to log ============================================================
