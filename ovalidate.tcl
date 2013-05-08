@@ -164,7 +164,7 @@ apply {{} {
 
     Def boolean {
 	if {[string is boolean -strict $v]} return
-	Bad "Expected boolean, but got \"$new\""
+	Bad "Expected boolean, but got \"$v\""
     } {
 	ttk::checkbutton $win \
 	    -command [lambda {win option} {
@@ -258,7 +258,7 @@ apply {{} {
 	if {$v eq {}} return;# default
 	if {[file isfile $v] &&
 	    [file readable $v]} return
-	Bad "Expected boolean, but got \"$new\""
+	Bad "Expected readable file, but got \"$v\""
     } {
 	ttk::frame  $win
 	ttk::entry  $win.e \
