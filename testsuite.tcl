@@ -416,15 +416,33 @@ proc ::kettle::Test::FormatTimings {state} {
 }
 
 proc ::kettle::Test::ProcessLine {line} {
+    #stream to rawlog {[string range $line 0 end-1]}
+
     # Counters and other state in the calling environment.
     upvar 1 state state
+
+    # Capture of test failure in progress.
+    # Take all lines, unprocessed.
+    CaptureFailureSync            ; # cap/state: sync     => body
+    CaptureFailureCollectBody     ; # cap/state: body     => actual|error|setup|cleanup
+    CaptureFailureCollectSetup    ; # cap/state: setup    => none
+    CaptureFailureCollectCleanup  ; # cap/state: cleanup  => none
+    CaptureFailureCollectActual   ; # cap/state: actual   => expected
+    CaptureFailureCollectExpected ; # cap/state: expected => none
+    CaptureFailureCollectError    ; # cap/state: error    => expected
+
+    # Capture of Tcl stack trace in progress.
+    # Take all lines, unprocessed.
+    CaptureStack
+
+    # Start processing the input line for easier matching, and to
+    # reduce the log.
 
     set line [string trimright $line]
 
     stream term full $line
     stream to log   {$line}
 
-    set rline $line
     set line [string trim $line]
     if {[string equal $line ""]} return
 
@@ -438,16 +456,9 @@ proc ::kettle::Test::ProcessLine {line} {
     Support;Testing
     Summary
 
-    CaptureFailureSync            ; # cap/state: sync => body
-    CaptureFailureCollectBody     ; # cap/state: body => actual|error
-    CaptureFailureCollectActual   ; # cap/state: actual   => expected
-    CaptureFailureCollectExpected ; # cap/state: expected => none
-    CaptureFailureCollectError    ; # cap/state: error    => expected
-
-    CaptureStackStart
-    CaptureStack
-
-    TestStart;TestSkipped;TestPassed;TestFailed ; # cap/state => sync
+    TestStart;TestSkipped;TestPassed
+    TestFailed        ; # cap/state => sync, see CaptureFailure* above
+    CaptureStackStart ; # cap/stack => on,   see CaptureStaCK ABOVE
 
     Aborted
     AbortCause
@@ -725,10 +736,6 @@ proc ::kettle::Test::Summary {} {
     return -code return
 }
 
-proc ::kettle::Test::TestDecl {} {
-    upvar 1 line line state state
-}
-
 proc ::kettle::Test::TestStart {} {
     upvar 1 line line state state
     if {![string match {---- * start} $line]} return
@@ -768,13 +775,15 @@ proc ::kettle::Test::TestFailed {} {
     dict set state suite/status fail
     dict incr state testfail
 
-    ## Initialize state machine to capture the test result.
-    ## states: none, sync, body, actual, expected, done, error
+    if {![dict exists $state test] ||
+	([dict get $state test] eq {})} {
+	# Required for tests which fail during -setup. These are not
+	# reported as started, and TestStart above is never run for
+	# them.
+	dict set state test $testname
+    }
 
-    dict set state cap/state    sync
-    dict set state cap body     {}
-    dict set state cap actual   {}
-    dict set state cap expected {}
+    CaptureInit
     return -code return
 }
 
@@ -783,7 +792,7 @@ proc ::kettle::Test::CaptureFailureSync {} {
     if {[dict get $state cap/state] ne "sync"} return
     upvar 1 line line
     if {![string match {==== Contents*} $line]} return
-    dict set state cap/state body
+    CaptureNext body
     return -code return
 }
 
@@ -791,19 +800,61 @@ proc ::kettle::Test::CaptureFailureCollectBody {} {
     upvar 1 state state
     if {[dict get $state cap/state] ne "body"} return
 
-    upvar 1 rline line
+    upvar 1 line line
     if {[string match {---- Result was*} $line]} {
-	dict set state cap/state actual
+	CaptureNext actual
+	return -code return
+    } elseif {[string match {---- Test setup failed:*} $line]} {
+	CaptureNext setup
+	return -code return
+    } elseif {[string match {---- Test cleanup failed:*} $line]} {
+	CaptureNext cleanup
 	return -code return
     } elseif {[string match {---- Test generated error*} $line]} {
-	dict set state cap/state error
+	CaptureNext error
 	return -code return
     }
 
-    dict update state cap c {
-	dict append c body $line \n
+    if {[string trim $line] ne {}} {
+	dict update state cap c {
+	    dict append c body $line
+	}
     }
 
+    return -code return
+}
+
+proc ::kettle::Test::CaptureFailureCollectSetup {} {
+    upvar 1 state state
+    if {[dict get $state cap/state] ne "setup"} return
+
+    upvar 1 line line
+
+    if {![string match {==== *} $line]} {
+	dict update state cap c {
+	    dict append c setup $line
+	}
+	return -code return
+    }
+
+    CaptureStop
+    return -code return
+}
+
+proc ::kettle::Test::CaptureFailureCollectCleanup {} {
+    upvar 1 state state
+    if {[dict get $state cap/state] ne "cleanup"} return
+
+    upvar 1 line line
+
+    if {![string match {==== *} $line]} {
+	dict update state cap c {
+	    dict append c cleanup $line
+	}
+	return -code return
+    }
+
+    CaptureStop
     return -code return
 }
 
@@ -811,14 +862,14 @@ proc ::kettle::Test::CaptureFailureCollectActual {} {
     upvar 1 state state
     if {[dict get $state cap/state] ne "actual"} return
 
-    upvar 1 rline line
+    upvar 1 line line
     if {[string match {---- Result should*} $line]} {
-	dict set state cap/state expected
+	CaptureNext expected
 	return -code return
     }
 
     dict update state cap c {
-	dict append c actual $line \n
+	dict append c actual $line
     }
 
     return -code return
@@ -828,33 +879,15 @@ proc ::kettle::Test::CaptureFailureCollectExpected {} {
     upvar 1 state state
     if {[dict get $state cap/state] ne "expected"} return
 
-    upvar 1 rline line
+    upvar 1 line line
     if {![string match {==== *} $line]} {
 	dict update state cap c {
-	    dict append c expected $line \n
+	    dict append c expected $line
 	}
 	return -code return
     }
 
-    if {[stream active]} {
-	set test     [dict get $state test]
-	set body     [dict get $state cap body]
-	set actual   [dict get $state cap actual]
-	set expected [dict get $state cap expected]
-
-	stream to faildetails {==== [lrange $test end-1 end] FAILED =========}
-	stream to faildetails {==== Contents of test case:\n}
-	stream to faildetails {$body}
-	stream to faildetails {---- Result was:}
-	stream to faildetails {[string range $actual 0 end-1]}
-	stream to faildetails {---- Result should have been:}
-	stream to faildetails {[string range $expected 0 end-1]}
-	stream to faildetails {==== [lrange $test end-1 end] ====\n\n}
-    }
-
-    dict unset state cap
-    dict set   state cap/state none
-    dict set   state test {}
+    CaptureStop
     return -code return
 }
 
@@ -862,16 +895,90 @@ proc ::kettle::Test::CaptureFailureCollectError {} {
     upvar 1 state state
     if {[dict get $state cap/state] ne "error"} return
 
-    upvar 1 rline line
+    upvar 1 line line
     if {[string match {---- errorCode*} $line]} {
-	dict set state cap/state expected
+	CaptureNext expected
 	return -code return
     }
 
     dict update state cap c {
-	dict append c actual $line \n
+	dict append c actual $line
     }
     return -code return
+}
+
+proc ::kettle::Test::CaptureInit {} {
+    #upvar 1 line line ; stream to captrace {CAP/sync: $line}
+    upvar 1 state state
+    ## Initialize state machine to capture the test result.
+    ## states: none, sync, body, actual, expected, done, error
+    dict set state cap/state    sync
+    dict set state cap actual   {}
+    dict set state cap body     {}
+    dict set state cap cleanup  {}
+    dict set state cap expected {}
+    dict set state cap setup    {}
+    return
+}
+
+proc ::kettle::Test::CaptureNext {new} {
+    #upvar 1 line line ; stream to captrace {CAP/$new: $line}
+    upvar 1 state state
+    dict set state cap/state $new
+    return
+}
+
+proc ::kettle::Test::CaptureStop {} {
+    #upvar 1 line line ; stream to captrace {CAP/stop: $line}
+    upvar 1 state state
+
+    if {[stream active]} {
+	set test     [dict get $state test]
+	set body     [dict get $state cap body]
+	set setup    [dict get $state cap setup]
+	set cleanup  [dict get $state cap cleanup]
+	set actual   [dict get $state cap actual]
+	set expected [dict get $state cap expected]
+
+	stream to faildetails {}
+	stream to faildetails {[string repeat = 60]}
+	stream to faildetails {==== [lrange $test end-1 end]}
+	stream to faildetails {==== Contents of test case:\n}
+	stream to faildetails {$body}
+
+	if {$actual ne {}} {
+	    stream to faildetails {---- Result was:}
+	    stream to faildetails {[string range $actual 0 end-1]}
+	    stream to faildetails {---- Result should have been:}
+	    stream to faildetails {[string range $expected 0 end-1]}
+	    stream to faildetails {---- End\n}
+
+	    set fname [string map {
+		/ %2f
+		: %3a
+	    } $test]
+
+	    stream to result.${fname}.expected {$expected}
+	    stream to result.${fname}.actual   {$actual}
+	}
+
+	if {$setup ne {}} {
+	    stream to faildetails {---- Test setup failed:}
+	    stream to faildetails {[string range $setup 0 end-1]}
+	}
+
+	if {$cleanup ne {}} {
+	    stream to faildetails {---- Test cleanup failed:}
+	    stream to faildetails {[string range $cleanup 0 end-1]}
+	}
+
+	stream to faildetails {[string repeat = 60]}
+    }
+
+    dict unset state cap
+    dict set   state cap/state none
+    dict set   state test {}
+    return
 }
 
 proc ::kettle::Test::CaptureStackStart {} {
@@ -893,7 +1000,7 @@ proc ::kettle::Test::CaptureStack {} {
     upvar 1 line line
 
     if {![string match {@-*} $line]} {
-	dict append state stack [string range $line 2 end] \n
+	dict append state stack [string range $line 2 end]
 	return -code return
     }
 
