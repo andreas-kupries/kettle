@@ -4,11 +4,43 @@
 
 namespace eval ::kettle { namespace export testsuite }
 
+kettle option define --constraints {
+    Tcl list of constraints to activate.
+} {} listsimple
+
+kettle option define --file {
+    Tcl list of glob patterns for test files to be run exclusively.
+} * listsimple
+
+kettle option define --limitconstraints {
+    Contraint handling. When set run only tests with the active
+    constraints (see -constraints).
+} 0 boolean
+
+# Already defined by benchmarks.tcl
+if 0 {kettle option define --match {
+    Tcl list of glob patterns for tests to be run exclusively.
+} * listsimple}
+
+kettle option define --notfile {
+    Tcl list of glob patterns for test files to be skipped.
+} {} listsimple
+
 kettle option define --single {
     Run each test case completely independent.
 } 0 boolean
 
+kettle option define --skip {
+    Tcl list of glob patterns for tests to be skipped.
+} {} listsimple
+
+kettle option no-work-key --constraints
+kettle option no-work-key --file
+kettle option no-work-key --limitconstraints
+kettle option no-work-key --match
+kettle option no-work-key --notfile
 kettle option no-work-key --single
+kettle option no-work-key --skip
 
 # # ## ### ##### ######## ############# #####################
 ## API.
@@ -115,6 +147,14 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     # assumption allows us to run it directly, using our own
     # tcl executable as interpreter.
 
+    # Translate kettle test options into tcltest options.
+    set options {}
+    foreach {o} {
+	constraints limitconstraints match skip file notfile
+    } {
+	lappend options -$o [option get --$o]
+    }
+
     stream to log ============================================================
 
     set main [path norm [option get @kettledir]/testmain.tcl]
@@ -160,8 +200,8 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 		    path pipe line {
 			io trace {TEST: $line}
 			ProcessLine $line
-		    } [option get --with-shell] $main $localprefix $test run \
-			-match $testcase
+		    } [option get --with-shell] $main $localprefix \
+			$test run {*}$options -match $testcase
 		}
 	    }
 	} else {
@@ -181,7 +221,8 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 		path pipe line {
 		    io trace {TEST: $line}
 		    ProcessLine $line
-		} [option get --with-shell] $main $localprefix $test run
+		} [option get --with-shell] $main $localprefix \
+		    $test run {*}$options
 	    }
 	}
     }

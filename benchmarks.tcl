@@ -43,7 +43,7 @@ kettle option no-work-key --collate
 # patterns.
 
 kettle option define --match {
-    Run only tests matching the glob pattern.
+    Run only tests/benchmarks matching the glob pattern.
     Default is the empty string, disabling the filter.
 } {} string
 kettle option no-work-key --match
