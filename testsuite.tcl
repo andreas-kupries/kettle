@@ -471,12 +471,13 @@ proc ::kettle::Test::ProcessLine {line} {
     # Capture of test failure in progress.
     # Take all lines, unprocessed.
     CaptureFailureSync            ; # cap/state: sync     => body
-    CaptureFailureCollectBody     ; # cap/state: body     => actual|error|setup|cleanup
+    CaptureFailureCollectBody     ; # cap/state: body     => actual|error|setup|cleanup|normal
     CaptureFailureCollectSetup    ; # cap/state: setup    => none
     CaptureFailureCollectCleanup  ; # cap/state: cleanup  => none
     CaptureFailureCollectActual   ; # cap/state: actual   => expected
     CaptureFailureCollectExpected ; # cap/state: expected => none
     CaptureFailureCollectError    ; # cap/state: error    => expected
+    CaptureFailureCollectNormal   ; # cap/state: normal   => none
 
     # Capture of Tcl stack trace in progress.
     # Take all lines, unprocessed.
@@ -860,6 +861,9 @@ proc ::kettle::Test::CaptureFailureCollectBody {} {
     } elseif {[string match {---- Test generated error*} $line]} {
 	CaptureNext error
 	return -code return
+    } elseif {[string match {---- Test completed normally*} $line]} {
+	CaptureNext normal
+	return -code return
     }
 
     if {[string trim $line] ne {}} {
@@ -938,6 +942,22 @@ proc ::kettle::Test::CaptureFailureCollectExpected {} {
     return -code return
 }
 
+proc ::kettle::Test::CaptureFailureCollectNormal {} {
+    upvar 1 state state
+    if {[dict get $state cap/state] ne "normal"} return
+
+    upvar 1 line line
+    if {![string match {==== *} $line]} {
+	dict update state cap c {
+	    dict append c normal $line
+	}
+	return -code return
+    }
+
+    CaptureStop
+    return -code return
+}
+
 proc ::kettle::Test::CaptureFailureCollectError {} {
     upvar 1 state state
     if {[dict get $state cap/state] ne "error"} return
@@ -965,6 +985,7 @@ proc ::kettle::Test::CaptureInit {} {
     dict set state cap cleanup  {}
     dict set state cap expected {}
     dict set state cap setup    {}
+    dict set state cap normal   {}
     return
 }
 
@@ -986,6 +1007,7 @@ proc ::kettle::Test::CaptureStop {} {
 	set cleanup  [dict get $state cap cleanup]
 	set actual   [dict get $state cap actual]
 	set expected [dict get $state cap expected]
+	set normal   [dict get $state cap normal]
 
 	stream to faildetails {}
 	stream to faildetails {[string repeat = 60]}
@@ -1017,6 +1039,11 @@ proc ::kettle::Test::CaptureStop {} {
 	if {$cleanup ne {}} {
 	    stream to faildetails {---- Test cleanup failed:}
 	    stream to faildetails {[string range $cleanup 0 end-1]}
+	}
+
+	if {$normal ne {}} {
+	    stream to faildetails {---- Test completed normally, expected error:}
+	    stream to faildetails {[string range $normal 0 end-1]}
 	}
 
 	stream to faildetails {[string repeat = 60]}
