@@ -2,6 +2,16 @@
 # # ## ### ##### ######## ############# #####################
 ## Kettle package
 
+# @@ Meta Begin
+# Package kettle 0
+# Meta platform tcl
+# Meta summary     Build support package and application.
+# Meta description Build support package and application.
+# Meta subject {build support} critcl teapot {meta data}
+# Meta subject doctools diagram
+# Meta require {Tcl 8.5-}
+# @@ Meta End
+
 # # ## ### ##### ######## ############# #####################
 ## Requisites
 
@@ -28,6 +38,8 @@ namespace eval ::kettle {
 ## @owns: invoke.tcl
 ## @owns: io.tcl
 ## @owns: lambda.tcl
+## @owns: mdref.tcl
+## @owns: meta.tcl
 ## @owns: options.tcl
 ## @owns: ovalidate.tcl
 ## @owns: path.tcl
@@ -46,9 +58,10 @@ namespace eval ::kettle {
 
 ## The next two files are not sourced as part of the kettle application.
 ##
-# The first is the main entry point for the 'test' recipe, i.e. the
-# application running a specific .test file. It is used to communicate
-# build configuration data into the test environment.
+# The first is the main entry point for the 'test' and related
+# recipes, i.e. the application running a specific .test file. It is
+# used to communicate build configuration data into the test
+# environment.
 ##
 # The other provides lots of utilities to make writing tests easier.
 
@@ -81,7 +94,9 @@ namespace eval ::kettle {
     source $selfdir/io.tcl         ; # Message output support.
     # # ## ### ##### ######## ############# #####################
     source $selfdir/status.tcl     ; # General goal status.
-    source $selfdir/path.tcl       ; # General path utilities
+    source $selfdir/path.tcl       ; # General path utilities.
+    source $selfdir/mdref.tcl      ; # Teapot pkg ref utilities.
+    source $selfdir/meta.tcl       ; # Teapot meta data utilities.
     source $selfdir/ovalidate.tcl  ; # Option Validation sub layer.
     source $selfdir/options.tcl    ; # Option management.
     # # ## ### ##### ######## ############# #####################

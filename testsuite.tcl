@@ -463,7 +463,7 @@ proc ::kettle::Test::FormatTimings {state} {
 }
 
 proc ::kettle::Test::ProcessLine {line} {
-    #stream to rawlog {[string range $line 0 end-1]}
+    stream to rawlog {[string range $line 0 end-1]}
 
     # Counters and other state in the calling environment.
     upvar 1 state state

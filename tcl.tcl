@@ -14,6 +14,9 @@ proc ::kettle::tcl {} {
     testsuite
     benchmarks
 
+    # Heuristic processing of external teapot meta data files.
+    meta scan
+
     # Heuristic search for packages to install, collect names, versions, and files.
     # Aborts caller when nothing is found.
     lassign [path scan \
@@ -31,6 +34,10 @@ proc ::kettle::tcl {} {
 proc ::kettle::TclSetup {root files pn pv} {
     set pkgdir [path libdir [string map {:: _} $pn]$pv]
 
+    # Process any teapot meta data stored within the main package file
+    # itself.
+    meta read-internal [lindex $files 0]
+
     recipe define install-package-$pn "Install package $pn $pv" {pkgdir root files pn pv} {
 	if {[option exists @dependencies]} {
 	    invoke @dependencies install
@@ -39,22 +46,26 @@ proc ::kettle::TclSetup {root files pn pv} {
 	path in $root {
 	    try {
 		set tmpdir [path tmpfile tclindex_]
-		file mkdir  $tmpdir
-		set tmpfile $tmpdir/pkgIndex.tcl
+		file mkdir    $tmpdir
+		set indexfile $tmpdir/pkgIndex.tcl
+		set mdfile    $tmpdir/teapot.txt
 
 		path ensure-cleanup $tmpdir
 
 		set primary [lindex $files 0]
-		path write $tmpfile \
+		path write $indexfile \
 		    "package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
+
+		set mdfile [meta write $mdfile package $pn $pv]
 
 		path install-file-group \
 		    "package $pn $pv" \
-		    $pkgdir {*}$files $tmpfile
+		    $pkgdir {*}$files $indexfile {*}$mdfile
 
 	    } finally {
-		file delete $tmpfile
-		file delete $tmpdir
+		file delete $indexfile
+		file delete $mdfile
+		file delete -force $tmpdir
 	    }
 	}
     } $pkgdir $root $files $pn $pv
