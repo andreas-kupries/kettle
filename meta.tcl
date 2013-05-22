@@ -118,6 +118,13 @@ proc ::kettle::meta::insert {dst type name} {
     return
 }
 
+proc ::kettle::meta::add {type name mdkey value} {
+    variable md
+    set key [list $type $name]
+    dict set md $key $mdkey $value
+    return
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Internals
 

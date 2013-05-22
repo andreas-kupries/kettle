@@ -36,7 +36,13 @@ proc ::kettle::TclSetup {root files pn pv} {
 
     # Process any teapot meta data stored within the main package file
     # itself.
-    meta read-internal [lindex $files 0] package $pn
+
+    set adjunct [lassign $files primary]
+    meta read-internal $primary package $pn
+    set primary [file tail $primary]
+
+    meta add package $pn entrysource $primary
+    meta add package $pn included    [list $primary {*}$adjunct]
 
     recipe define install-package-$pn "Install package $pn $pv" {pkgdir root files pn pv} {
 	if {[option exists @dependencies]} {
