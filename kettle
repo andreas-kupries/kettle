@@ -6,6 +6,7 @@
 # @@ Meta Begin
 # Application kettle 1
 # Meta platform tcl
+# Meta author      {Andreas Kupries}
 # Meta summary     Build support application.
 # Meta description Kettle is a system to make building Tcl
 # Meta description packages quick and easy. More importantly,

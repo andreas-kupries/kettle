@@ -5,6 +5,7 @@
 # @@ Meta Begin
 # Package kettle 0
 # Meta platform tcl
+# Meta author      {Andreas Kupries}
 # Meta summary     Build support package.
 # Meta description Kettle is a system to make building Tcl
 # Meta description packages quick and easy. More importantly,
