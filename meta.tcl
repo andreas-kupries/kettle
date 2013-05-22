@@ -138,15 +138,37 @@ proc ::kettle::meta::Get {type name vv} {
     if {![dict exists $md $key]} {
 	set m {}
 	set ver 0
+
+	io warn {
+	    io puts "[string totitle $type] $name: No teapot meta data found."
+	}
     } else {
-	set m [dict get $md $key]
+	set m   [dict get $md $key]
 	set ver [dict get $m version]
 	dict unset m name
 	dict unset m version
 	dict unset m entity
     }
 
-    dict set m build::who $tcl_platform(user)
+    # Heuristic for a location if missing.
+    # Use fossil remote, stripped of account information.
+    # But only if we are in a fossil checkout.
+    if {![dict exists $m location] &&
+	([path find.fossil [path sourcedir]] ne {})
+    } {
+	set remote [exec {*}[auto_execok fossil] remote]
+	regsub {/[^@]*@} $remote {/} remote
+	dict set m location $remote
+    }
+
+    foreach k {author location} {
+	if {[dict exists $m $k]} continue
+	io warn {
+	    io puts "[string totitle $type] $name: Missing $k information."
+	}
+    }
+
+    dict set m build::by $tcl_platform(user)
     dict set m build::date \
 	[clock format [clock seconds] -format {%Y-%m-%d}]
 
