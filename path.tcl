@@ -293,6 +293,14 @@ proc ::kettle::path::tcltest-file {path} {
     return 0
 }
 
+proc ::kettle::path::teapot-file {path} {
+    set test [cathead $path 1024 -translation binary]
+    # marker
+    if {[regexp {tcl.tk//DSL teapot//EN//} $test]} { return 1 }
+    # no usable marker
+    return 0
+}
+
 proc ::kettle::path::bench-file {path} {
     set test [cathead $path 1024 -translation binary]
     # marker
