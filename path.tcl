@@ -587,7 +587,7 @@ proc ::kettle::path::install-application {src dstdir} {
     return
 }
 
-proc ::kettle::path::install-script {src dstdir shell} {
+proc ::kettle::path::install-script {src dstdir shell {cmd {}}} {
     # Install single-file script application into destination _directory_.
     # a previously existing file is moved out of the way.
 
@@ -617,6 +617,10 @@ proc ::kettle::path::install-script {src dstdir shell} {
 	}
 
 	return {*}$o $e
+    }
+
+    if {[llength $cmd]} {
+	{*}$cmd $dstdir/$fname
     }
 
     fixhashbang    $dstdir/$fname $shell

@@ -13,6 +13,8 @@ proc ::kettle::tclapp {fname} {
     io trace {}
     io trace {DECLARE tcl application $fname @ [path sourcedir]}
 
+    meta scan
+
     set src [path sourcedir $fname]
 
     if {![file exists $src]} {
@@ -20,13 +22,18 @@ proc ::kettle::tclapp {fname} {
 	return
     }
 
+    set name [file rootname $fname]
+    meta read-internal $src application $name
+
     io trace {    Accepted: $fname}
 
-    recipe define install-app-$fname "Install application $fname" {src} {
+    recipe define install-app-$fname "Install application $fname" {name src} {
 	path install-script \
-	    $src [path bindir] \
-	    [info nameofexecutable]
-    } $src
+	    $src [path bindir] [info nameofexecutable] \
+	    [lambda {name dst} {
+		kettle meta insert $dst application $name
+	    } $name]
+    } $name $src
 
     recipe define uninstall-app-$fname "Uninstall application $fname" {src} {
 	path uninstall-application \

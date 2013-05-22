@@ -19,6 +19,9 @@ namespace eval ::kettle::meta {
 
 namespace eval ::kettle::meta {
     variable md {} ; # dict (type --> (name --> meta data))
+
+    variable mbegin "# @@ Meta Begin"
+    variable mend   "# @@ Meta End"
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -33,6 +36,9 @@ namespace eval ::kettle::meta {
 # a teapot.txt is generated, holding the data for P in external format.
 
 proc ::kettle::meta::scan {} {
+    # Overwrite self, we run only once for effect.
+    proc ::kettle::meta::scan args {}
+
     # Heuristic search for meta data in the directory containing tcl
     # packages, in separate files. See (1).
 
@@ -52,37 +58,88 @@ proc ::kettle::meta::scan {} {
 }
 
 proc ::kettle::meta::read-external {file} {
+    variable md
     #puts E|$file
     set contents [path cat $file]
-    Parse $contents
+    set has      [Parse $contents]
+
+    # Extend md storage
+    lappend md {*}$has
     return
 }
 
-proc ::kettle::meta::read-internal {file} {
+proc ::kettle::meta::read-internal {file etype ename} {
+    variable md
+
     #puts I|$file
-    Parse [GetInternal [path cat $file]]
-    return
+    set block [lindex [GetInternal [path cat $file]] 1]
+    if {$block eq {}} {
+	return 0
+    }
+
+    set ekey [list $etype $ename]
+    set has  [Parse $block]
+
+    if {![dict size $has]} { return 0 }
+    if {[dict size $has] > 1} {
+	io err {
+	    io puts "Expected meta data for a single $etype, got multiple entries instead."
+	}
+	return 0
+    }
+    if {![dict exists $has $ekey]} {
+	set actual [lindex [dict keys $has] 0]
+	io err {
+	    io puts "Expected meta data for $etype $ename, got $actual instead."
+	}
+	return 0
+    }
+
+    # Extend md storage
+    lappend md {*}$has
+    return 1
 }
 
 proc ::kettle::meta::write {dst type name ver} {
-    path write $dst [join [Assemble $name $ver $type [Get $type $name]] \n]
+    path write $dst [join [Assemble $name $ver $type [Get $type $name __]] \n]\n
     return $dst
+}
+
+proc ::kettle::meta::insert {dst type name} {
+    variable mbegin
+    variable mend
+
+    set md [Get $type $name ver]
+    set pfx "# "
+    set block $pfx[join [Assemble $name $ver $type $md] "\n$pfx"]
+
+    lassign [GetInternal [path cat $dst]] header _ trailer
+    path write $dst $header\n$mbegin\n$block\n$mend\n$trailer
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Internals
 
-proc ::kettle::meta::Get {type name} {
+proc ::kettle::meta::Get {type name vv} {
+    upvar 1 $vv ver
     variable md
-    if {![dict exists $md $type $name]} {
+    global tcl_platform
+
+    set key [list $type $name]
+
+    if {![dict exists $md $key]} {
 	set m {}
+	set ver 0
     } else {
-	set m [dict get $md $type $name]
+	set m [dict get $md $key]
+	set ver [dict get $m version]
 	dict unset m name
 	dict unset m version
 	dict unset m entity
     }
 
+    dict set m build::who $tcl_platform(user)
     dict set m build::date \
 	[clock format [clock seconds] -format {%Y-%m-%d}]
 
@@ -90,39 +147,41 @@ proc ::kettle::meta::Get {type name} {
 }
 
 proc ::kettle::meta::GetInternal {str} {
-    set collect 0
+    variable mbegin
+    variable mend
+
+    set collect header; #|meta|trailer
+    set header  {}
     set meta    {}
+    set trailer {}
 
     foreach line [split $str \n] {
 	# Ignore everything until the beginning of the meta data
 	# block.
 
-	if {[regexp "^# @@ Meta Begin" $line]} {
+	if {[regexp "^$mbegin" $line]} {
 	    io trace "META $line"
-	    set collect 1
+	    set collect meta
+	    continue 
+	} elseif {[regexp "^$mend" $line]} {
+	    io trace "META $line"
+	    set collect trailer
 	    continue 
 	}
 
-	if {!$collect} continue
-
-	io trace "META $line"
-
-	# Stop collecting meta data when we reach the end of the
-	# block.
-
-	if {[regexp "^# @@ Meta End" $line]} {
-	    break
+	if {$collect eq "meta"} {
+	    # We are inside of the Meta data block. Strip the comment
+	    # prefix from the line, i.e. transform the embedded meta
+	    # information back into the regular form.
+	    regsub "^\#\[ \t\]*" $line {} line
 	}
 
-	# We are inside of the Meta data block. Strip the comment
-	# prefix from the line, i.e. transform the embedded meta
-	# information back into the regular form.
-
-	regsub "^\#\[ \t\]*" $line {} line
-	lappend meta $line
+	io trace "META $line"
+	# state (collect) == name of variable to extend
+	lappend $collect $line
     }
 
-    return [join $meta \n]
+    return [list [join $header \n] [join $meta \n] [join $trailer \n]]
 }
 
 proc ::kettle::meta::Parse {str} {
@@ -130,6 +189,7 @@ proc ::kettle::meta::Parse {str} {
 
     #puts P|$str|
 
+    variable extracted {}
     set i [interp create -safe]
 
     # Action for data collection ...
@@ -154,18 +214,20 @@ proc ::kettle::meta::Parse {str} {
 	set msg [::string map {
 	    {::kettle::meta::} {}
 	} $e]
-	io err { io puts "Bad meta data syntax: $msg" }
+	io err {
+	    io puts "Bad meta data syntax: $msg"
+	}
 	#puts $::errorInfo
     } finally {
 	interp delete $i
     }
-    return
+
+    return $extracted
 }
 
 proc ::kettle::meta::E {type name version} {
     SaveLast
 
-    variable md
     variable ctype   $type
     variable cname   $name
     variable current {}
@@ -199,14 +261,14 @@ proc ::kettle::meta::Init {} {
 }
 
 proc ::kettle::meta::SaveLast {} {
-    variable md
+    variable extracted
     variable cname
     variable ctype
     variable current
 
     if {$cname eq {}} return
 
-    dict set md $ctype $cname $current
+    dict set extracted [list $ctype $cname] $current
 
     set ctype   {}
     set cname   {}
@@ -215,84 +277,88 @@ proc ::kettle::meta::SaveLast {} {
 }
 
 proc ::kettle::meta::Normalize {} {
-    variable md
-    if {![dict size $md]} return
+    variable extracted
+    if {![dict size $extracted]} return
 
-    dict for {type data} $md {
-	dict for {name meta} $data {
+    dict for {key data} $extracted {
+	#lassign $key type name
 
-	    # Special knowledge about dependencies, remove duplicates,
-	    # redundancies. Ditto for platform, in an effort to handle
-	    # crooked input better.
+	# Special knowledge about dependencies, remove duplicates,
+	# redundancies. Ditto for platform, in an effort to handle
+	# crooked input better.
 
-	    if {[dict exists $meta platform]} {
-		dict set meta platform \
-		    [lsort -uniq [dict get $meta platform]]
-	    }
-
-	    foreach what {require recommend} {
-		if {![dict exists $meta $what]} continue
-		dict set meta $what \
-		    [mdref normalize [dict get $meta $what]]
-	    }
-
-	    dict set data $name $meta
+	if {[dict exists $data platform]} {
+	    dict set data platform \
+		[lsort -uniq [dict get $data platform]]
 	}
 
-	dict set md $type $data
+	foreach what {require recommend} {
+	    if {![dict exists $data $what]} continue
+	    dict set data $what \
+		[mdref normalize [dict get $data $what]]
+	}
+
+	dict set extracted $key $data
     }
     return
 }
 
 proc ::kettle::meta::Validate {} {
-    variable md
+    variable extracted
     set errors 0
 
-    if {![dict size $md]} {
-	io err { io puts {No entities found} }
+    if {![dict size $extracted]} {
+	io err {
+	    io puts {No entities found}
+	}
 	return 0
     }
 
-    dict for {type data} $md {
-	dict for {name meta} $data {
-	    set e [dict get $meta entity]
-	    set n [dict get $meta name]
-	    set v [dict get $meta version]
+    dict for {key data} $extracted {
+	#lassign $key type name
 
-	    set prefix "Bad meta data for $e $n $v:"
+	set keep 1
+	set e [dict get $data entity]
+	set n [dict get $data name]
+	set v [dict get $data version]
 
-	    if {![dict exists $meta platform]} {
-		io err { io puts "$prefix Incomplete, no platform specified" }
-		dict unset meta $name
-		incr errors
-	    } elseif {[llength [dict get $meta platform]] > 1} {
-		io err { io puts "$prefix Multi-platform archives are not acceptable." }
-		dict unset meta $name
-		incr errors
+	set prefix "Bad meta data for $e $n $v:"
+
+	if {![dict exists $data platform]} {
+	    io err {
+		io puts "$prefix Incomplete, no platform specified"
 	    }
-
-	    foreach {what label} {
-		require   requirement
-		recommend recommendation
-	    } {
-		if {![dict exists $meta $what]} continue
-
-		# Special knowledge about dependencies, check their
-		# syntax.
-
-		foreach ref [dict get $meta $what] {
-		    if {![mdref valid $ref message]} {
-			io err { io puts "$prefix Bad reference syntax in $label \"$ref\": $message" }
-			dict unset meta $name
-			incr errors
-		    }
-		}
+	    set keep 0
+	    incr errors
+	} elseif {[llength [dict get $data platform]] > 1} {
+	    io err {
+		io puts "$prefix Multi-platform archives are not acceptable."
 	    }
-
-	    dict set data $name $meta
+	    set keep 0
+	    incr errors
 	}
 
-	dict set md $type $data
+	foreach {what label} {
+	    require   requirement
+	    recommend recommendation
+	} {
+	    if {![dict exists $data $what]} continue
+
+	    # Special knowledge about dependencies, check their
+	    # syntax.
+
+	    foreach ref [dict get $data $what] {
+		if {[mdref valid $ref message]} continue
+		io err {
+		    io puts "$prefix Bad reference syntax in $label \"$ref\": $message"
+		}
+		set keep 0
+		incr errors
+	    }
+	}
+
+	if {$keep} continue
+	dict unset extracted $key
     }
 
     if {$errors} { return 0 }
@@ -352,7 +418,7 @@ proc ::kettle::meta::Assemble {name ver type meta} {
 	}
     }
 
-    lappend lines {} ; # Forces a \n at the end of the block when joining the lines.
+    #lappend lines {} ; # Forces a \n at the end of the block when joining the lines.
     return $lines
 
 }

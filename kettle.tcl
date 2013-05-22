@@ -5,8 +5,17 @@
 # @@ Meta Begin
 # Package kettle 0
 # Meta platform tcl
-# Meta summary     Build support package and application.
-# Meta description Build support package and application.
+# Meta summary     Build support package.
+# Meta description Kettle is a system to make building Tcl
+# Meta description packages quick and easy. More importantly,
+# Meta description possibly, to make writing the build system
+# Meta description for Tcl packages easy.
+# Meta description As such kettle is several things:
+# Meta description (1) A DSL helping you to write build systems
+# Meta description for your packages. (2) A package implementing
+# Meta description this DSL. (3) An application which can serve
+# Meta description as the interpreter for a build file containing
+# Meta description commands in the above DSL.
 # Meta subject {build support} critcl teapot {meta data}
 # Meta subject doctools diagram
 # Meta require {Tcl 8.5-}
