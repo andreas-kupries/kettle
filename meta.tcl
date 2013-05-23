@@ -133,6 +133,8 @@ proc ::kettle::meta::Get {type name vv} {
     variable md
     global tcl_platform
 
+    io trace {meta-get $type $name}
+
     set key [list $type $name]
 
     if {![dict exists $md $key]} {
@@ -143,7 +145,10 @@ proc ::kettle::meta::Get {type name vv} {
 	    io puts "[string totitle $type] $name: No teapot meta data found."
 	}
     } else {
-	set m   [dict get $md $key]
+	set m [dict get $md $key]
+
+	io trace {  = $m}
+
 	set ver [dict get $m version]
 	dict unset m name
 	dict unset m version
@@ -189,11 +194,11 @@ proc ::kettle::meta::GetInternal {str} {
 	# block.
 
 	if {[regexp "^$mbegin" $line]} {
-	    io trace "META $line"
+	    io trace {META BEGIN}
 	    set collect meta
 	    continue 
 	} elseif {[regexp "^$mend" $line]} {
-	    io trace "META $line"
+	    io trace {META END}
 	    set collect trailer
 	    continue 
 	}
@@ -205,7 +210,7 @@ proc ::kettle::meta::GetInternal {str} {
 	    regsub "^\#\[ \t\]*" $line {} line
 	}
 
-	io trace "META $line"
+	io trace {[string toupper $collect] $line}
 	# state (collect) == name of variable to extend
 	lappend $collect $line
     }
