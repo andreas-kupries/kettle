@@ -43,6 +43,9 @@ proc ::kettle::TclSetup {root files pn pv} {
 
     meta add package $pn entrysource $primary
     meta add package $pn included    [list $primary {*}$adjunct]
+    meta add package $pn version $pv
+    meta add package $pn name    $pn
+    meta add package $pn entity  package
 
     recipe define install-package-$pn "Install package $pn $pv" {pkgdir root files pn pv} {
 	if {[option exists @dependencies]} {
