@@ -155,6 +155,22 @@ proc ::kettle::meta::Get {type name vv} {
 	dict unset m entity
     }
 
+    # Determine the type of version control this repository is under,
+    # and report it in the manifest.
+
+    set src [path sourcedir]
+    set vctype unknown
+    set vcrev  unknown
+    foreach vc {fossil git} {
+	set vcloc [path find.$vc $src]
+	if {$vcloc eq {}} continue
+	set vctype $vc
+	set vcrev  [path revision.$vc $vcloc]
+    }
+
+    dict set m vc::system   $vctype
+    dict set m vc::revision $vcrev
+
     # Heuristic for a location if missing.
     # Use fossil remote, stripped of account information.
     # But only if we are in a fossil checkout.
