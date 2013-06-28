@@ -32,6 +32,14 @@ proc ::kettle::Application {} {
 
 	set first [lindex $argv 0]
 
+	if {[string match @* $first]} {
+	    # Special operation detected, bypass the whole processing
+	    # of options, and goals.
+
+	    special [string range $first 1 end] {*}[lassign $argv __]
+	    ::exit 0
+	}
+
 	if {$first eq {-f}} {
 	    set argv     [lassign $argv __ path]
 	    set declfile [path norm $path]

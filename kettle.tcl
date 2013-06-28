@@ -54,6 +54,7 @@ namespace eval ::kettle {
 ## @owns: ovalidate.tcl
 ## @owns: path.tcl
 ## @owns: recipes.tcl
+## @owns: special.tcl
 ## @owns: standard.tcl
 ## @owns: status.tcl
 ## @owns: stream.tcl
@@ -116,6 +117,7 @@ namespace eval ::kettle {
     source $selfdir/stream.tcl     ; # Log streams
     # # ## ### ##### ######## ############# #####################
     source $selfdir/gui.tcl        ; # GUI support.
+    source $selfdir/special.tcl    ; # Special commands.
     source $selfdir/app.tcl        ; # Application core.
     # # ## ### ##### ######## ############# #####################
     source $selfdir/standard.tcl   ; # Standard recipes.
