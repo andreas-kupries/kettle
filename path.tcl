@@ -164,6 +164,21 @@ proc ::kettle::path::fixhashbang {file shell} {
     return
 }
 
+proc ::kettle::path::add-top-comment {comment contents} {
+    set r {}
+    set done no
+    foreach line [split $contents \n] {
+	if {$done || [regexp "^\\s*\#.*$" $line]} {
+	    lappend r $line
+	    continue
+	}
+	lappend r $comment
+	lappend r $line
+	set done yes
+    }
+    join $r \n
+}
+
 proc ::kettle::path::tcl-package-file {file} {
     set contents   [cat $file]
     set provisions [grep {*package provide *} $contents]
@@ -501,6 +516,31 @@ proc ::kettle::path::write {path contents args} {
     return
 }
 
+proc ::kettle::path::write-append {path contents args} {
+    set c [open $path a]
+    if {[llength $args]} { fconfigure $c {*}$args }
+    ::puts -nonewline $c $contents
+    close $c
+    return
+}
+
+proc ::kettle::path::write-prepend {path contents args} {
+    set new [tmpfile tmp_prepend_]
+    write-append $new $contents            {*}$args
+    write-append $new [cat $path {*}$args] {*}$args
+
+    file rename -force $new $path
+    return
+}
+
+proc ::kettle::path::write-modify {path cmdprefix args} {
+    set new [tmpfile tmp_modify_]
+    write $new [{*}$cmdprefix [cat $path {*}$args]] {*}$args
+
+    file rename -force $new $path
+    return
+}
+
 proc ::kettle::path::copy-file {src dstdir} {
     # Copy single file into destination _directory_
     # Fails goal on an existing file.
@@ -811,7 +851,7 @@ proc ::kettle::path::scanup {path cmd} {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Repository type detection
+## Repository type detection, extraction of current revision, ...
 
 proc ::kettle::path::find.git {path} {
     scanup $path ::kettle::path::is.git

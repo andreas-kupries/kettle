@@ -95,6 +95,14 @@ kettle recipe parent show-state         show
 
 # # ## ### ##### ######## ############# #####################
 
+kettle recipe define meta-status {
+    Status of meta data for Tcl packages and applications.
+} {} {
+    meta show-status
+}
+
+# # ## ### ##### ######## ############# #####################
+
 kettle recipe define gui {
     Graphical interface to the system.
 } {} {

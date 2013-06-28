@@ -59,6 +59,37 @@ proc ::kettle::tclapp {fname} {
     recipe parent reinstall-app-$fname       reinstall-tcl-applications
     recipe parent reinstall-tcl-applications reinstall-applications
     recipe parent reinstall-applications     reinstall
+
+    # For applications without user-specified meta data we initialize
+    # a recipe which allows the developer to quickly insert a basic
+    # structure with standard keys, which can then be completed
+    # manually.
+
+    if {![meta defined? application $name]} {
+	recipe define meta-generate-application-$fname "Generate empty data for application $fname" {root files pn pv} {
+
+	    dict set m platform    tcl
+	    dict set m author      ?
+	    dict set m summary     ?
+	    dict set m description ?
+	    dict set m subject     ?
+	    dict set m category    ?
+	    dict set m require     ?
+
+	    meta fix-location m
+	    if {![dict exists $m location]} {
+		dict set m location ?
+	    }
+
+	    set m [meta format-internal application $name ? $m]
+	    path write-modify $src \
+		[list kettle path add-top-comment $m]
+	} $src
+
+	recipe parent meta-generate-application-$fname  meta-generate-tcl-applications
+	recipe parent meta-generate-tcl-applications    meta-generate-applications
+	recipe parent meta-generate-applications        meta-generate
+    }
     return
 }
 

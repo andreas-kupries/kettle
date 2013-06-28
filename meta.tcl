@@ -12,6 +12,7 @@ namespace eval ::kettle::meta {
     namespace import ::kettle::io
     namespace import ::kettle::path
     namespace import ::kettle::mdref
+    namespace import ::kettle::strutil
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -99,13 +100,25 @@ proc ::kettle::meta::read-internal {file etype ename} {
 
     # Extend md storage
     lappend md {*}$has
-    dict set mduser [lindex [dict keys $has] 0] 1
+    set key [lindex [dict keys $has] 0]
+    dict set mduser $key 1
     return 1
 }
 
 proc ::kettle::meta::write {dst type name ver} {
     path write $dst [join [Assemble $name $ver $type [Get $type $name __]] \n]\n
     return $dst
+}
+
+proc ::kettle::meta::format-external {type name ver md} {
+    return [join [Assemble $name $ver $type $md] \n]\n
+}
+
+proc ::kettle::meta::format-internal {type name ver md} {
+    variable mbegin
+    variable mend
+    set prefix "# "
+    return \n$mbegin\n$prefix[join [Assemble $name $ver $type $md] \n$prefix]\n$mend
 }
 
 proc ::kettle::meta::insert {dst type name} {
@@ -125,6 +138,68 @@ proc ::kettle::meta::add {type name mdkey value} {
     variable md
     set key [list $type $name]
     dict set md $key $mdkey $value
+    return
+}
+
+proc ::kettle::meta::defined? {type name} {
+    variable mduser
+    io trace {meta-defined? $type $name}
+
+    set key [list $type $name]
+    return [dict exists $mduser $key]
+}
+
+proc ::kettle::meta::show-status {} {
+    variable md
+
+    set keys [lsort -dict [dict keys $md]]
+
+    if {![llength $keys]} {
+	io puts "No packages/applications to show"
+    }
+
+    lappend types Entity
+    lappend names Name
+    lappend skip  1
+    foreach key $keys {
+	lassign $key type name
+	lappend types $type
+	lappend names $name
+	lappend skip 0
+    }
+    set keys [linsert $keys 0 {}]
+
+    io puts {}
+    foreach k $keys t [strutil padr $types] n [strutil padr $names] s $skip {
+	if {$s} {
+	    set status Status
+	} else {
+	    lassign $k kt kn
+	    set status [expr {[defined? $kt $kn]
+			      ? "OK"
+			      : "[io merr {No user data}]"}]
+	}
+	io puts "\t$t $n $status"
+    }
+    io puts {}
+    return
+}
+
+proc ::kettle::meta::fix-location {var} {
+    upvar 1 $var m
+    # Heuristic for a location if missing.
+    # Use fossil remote, stripped of account information.
+    # But only if we are in a fossil checkout.
+
+    # TODO: Handle git also
+
+    if {![dict exists $m location] &&
+	([path find.fossil [path sourcedir]] ne {})
+    } {
+	set remote [exec {*}[auto_execok fossil] remote]
+	regsub {/[^@]*@} $remote {/} remote
+	dict set m location $remote
+    }
     return
 }
 
@@ -157,7 +232,7 @@ proc ::kettle::meta::Get {type name vv} {
     dict unset m entity
 
     FixVCInformation m
-    FixLocation      m
+    fix-location     m
 
     foreach k {author location} {
 	if {[dict exists $m $k]} continue
@@ -190,24 +265,6 @@ proc ::kettle::meta::FixVCInformation {var} {
 
     dict set m vc::system   $vctype
     dict set m vc::revision $vcrev
-    return
-}
-
-proc ::kettle::meta::FixLocation {var} {
-    upvar 1 $var m
-    # Heuristic for a location if missing.
-    # Use fossil remote, stripped of account information.
-    # But only if we are in a fossil checkout.
-
-    # TODO: Handle git also
-
-    if {![dict exists $m location] &&
-	([path find.fossil [path sourcedir]] ne {})
-    } {
-	set remote [exec {*}[auto_execok fossil] remote]
-	regsub {/[^@]*@} $remote {/} remote
-	dict set m location $remote
-    }
     return
 }
 
@@ -489,7 +546,7 @@ proc ::kettle::meta::Assemble {name ver type meta} {
 }
 
 proc ::kettle::meta::ALine {k maxl v} {
-    return "Meta [format "%-*s" $maxl [list $k]] $v"
+    return "Meta [::format "%-*s" $maxl [list $k]] $v"
 }
 
 proc ::kettle::meta::MaxLength {mv} {
