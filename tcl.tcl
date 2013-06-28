@@ -107,6 +107,43 @@ proc ::kettle::TclSetup {root files pn pv} {
     recipe parent reinstall-package-$pn  reinstall-tcl-packages
     recipe parent reinstall-tcl-packages reinstall-packages
     recipe parent reinstall-packages     reinstall
+
+    # For packages without user-specified meta data we initialize a
+    # recipe which allows the developer to quickly insert a basic
+    # structure with standard keys which, can then be completed
+    # manually.
+
+    if {![meta defined? package $pn]} {
+	recipe define meta-generate-package-$pn "Generate empty data for package $pn $pv" {root files pn pv} {
+	    path in $root {
+		set primary [lindex $files 0]
+
+		dict set m platform    tcl
+		dict set m author      ?
+		dict set m summary     ?
+		dict set m description ?
+		dict set m subject     ?
+		dict set m category    ?
+		dict set m require     ?
+
+		meta fix-location m
+		if {![dict exists $m location]} {
+		    dict set m location ?
+		}
+
+		set m [meta format-internal package $pn $pv $m]
+		#path write-prepend $primary $m
+		path write-modify $primary \
+		    [list kettle path add-top-comment $m]
+	    }
+
+	} $root $files $pn $pv
+
+	recipe parent meta-generate-package-$pn  meta-generate-tcl-packages
+	recipe parent meta-generate-tcl-packages meta-generate-packages
+	recipe parent meta-generate-packages     meta-generate
+    }
+
     return
 }
 
