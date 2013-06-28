@@ -30,9 +30,16 @@ proc ::kettle::Application {} {
     try {
 	# Process arguments: -f, -trace, --* options, and goals
 
-	if {[lindex $argv 0] eq {-f}} {
+	set first [lindex $argv 0]
+
+	if {$first eq {-f}} {
 	    set argv     [lassign $argv __ path]
 	    set declfile [path norm $path]
+
+	} elseif {[file exists $first]} {
+	    set argv     [lassign $argv __]
+	    set declfile [path norm $first]
+
 	} elseif {[file exists build.tcl]} {
 	    set declfile [path norm build.tcl]
 	} else {
