@@ -22,6 +22,8 @@
 # Meta subject doctools diagram
 # Meta require {Tcl 8.5-}
 # Meta require {kettle}
+# Meta category Builder/Developer support
+# Meta location https://core.tcl.tk/akupries/kettle
 # @@ Meta End
 
 apply {{self} {
