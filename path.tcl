@@ -821,6 +821,20 @@ proc ::kettle::path::find.fossil {path} {
     scanup $path ::kettle::path::is.fossil
 }
 
+proc ::kettle::path::revision.git {path} {
+    in $path {
+	set v [::exec {*}[auto_execok git] describe]
+    }
+    return [string trim $v]
+}
+
+proc ::kettle::path::revision.fossil {path} {
+    in $path {
+	set info [::exec {*}[auto_execok fossil] info]
+    }
+    return [lindex [grep {checkout:*} $info] 0 1]
+}
+
 proc ::kettle::path::is.git {path} {
     set control $path/.git
     expr {[file exists $control] && [file isdirectory $control]}
