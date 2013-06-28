@@ -18,7 +18,8 @@ namespace eval ::kettle::meta {
 ## State
 
 namespace eval ::kettle::meta {
-    variable md {} ; # dict (type --> (name --> meta data))
+    variable md     {} ; # dict: (type, name) --> meta data
+    variable mduser {} ; # dict: (type, name) --> /has user definitions/
 
     variable mbegin "# @@ Meta Begin"
     variable mend   "# @@ Meta End"
@@ -70,6 +71,7 @@ proc ::kettle::meta::read-external {file} {
 
 proc ::kettle::meta::read-internal {file etype ename} {
     variable md
+    variable mduser
 
     #puts I|$file
     set block [lindex [GetInternal [path cat $file]] 1]
@@ -97,6 +99,7 @@ proc ::kettle::meta::read-internal {file etype ename} {
 
     # Extend md storage
     lappend md {*}$has
+    dict set mduser [lindex [dict keys $has] 0] 1
     return 1
 }
 
@@ -131,56 +134,30 @@ proc ::kettle::meta::add {type name mdkey value} {
 proc ::kettle::meta::Get {type name vv} {
     upvar 1 $vv ver
     variable md
+    variable mduser
     global tcl_platform
 
     io trace {meta-get $type $name}
 
     set key [list $type $name]
 
-    if {![dict exists $md $key]} {
-	set m {}
-	set ver 0
-
+    if {![dict exists $mduser $key]} {
 	io warn {
-	    io puts "[string totitle $type] $name: No teapot meta data found."
+	    io puts "[string totitle $type] $name: No user-specified teapot meta data found."
 	}
-    } else {
-	set m [dict get $md $key]
-
-	io trace {  = $m}
-
-	set ver [dict get $m version]
-	dict unset m name
-	dict unset m version
-	dict unset m entity
     }
 
-    # Determine the type of version control this repository is under,
-    # and report it in the manifest.
+    set m [dict get $md $key]
 
-    set src [path sourcedir]
-    set vctype unknown
-    set vcrev  unknown
-    foreach vc {fossil git} {
-	set vcloc [path find.$vc $src]
-	if {$vcloc eq {}} continue
-	set vctype $vc
-	set vcrev  [path revision.$vc $vcloc]
-    }
+    io trace {  = $m}
 
-    dict set m vc::system   $vctype
-    dict set m vc::revision $vcrev
+    set ver [dict get $m version]
+    dict unset m name
+    dict unset m version
+    dict unset m entity
 
-    # Heuristic for a location if missing.
-    # Use fossil remote, stripped of account information.
-    # But only if we are in a fossil checkout.
-    if {![dict exists $m location] &&
-	([path find.fossil [path sourcedir]] ne {})
-    } {
-	set remote [exec {*}[auto_execok fossil] remote]
-	regsub {/[^@]*@} $remote {/} remote
-	dict set m location $remote
-    }
+    FixVCInformation m
+    FixLocation      m
 
     foreach k {author location} {
 	if {[dict exists $m $k]} continue
@@ -194,6 +171,44 @@ proc ::kettle::meta::Get {type name vv} {
 	[clock format [clock seconds] -format {%Y-%m-%d}]
 
     return $m
+}
+
+proc ::kettle::meta::FixVCInformation {var} {
+    upvar 1 $var m
+    # Determine the type of version control this repository is under,
+    # and report it and the current revision.
+
+    set src [path sourcedir]
+    set vctype unknown
+    set vcrev  unknown
+    foreach vc {fossil git} {
+	set vcloc [path find.$vc $src]
+	if {$vcloc eq {}} continue
+	set vctype $vc
+	set vcrev  [path revision.$vc $vcloc]
+    }
+
+    dict set m vc::system   $vctype
+    dict set m vc::revision $vcrev
+    return
+}
+
+proc ::kettle::meta::FixLocation {var} {
+    upvar 1 $var m
+    # Heuristic for a location if missing.
+    # Use fossil remote, stripped of account information.
+    # But only if we are in a fossil checkout.
+
+    # TODO: Handle git also
+
+    if {![dict exists $m location] &&
+	([path find.fossil [path sourcedir]] ne {})
+    } {
+	set remote [exec {*}[auto_execok fossil] remote]
+	regsub {/[^@]*@} $remote {/} remote
+	dict set m location $remote
+    }
+    return
 }
 
 proc ::kettle::meta::GetInternal {str} {
