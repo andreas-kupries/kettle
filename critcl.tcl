@@ -185,6 +185,11 @@ proc ::kettle::CritclSetup {root file pn pv} {
 	path uninstall-file-group "package $pn $pv" $pkgdir
     } $pkgdir $pn $pv
 
+    recipe define reinstall-package-$pn "Reinstall package $pn $pv" {pn} {
+	invoke self uninstall-package-$pn
+	invoke self install-package-$pn
+    } $pn
+
     recipe parent install-package-$pn     install-binary-packages
     recipe parent install-binary-packages install-packages
     recipe parent install-packages        install
@@ -196,6 +201,10 @@ proc ::kettle::CritclSetup {root file pn pv} {
     recipe parent uninstall-package-$pn     uninstall-binary-packages
     recipe parent uninstall-binary-packages uninstall-packages
     recipe parent uninstall-packages        uninstall
+
+    recipe parent reinstall-package-$pn     reinstall-binary-packages
+    recipe parent reinstall-binary-packages reinstall-packages
+    recipe parent reinstall-packages        reinstall
 
     # critcl specific target
     # - Wrap the critcl package into a regular TEA-based buildsystem.
