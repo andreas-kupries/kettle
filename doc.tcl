@@ -127,6 +127,20 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	    $dst
     } $htmldst
 
+    recipe define reinstall-doc-manpages {
+	Reinstall manpages
+    } {} {
+	invoke self uninstall-doc-manpages
+	invoke self install-doc-manpages
+    }
+
+    recipe define reinstall-doc-html {
+	Reinstall HTML documentation
+    } {} {
+	invoke self uninstall-doc-html
+	invoke self install-doc-html
+    }
+
     recipe parent install-doc-html     install-doc
     recipe parent install-doc-manpages install-doc
     recipe parent install-doc install
@@ -134,6 +148,10 @@ proc ::kettle::doc {{docsrcdir doc}} {
     recipe parent uninstall-doc-html     uninstall-doc
     recipe parent uninstall-doc-manpages uninstall-doc
     recipe parent uninstall-doc uninstall
+
+    recipe parent reinstall-doc-html     reinstall-doc
+    recipe parent reinstall-doc-manpages reinstall-doc
+    recipe parent reinstall-doc uninstall
 
     recipe parent validate-doc validate
     return

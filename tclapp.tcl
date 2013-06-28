@@ -40,6 +40,11 @@ proc ::kettle::tclapp {fname} {
 	    $src [path bindir]
     } $src
 
+    recipe define reinstall-app-$fname "Reinstall application $fname" {fname} {
+	invoke self uninstall-app-$fname
+	invoke self install-app-$fname
+    } $fname
+
     # Hook the application specific recipes into a hierarchy of more
     # general recipes.
 
@@ -50,6 +55,10 @@ proc ::kettle::tclapp {fname} {
     recipe parent uninstall-app-$fname       uninstall-tcl-applications
     recipe parent uninstall-tcl-applications uninstall-applications
     recipe parent uninstall-applications     uninstall
+
+    recipe parent reinstall-app-$fname       reinstall-tcl-applications
+    recipe parent reinstall-tcl-applications reinstall-applications
+    recipe parent reinstall-applications     reinstall
     return
 }
 

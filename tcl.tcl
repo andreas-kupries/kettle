@@ -79,9 +79,14 @@ proc ::kettle::TclSetup {root files pn pv} {
 	}
     } $pkgdir $root $files $pn $pv
 
-   recipe define uninstall-package-$pn "Uninstall package $pn $pv" {pkgdir pn pv} {
-       path uninstall-file-group "package $pn $pv" $pkgdir
-   } $pkgdir $pn $pv
+    recipe define uninstall-package-$pn "Uninstall package $pn $pv" {pkgdir pn pv} {
+	path uninstall-file-group "package $pn $pv" $pkgdir
+    } $pkgdir $pn $pv
+
+    recipe define reinstall-package-$pn "Reinstall package $pn $pv" {pn} {
+	invoke self uninstall-package-$pn
+	invoke self install-package-$pn
+    } $pn
 
     # Hook the package specific recipes into a hierarchy of more
     # general recipes.
@@ -98,6 +103,10 @@ proc ::kettle::TclSetup {root files pn pv} {
     recipe parent debug-package-$pn   debug-tcl-packages
     recipe parent debug-tcl-packages  debug-packages
     recipe parent debug-packages      debug
+
+    recipe parent reinstall-package-$pn  reinstall-tcl-packages
+    recipe parent reinstall-tcl-packages reinstall-packages
+    recipe parent reinstall-packages     reinstall
     return
 }
 
