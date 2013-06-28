@@ -20,6 +20,8 @@
 # Meta subject {build support} critcl teapot {meta data}
 # Meta subject doctools diagram
 # Meta require {Tcl 8.5-}
+# Meta category Builder/Developer support
+# Meta location https://core.tcl.tk/akupries/kettle
 # @@ Meta End
 
 # # ## ### ##### ######## ############# #####################

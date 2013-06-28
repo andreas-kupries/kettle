@@ -149,6 +149,35 @@ proc ::kettle::meta::defined? {type name} {
     return [dict exists $mduser $key]
 }
 
+proc ::kettle::meta::status {type name} {
+    variable mduser
+    variable md
+
+    io trace {meta-status $type $name}
+
+    set key [list $type $name]
+    if {![dict exists $mduser $key]} {
+	return MISSING
+    }
+
+    set m [dict get $md $key]
+
+    set r {}
+    foreach k {
+	author location summary description
+	subject category platform
+    } {
+	if {[dict exists $m $k] &&
+	    ([dict get $m $k] ne "?")
+	} continue
+	lappend r $k
+    }
+    if {[llength $r]} {
+	return "UNDEFINED: [join $r {, }]"
+    }
+    return OK
+}
+
 proc ::kettle::meta::show-status {} {
     variable md
 
@@ -175,9 +204,12 @@ proc ::kettle::meta::show-status {} {
 	    set status Status
 	} else {
 	    lassign $k kt kn
-	    set status [expr {[defined? $kt $kn]
-			      ? "OK"
-			      : "[io merr {No user data}]"}]
+	    set status [status $kt $kn]
+	    switch -glob -- $status {
+		OK      { set status [io mok   $status] }
+		UNDEF*  { set status [io mcyan $status] }
+		default { set status [io merr  $status] }
+	    }
 	}
 	io puts "\t$t $n $status"
     }
