@@ -293,6 +293,7 @@ proc ::kettle::meta::FixVCInformation {var} {
 	if {$vcloc eq {}} continue
 	set vctype $vc
 	set vcrev  [path revision.$vc $vcloc]
+	break
     }
 
     dict set m vc::system   $vctype
