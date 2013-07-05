@@ -1,0 +1,141 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin xxx_devguide n 1]
+[include include/module.inc]
+[titledesc {XXX - The Developer's Guide}]
+[description]
+[include include/welcome.inc]
+
+[para]
+
+This document is a guide for developers working on XXX,
+i.e. maintainers fixing bugs, extending the package's functionality,
+etc.
+
+[para]
+
+Please read
+
+[list_begin enum]
+[enum] [term {XXX - How To Get The Sources}] and
+[enum] [term {XXX - The Installer's Guide}]
+[list_end]
+
+first, if that was not done already.
+
+Here we assume that the sources are already available in a directory
+of your choice, and that you not only know how to build and install
+them, but also have all the necessary requisites to actually do
+so. The guide to the sources in particular also explains which source
+code management system is used, where to find it, how to set it up,
+etc.
+
+
+[section {Playing with XXX}]
+
+We currently do not have demo applications.
+
+[section {Developing for XXX}]
+
+[comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
+[subsection {Architecture & Concepts}]
+
+This set of packages doesn't have much of an architecture and no special
+concepts.
+
+[para] We have a single internal package which provides a command for the
+declaration of icon sets and generates an API from the specified arguments
+for the new icon set.
+
+[para] On top of that we have the packages for the icon sets just declaring
+themselves, i.e. using this internal package to do the heavy lifting.
+
+[para][image architecture]
+
+[para] The icons are accessed by name and are returned in the form of a Tk
+photo image. The images are generated lazily, i.e. on demand and then cached.
+
+
+[comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
+[subsection {Directory structure}]
+
+[list_begin definitions][comment {___1___}]
+
+[comment =====================================================================]
+[def Helpers]
+
+[comment =====================================================================]
+[def Documentation]
+
+[list_begin definitions]
+[def [file doc/]]
+
+This directory contains the documentation sources. The texts are written
+in [term doctools] format, whereas any figures are done with tklib's
+[package dia](gram) package and application.
+
+[def [file embedded/]]
+
+This directory contains the documentation converted to regular manpages
+(nroff) and HTML.
+
+It is called embedded because these files, while derived, are part of the
+fossil repository, i.e. embedded into it. This enables fossil to access
+and display these files when serving the repositories' web interface.
+The "Command Reference" link at
+
+[uri http://chiselapp.com/user/andreas_kupries/repository/xxx/home]
+
+is, for example, accessing the generated HTML.
+
+[list_end]
+
+[comment =====================================================================]
+[def {Demonstration Application and Framework}]
+
+[comment =====================================================================]
+[def {Package Code, General structure}]
+
+We have one [file .tcl] file per package, internal and icon sets. The icon set packages additionally each have a directory named like their file, but without the extension [file .tcl], containing the actual image files of the icons.
+
+[para][image dependencies]
+
+[comment =====================================================================]
+[def {Package Code, Per Package}]
+
+[list_begin definitions]
+
+[def [package xxx]]
+[list_begin definitions]
+[def [file core.tcl]]
+[list_end]
+
+[def [package xxx::flags]]
+[list_begin definitions]
+[def [file flags.tcl]]
+[def [file flags]]
+[list_end]
+
+[def [package xxx::mini]]
+[list_begin definitions]
+[def [file mini.tcl]]
+[def [file mini]]
+[list_end]
+
+[def [package xxx::mint]]
+[list_begin definitions]
+[def [file mint.tcl]]
+[def [file mint]]
+[list_end]
+
+[def [package xxx::silk]]
+[list_begin definitions]
+[def [file silk.tcl]]
+[def [file silk]]
+[list_end]
+
+[list_end]
+
+[list_end][comment {___1___}]
+
+[manpage_end]
+

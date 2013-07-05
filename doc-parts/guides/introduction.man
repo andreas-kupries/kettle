@@ -1,0 +1,48 @@
+[comment {-*- tcl -*- doctools manpage}]
+[manpage_begin xxx_introduction n 1]
+[include include/module.inc]
+[titledesc {XXX - Introduction to XXX}]
+[description]
+[include include/welcome.inc]
+
+[comment {
+[para]
+What are your goals which drove you here ?
+
+[list_begin enumerated]
+[enum]
+[list_end]
+}]
+
+[section {Related Documents}]
+
+[list_begin enum]
+[enum] [term {XXX - How To Get The Sources}].
+[enum] [term {XXX - The Installer's Guide}].
+[enum] [term {XXX - The Developer's Guide}].
+[list_end]
+
+[section {System Architecture}]
+
+XXX consists of one internal core package 
+prvoding the commands shared by all the user-visible
+packages, and then one user-visible package per
+icon set made available, for a total of 5 packages
+(1 internal, plus 4 icon sets).
+
+[para] The user visible packages are
+
+[list_begin enumerated]
+[enum][package xxx::flags]
+[enum][package xxx::mini]
+[enum][package xxx::mint]
+[enum][package xxx::silk]
+[list_end]
+
+[para] The internal package is not described here, as
+it is only of interest to developers modifying and/or
+maintaining xxx itself. As such its description
+is found only in the Developer's Guide.
+
+[manpage_end]
+

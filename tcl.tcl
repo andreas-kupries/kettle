@@ -56,25 +56,22 @@ proc ::kettle::TclSetup {root files pn pv} {
 	    try {
 		set tmpdir [path tmpfile tclindex_]
 		file mkdir    $tmpdir
-		set indexfile $tmpdir/pkgIndex.tcl
-		set mdfile    $tmpdir/teapot.txt
-
 		path ensure-cleanup $tmpdir
 
+		set index $tmpdir/pkgIndex.tcl
+
 		set primary [lindex $files 0]
-		path write $indexfile \
+		path write $index \
 		    "package ifneeded [list $pn] $pv \[list source \[file join \$dir [file tail $primary]]]"
 
-		set mdfile [meta write $mdfile package $pn $pv]
+		set md $tmpdir/teapot.txt
+		meta write $md package $pn $pv
 
 		path install-file-group \
-		    "package $pn $pv" \
-		    $pkgdir {*}$files $indexfile {*}$mdfile
-
+		    "package $pn $pv (Sources)" \
+		    $pkgdir {*}$files --base $tmpdir $index $md
 	    } finally {
-		file delete $indexfile
-		file delete $mdfile
-		file delete -force $tmpdir
+		file delete -force $index $md $tmpdir
 	    }
 	}
     } $pkgdir $root $files $pn $pv
