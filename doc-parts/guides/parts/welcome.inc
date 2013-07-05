@@ -1,3 +1,6 @@
 
-Welcome to xxx, a set of packages providing access to the
-same-named icon sets by <XXX author>, at <XXX website>.
+[comment { -- @EDIT Please edit to suit. -- }]
+
+Welcome to the [vset PTITLE] project,
+written by [vset AUTHOR],
+and available from [vset REPOSITORY].

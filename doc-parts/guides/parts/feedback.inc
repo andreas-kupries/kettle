@@ -1,10 +1,11 @@
 [comment {--- Standard section and trailer for all manpages in this module --}]
 [section {Bugs, Ideas, Feedback}]
 
-This document, and the package it describes, will undoubtedly contain
+Both the package(s) and this documentation will undoubtedly contain
 bugs and other problems.
 
-Please report such at [uri [vset REPOSITORY] "[vset PTITLE] Tickets"].
+Please report such at
+[uri [vset REPOSITORY] "[vset PTITLE] Tickets"].
 
-Please also report any ideas for enhancements you may have for either
-package and/or documentation.
+[para] Please also report any ideas you may have for enhancements of
+either package(s) and/or documentation.

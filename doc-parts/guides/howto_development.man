@@ -1,9 +1,9 @@
-[comment {-*- tcl -*- doctools manpage}]
-[manpage_begin xxx_devguide n 1]
-[include include/module.inc]
-[titledesc {XXX - The Developer's Guide}]
+[include parts/definitions.inc]
+[manpage_begin [vset PROJECT]_development [vset MAN_SECTION] [vset VERSION]]
+[include parts/module.inc]
+[titledesc [vset TITLE_DEV]]
 [description]
-[include include/welcome.inc]
+[include parts/welcome.inc]
 
 [para]
 
@@ -137,5 +137,7 @@ We have one [file .tcl] file per package, internal and icon sets. The icon set p
 
 [list_end][comment {___1___}]
 
-[manpage_end]
 
+[include parts/related.inc]
+[include parts/feedback.inc]
+[manpage_end]

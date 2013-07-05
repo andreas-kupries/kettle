@@ -6,7 +6,7 @@
 ## Export (internals - recipe definitions, other utilities)
 
 namespace eval ::kettle::special {
-    namespace export setup doc-setup doc-config
+    namespace export help setup doc-setup doc-config
     namespace ensemble create
 
     # TODO: Commands for manipulation/configuration of the documentation setup.
@@ -22,15 +22,51 @@ namespace eval ::kettle::special {
 
     variable docbase   doc
     variable docconfig doc/parts/configuration.inc
+    variable help      {}
+}
+
+# # ## ### ##### ######## ############# #####################
+## Command definition with help.
+
+proc ::kettle::special::Def {name alist helptext body} {
+    variable help 
+    dict set help @$name [list $alist $helptext]
+    proc $name $alist $body
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
 ## API
 
-proc ::kettle::special::setup {args} {
-    # Generate a basic build.tcl file in the current working
-    # directory.
+::kettle::special::Def help {args} {
+    Show help for all or just the named special commands.
+} {
+    variable help
+    # No arguments, show help for all.
+    if {![llength $args]} {
+	foreach cmd [lsort -dict [dict keys $help]] {
+	    lappend args $cmd
+	}
+    }
 
+    foreach cmd $args {
+	if {![dict exists $help $cmd]} {
+	    io err {
+		io puts "No help available for unknown command $cmd"
+	    }
+	} else {
+	    lassign	[dict get $help $cmd] alist text
+	    io puts "    [list $cmd $alist] ...\n\t[join [split $text \n] \n\t]"
+	}
+    }
+    return
+}
+
+::kettle::special::Def setup {args} {
+    Generate a basic build.tcl file in the current working
+    directory. The arguments, if any, name the API commands
+    to put into the file. Defaults to 'tcl'.
+} {
     if {![llength $args]} {
 	lappend args tcl
     }
@@ -44,7 +80,15 @@ proc ::kettle::special::setup {args} {
     return
 }
 
-proc ::kettle::special::doc-setup {{pname {}}} {
+::kettle::special::Def doc-setup {{pname {}}} {
+    Generates a basic documentation setup for the named
+    project, in the current working directory. If the
+    project is not named the last part of the directory
+    name is used as default.
+
+    Use @doc-config, etc. to query and (re)configure other
+    parts of the setup after the fact.
+} {
     variable docbase
     set sources [pwd]
 
@@ -103,30 +147,38 @@ proc ::kettle::special::doc-setup {{pname {}}} {
     # endangering existing files.
 
     append dst /parts
-
-    path in $docsrc/license {
-	path copy-file bsd.inc $dst
-	file rename $dst/bsd.inc $dst/license.inc
-    }
-
-    path in $docsrc/requirements {
-	path copy-file tcl85.inc $dst
-	file rename $dst/tcl85.inc $dst/rq_tcl.inc
-    }
-
-    io puts "!Attention"
-    io puts "  You have to edit doc/parts/module.inc to suit"
-    io puts "  (special copyrights, module description, common keywords, ...)"
-    io puts "!Attention"
+    PlacePart $docsrc/license/bsd.inc         $dst/license.inc
+    PlacePart $docsrc/requirements/tcl85.inc  $dst/rq_tcl85.inc
+    PlacePart $docsrc/requirements/kettle.inc $dst/rq_kettle.inc
 
     # Show current configuration
     io puts ""
     io puts "Current configuration..."
     doc-config
+
+    # Show current edit points
+    doc-edit-hooks
     return
 }
 
-proc ::kettle::special::doc-config {args} {
+::kettle::special::Def doc-edit-hooks {} {
+    Show all places in the documentation where the user can
+    and should edit it to suit the project.
+} {
+    #path scan
+    return
+}
+
+::kettle::special::Def doc-config {args} {
+    Query and change the configuration of the documentation
+    setup in the current working directory. Assumes a structure
+    created by @doc-setup.
+
+    Without argument prints the whole configuration. With a
+    single argument it prints the value of the so named
+    configuration variable. With a list of keys and values
+    it changes the configuration accordingly.
+} {
     variable docconfig
     set config [path norm $docconfig]
     set data [Decode [path cat $config]]
@@ -178,6 +230,26 @@ proc ::kettle::special::Encode {config} {
 	lappend lines "\[[list vset [string toupper $k] [dict get $config $k]]\]"
     }
     return [join $lines \n]
+}
+
+proc ::kettle::special::PlacePart {src dst} {
+    set dstfile [file tail    $dst]
+    set dstdir  [file dirname $dst]
+
+    try {
+	set tmpdir [path tmpfile placepart_]
+	file mkdir    $tmpdir
+	path ensure-cleanup $tmpdir
+
+	file copy $src $tmpdir/$dstfile
+
+	path in $tmpdir {
+	    path copy-file $dstfile $dstdir
+	}
+    } finally {
+	file delete -force $tmpdir/$dstfile $tmpdir
+    }
+    return
 }
 
 # # ## ### ##### ######## ############# #####################
