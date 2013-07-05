@@ -235,6 +235,26 @@ proc ::kettle::meta::fix-location {var} {
     return
 }
 
+proc ::kettle::meta::get-vc-information {src var} {
+    upvar 1 $var m
+    # Determine the type of version control this repository is under,
+    # and report it and the current revision.
+
+    set vctype unknown
+    set vcrev  unknown
+    foreach vc {fossil git} {
+	set vcloc [path find.$vc $src]
+	if {$vcloc eq {}} continue
+	set vctype $vc
+	set vcrev  [path revision.$vc $vcloc]
+	break
+    }
+
+    dict set m vc::system   $vctype
+    dict set m vc::revision $vcrev
+    return
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Internals
 
@@ -282,22 +302,7 @@ proc ::kettle::meta::Get {type name vv} {
 
 proc ::kettle::meta::FixVCInformation {var} {
     upvar 1 $var m
-    # Determine the type of version control this repository is under,
-    # and report it and the current revision.
-
-    set src [path sourcedir]
-    set vctype unknown
-    set vcrev  unknown
-    foreach vc {fossil git} {
-	set vcloc [path find.$vc $src]
-	if {$vcloc eq {}} continue
-	set vctype $vc
-	set vcrev  [path revision.$vc $vcloc]
-	break
-    }
-
-    dict set m vc::system   $vctype
-    dict set m vc::revision $vcrev
+    get-vc-information [path sourcedir] m
     return
 }
 

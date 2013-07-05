@@ -95,18 +95,22 @@ proc ::kettle::doc {{docsrcdir doc}} {
     recipe define install-doc-manpages {
 	Install manpages
     } {src dst} {
-	path install-file-set \
-	    "manpages" \
-	    $dst {*}[glob -directory $src *.n]
+	path in $src {
+	    path install-file-set \
+		"manpages" \
+		$dst {*}[glob -tails -directory $src *.n]
+	}
 	return
     } $mansrc $mandst
 
     recipe define install-doc-html {
 	Install HTML documentation
     } {src dst} {
-	path install-file-group \
-	    "HTML documentation" \
-	    $dst {*}[glob -directory $src *]
+	path in $src {
+	    path install-file-group \
+		"HTML documentation" \
+		$dst {*}[glob -tails -directory $src *]
+	}
 	return
     } $htmlsrc $htmldst
 
