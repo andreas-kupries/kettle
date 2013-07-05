@@ -143,15 +143,15 @@ proc ::kettle::doc {{docsrcdir doc}} {
 
     recipe parent install-doc-html     install-doc
     recipe parent install-doc-manpages install-doc
-    recipe parent install-doc install
+    recipe parent install-doc          install
 
     recipe parent uninstall-doc-html     uninstall-doc
     recipe parent uninstall-doc-manpages uninstall-doc
-    recipe parent uninstall-doc uninstall
+    recipe parent uninstall-doc          uninstall
 
     recipe parent reinstall-doc-html     reinstall-doc
     recipe parent reinstall-doc-manpages reinstall-doc
-    recipe parent reinstall-doc uninstall
+    recipe parent reinstall-doc          reinstall
 
     recipe parent validate-doc validate
     return
