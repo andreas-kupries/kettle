@@ -1,71 +1,30 @@
-[comment {-*- tcl -*- doctools manpage}]
-[manpage_begin xxx_sources n 1]
-[include include/module.inc]
-[titledesc {XXX - How To Get The Sources}]
+[include parts/definitions.inc]
+[manpage_begin [vset PROJECT]_howto_get_sources [vset MAN_SECTION] [vset VERSION]]
+[include parts/module.inc]
+[titledesc [vset TITLE_SOURCES]]
 [description]
-[include include/welcome.inc]
+[include parts/welcome.inc]
 
 [para]
 
 The audience of this document is anyone wishing to either have just a
-look at XXX's source code, or build the packages, or to extend and
-modify them.
+look at [vset PTITLE]'s sources, or to build the project, or to extend
+and modify it. The list of [sectref {Related Documents}] provides
+references to information for the latter two.
 
-[para] For builders and developers we additionally provide
+[section Location]
 
-[list_begin enum]
-[enum] [term {XXX - The Installer's Guide}].
-[enum] [term {XXX - The Developer's Guide}].
-[list_end]
+The official repository of the project is at [uri [vset REPOSITORY]].
 
-respectively.
-
-[section {Source Location}]
-
-The official repository for XXX can be found at
-[uri http://chiselapp.com/user/andreas_kupries/repository/xxx]
+[comment { -- @EDIT Please edit to suit for alternate repository locations.}]
 
 [section Retrieval]
-
-Assuming that you simply wish to look at the sources, or build a
-specific revision, the easiest way of retrieving it is to:
-
-[list_begin enum]
-[enum] Log into this site, as "anonymous", using the semi-random password in the captcha.
-[enum] Go to the "Timeline".
-[enum] Choose the revision you wish to have and 
-[enum] follow its link to its detailed information page.
-[enum] On that page, choose either the "ZIP" or "Tarball" link to get
-a copy of this revision in the format of your choice.
-[list_end]
+[include parts/retrieve.inc]
 
 [section {Source Code Management}]
+[include parts/scm.inc]
 
-For the curious (or a developer-to-be), the sources are managed by the
-[uri http://www.fossil-scm.org {Fossil SCM}].
-
-Binaries for popular platforms can be found directly at its
-[uri http://www.fossil-scm.org/download.html {download page}].
-
-[para]
-
-With that tool available the full history can be retrieved via:
-
-[example {
-    fossil clone \
-        http://chiselapp.com/user/andreas_kupries/repository/xxx \
-        xxx.fossil
-}]
-
-followed by
-
-[example {
-    mkdir xxx
-    cd xxx
-    fossil open ../xxx.fossil
-}]
-
-to get a checkout of the head of the trunk.
-
+[include parts/related.inc]
+[include parts/feedback.inc]
 [manpage_end]
 

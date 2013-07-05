@@ -1,7 +1,6 @@
 [comment {--- Standard header for all manpages in this module --}]
-[comment {--- EDIT to suit -------------------------------------}]
 [copyright "[vset COPYRIGHT] [vset AUTHOR]"]
 [copyright "[vset COPYRIGHT] Documentation, [vset AUTHOR]"]
-[moddesc { -- EDIT moddesc to suit -- see parts/module.inc}]
+[moddesc { -- @EDIT Please edit to suit (keywords also) -- }]
 [comment {-- keywords /begin}]
 [comment {-- keywords /end  }]

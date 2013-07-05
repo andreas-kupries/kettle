@@ -1,71 +1,40 @@
-[comment {-*- tcl -*- doctools manpage}]
-[manpage_begin xxx_install_guide n 1]
-[include include/module.inc]
-[titledesc {XXX - The Installer's Guide}]
+[include parts/definitions.inc]
+[manpage_begin [vset PROJECT]_installation [vset MAN_SECTION] [vset VERSION]]
+[include parts/module.inc]
+[titledesc [vset TITLE_INSTALL]]
 [description]
-[include include/welcome.inc]
+[include parts/welcome.inc]
 
 [para]
 
-The audience of this document is anyone wishing to build the packages,
+The audience of this document is anyone wishing to build the [vset PTITLE] project,
 for either themselves, or others.
 
 [para]
 
-For a developer intending to extend or modify the packages we
-additionally provide
-
-[list_begin enum]
-[enum] [term {XXX - The Developer's Guide}].
-[list_end]
+If you are a developer intending to extend or modify the project please see the
+list of [sectref {Related Documents}] for references to more information on this
+topic.
 
 [para]
 
-Please read [term {XXX - How To Get The Sources}] first, if that was
-not done already. Here we assume that the sources are already
-available in a directory of your choice.
+Please read [term [vset TITLE_SOURCES]] first, if that was not done already.
+Here we assume that the sources are already available in a directory of your
+choice.
 
 [para]
 
 [section Requisites]
-[include include/rq_tcl.inc]
+[comment { -- @EDIT Please edit to suit for additional requirements -- }]
+
+[comment {--- /howto-installation requirements /begin}]
+[include parts/rq_tcl85.inc]
+[include parts/rq_kettle.inc]
+[comment {--- /howto-installation requirements /end  }]
 
 [section {Build & Installation}]
+[include parts/build.inc]
 
-To install XXX simply run
-
-[example {
-    /path/to/tclsh8.5 /path/to/xxx/build.tcl install
-}]
-
-where [file /path/to/tclsh8.5] is the tclsh of your Tcl installation, and
-[file /path/to/xxx] the location of the XXX sources on your system.
-
-[para]
-
-This builds all packages and then places them in a directory where the
-[cmd tclsh8.5] will find them. 
-
-[para]
-
-On Windows you can invoke the file [file build.tcl] with a
-double-click.  This will pop up a small graphical interface for
-entering the destination and performing the installation. This
-handling of a double-click is restricted to Windows only however.
-
-[para]
-
-On unix the same GUI is acessible by invoking [file build.tcl] without
-any arguments.
-
-[para]
-
-To get help about the methods of [file build.tcl], and their complete
-syntax, invoke  [file build.tcl] with argument [method help], i.e., like
-
-[example {
-    /path/to/tclsh8.5 /path/to/xxx/build.tcl help
-}]
-
+[include parts/related.inc]
+[include parts/feedback.inc]
 [manpage_end]
-
