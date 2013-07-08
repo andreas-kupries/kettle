@@ -6,9 +6,6 @@
 ## Export (internals - recipe definitions, other utilities)
 
 namespace eval ::kettle::special {
-    namespace export help setup doc-setup doc-config
-    namespace ensemble create
-
     # TODO: Commands for manipulation/configuration of the documentation setup.
     # - License selection     (set == change)
     # - Requirement selection (add, remove)
@@ -32,6 +29,9 @@ proc ::kettle::special::Def {name alist helptext body} {
     variable help 
     dict set help @$name [list $alist $helptext]
     proc $name $alist $body
+
+    namespace export $name
+    namespace ensemble create
     return
 }
 
@@ -56,7 +56,7 @@ proc ::kettle::special::Def {name alist helptext body} {
 	    }
 	} else {
 	    lassign	[dict get $help $cmd] alist text
-	    io puts "    [list $cmd $alist] ...\n\t[join [split $text \n] \n\t]"
+	    io puts "    [list $cmd $alist]\n\t[join [split $text \n] \n\t]"
 	}
     }
     return
@@ -73,6 +73,7 @@ proc ::kettle::special::Def {name alist helptext body} {
 
     lappend lines "#!/usr/bin/env kettle"
     lappend lines "# -*- tcl -*-"
+    lappend lines "package require kettle"
     foreach code $args {
 	lappend lines [list kettle {*}$code]
     }
@@ -143,9 +144,10 @@ proc ::kettle::special::Def {name alist helptext body} {
 
     # 3. Place standard license (BSD).
     # 4. Place standard requirement (Tcl 8.5).
-    # TODO: Go through a temp file with proper name to insert without
-    # endangering existing files.
+    # 5. Place standard requirement (Kettle build system).
 
+    io puts ""
+    io puts "Configurable parts"
     append dst /parts
     PlacePart $docsrc/license/bsd.inc         $dst/license.inc
     PlacePart $docsrc/requirements/tcl85.inc  $dst/rq_tcl85.inc
@@ -157,15 +159,28 @@ proc ::kettle::special::Def {name alist helptext body} {
     doc-config
 
     # Show current edit points
+    io puts ""
+    io puts "Files with places to edit (Marker @EDIT)"
     doc-edit-hooks
+
+    io puts ""
     return
 }
 
 ::kettle::special::Def doc-edit-hooks {} {
-    Show all places in the documentation where the user can
-    and should edit it to suit the project.
+    Show all places in the generated documentation where the user
+    can and should edit it to suit the project.
 } {
-    #path scan
+    variable docbase
+    set d [path norm $docbase]
+    set first 1
+
+    path foreach-file $d path {
+	if {![llength [path grep {*@EDIT*} [split [path cat $path] \n]]]} continue
+	if {$first} { io puts "" }
+	set first 0
+	io puts \tdoc/[path strip $path $d]
+    }
     return
 }
 
@@ -235,6 +250,10 @@ proc ::kettle::special::Encode {config} {
 proc ::kettle::special::PlacePart {src dst} {
     set dstfile [file tail    $dst]
     set dstdir  [file dirname $dst]
+
+    set slabel [file join {*}[lrange [file split $src] end-1 end]]
+
+    io puts "    Placing $slabel ..."
 
     try {
 	set tmpdir [path tmpfile placepart_]
