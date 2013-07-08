@@ -7,136 +7,72 @@
 
 [para]
 
-This document is a guide for developers working on XXX,
-i.e. maintainers fixing bugs, extending the package's functionality,
-etc.
+The audience of this document are anyone wishing to modify
+[vset PTITLE] in any way, shape, or form. This can be a maintainer
+fixing bugs, a developer adding functionality, or patching it to
+accommodate local cicumstances, etc.
 
 [para]
 
 Please read
 
 [list_begin enum]
-[enum] [term {XXX - How To Get The Sources}] and
-[enum] [term {XXX - The Installer's Guide}]
+[enum][term [vset TITLE_SOURCES]] and
+[enum][term [vset TITLE_INSTALL]]
 [list_end]
 
-first, if that was not done already.
-
-Here we assume that the sources are already available in a directory
-of your choice, and that you not only know how to build and install
-them, but also have all the necessary requisites to actually do
-so. The guide to the sources in particular also explains which source
-code management system is used, where to find it, how to set it up,
-etc.
-
-
-[section {Playing with XXX}]
-
-We currently do not have demo applications.
-
-[section {Developing for XXX}]
+first, if that was not done already. Here we assume that the sources
+are already available in a directory of your choice, that it is known
+how to build and install the project, and that all the necessary
+requisites are available.
 
 [comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
-[subsection {Architecture & Concepts}]
+[comment {
+    @ EDIT Please edit the remainder of the document to suit.
+    Information to consider putting into this documentat are
 
-This set of packages doesn't have much of an architecture and no special
-concepts.
-
-[para] We have a single internal package which provides a command for the
-declaration of icon sets and generates an API from the specified arguments
-for the new icon set.
-
-[para] On top of that we have the packages for the icon sets just declaring
-themselves, i.e. using this internal package to do the heavy lifting.
-
-[para][image architecture]
-
-[para] The icons are accessed by name and are returned in the form of a Tk
-photo image. The images are generated lazily, i.e. on demand and then cached.
-
+    - Physical directory structure
+    - Logical structure (file- and package dependencies, for example)
+    - Development Tools required, beyond the tools for building and installation.
+    - System architecture, beyond what a simple user is given (in the introduction).
+    -- Data structures, for example.
+    - Deeper assumptions how pieces work together (Sequence diagrams?)
+}]
 
 [comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
-[subsection {Directory structure}]
+[section {Development Tools}]
 
-[list_begin definitions][comment {___1___}]
+[vset PTITLE] (currently) does not require tools beyond those needed for
+build and installation.
 
-[comment =====================================================================]
-[def Helpers]
+[comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
+[section {Demonstration/Example Applications}]
 
-[comment =====================================================================]
-[def Documentation]
+[vset PTITLE] (currently) does not have demonstrations, nor examples.
 
-[list_begin definitions]
-[def [file doc/]]
+[comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
+[section {Directory structure}]
 
-This directory contains the documentation sources. The texts are written
-in [term doctools] format, whereas any figures are done with tklib's
-[package dia](gram) package and application.
+Explain the physical layout (directory structure).
 
-[def [file embedded/]]
+[comment { @EDIT Explain physical layout (directory structure)
+    Kettle: Consider providing standard text blocks explaining
+            doc/
+            doc/figures/
+            embedded/
+}]
 
-This directory contains the documentation converted to regular manpages
-(nroff) and HTML.
+[comment @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@]
+[section {Architecture & Concepts}]
 
-It is called embedded because these files, while derived, are part of the
-fossil repository, i.e. embedded into it. This enables fossil to access
-and display these files when serving the repositories' web interface.
-The "Command Reference" link at
-
-[uri http://chiselapp.com/user/andreas_kupries/repository/xxx/home]
-
-is, for example, accessing the generated HTML.
-
+[list_begin enumerated]
+[enum] Explain the internal architecture.
+[enum] Explain file dependencies, if any.
+[enum] Explain package dependencies, if any.
+[enum] Explain the internal data structures, if any.
+[enum] Explain entity relationships (UML ERD), if any.
+[enum] Explain important operation sequences (UML SD), if any.
 [list_end]
-
-[comment =====================================================================]
-[def {Demonstration Application and Framework}]
-
-[comment =====================================================================]
-[def {Package Code, General structure}]
-
-We have one [file .tcl] file per package, internal and icon sets. The icon set packages additionally each have a directory named like their file, but without the extension [file .tcl], containing the actual image files of the icons.
-
-[para][image dependencies]
-
-[comment =====================================================================]
-[def {Package Code, Per Package}]
-
-[list_begin definitions]
-
-[def [package xxx]]
-[list_begin definitions]
-[def [file core.tcl]]
-[list_end]
-
-[def [package xxx::flags]]
-[list_begin definitions]
-[def [file flags.tcl]]
-[def [file flags]]
-[list_end]
-
-[def [package xxx::mini]]
-[list_begin definitions]
-[def [file mini.tcl]]
-[def [file mini]]
-[list_end]
-
-[def [package xxx::mint]]
-[list_begin definitions]
-[def [file mint.tcl]]
-[def [file mint]]
-[list_end]
-
-[def [package xxx::silk]]
-[list_begin definitions]
-[def [file silk.tcl]]
-[def [file silk]]
-[list_end]
-
-[list_end]
-
-[list_end][comment {___1___}]
-
 
 [include parts/related.inc]
 [include parts/feedback.inc]

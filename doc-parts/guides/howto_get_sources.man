@@ -7,7 +7,7 @@
 
 [para]
 
-The audience of this document is anyone wishing to either have just a
+The audience of this document are anyone wishing to either have just a
 look at [vset PTITLE]'s sources, or to build the project, or to extend
 and modify it. The list of [sectref {Related Documents}] provides
 references to information for the latter two.
