@@ -7,20 +7,20 @@
 
 [para]
 
-The audience of this document is anyone wishing to build the [vset PTITLE] project,
-for either themselves, or others.
+The audience of this document are anyone wishing to build the
+[vset PTITLE] project, for either themselves, or others.
 
 [para]
 
-If you are a developer intending to extend or modify the project please see the
-list of [sectref {Related Documents}] for references to more information on this
-topic.
+If you are a developer intending to extend or modify the project
+please see the list of [sectref {Related Documents}] for references to
+more information on this topic.
 
 [para]
 
-Please read [term [vset TITLE_SOURCES]] first, if that was not done already.
-Here we assume that the sources are already available in a directory of your
-choice.
+Please read [term [vset TITLE_SOURCES]] first, if that was not done
+already. Here we assume that the sources are already available in a
+directory of your choice.
 
 [para]
 

@@ -1,36 +1,63 @@
-
-
-To install XXX simply run
-
-[example {
-    /path/to/tclsh8.5 /path/to/xxx/build.tcl install
+[comment {
+    @EDIT Please edit to suit - Kettle based build and installation.
 }]
 
-where [file /path/to/tclsh8.5] is the tclsh of your Tcl installation, and
-[file /path/to/xxx] the location of the XXX sources on your system.
+[vset PTITLE] uses the Kettle application and package to handle building
+and installation. It is assumed to be installed and working. Please see
+section [sectref Kettle] in [sectref Requisites] for more information.
+
+[para] Note that all access to Kettle is mediated by the [file build.tcl]
+script, found in the top-level directory of the project.
+
+[para] For the most basic installation of [vset PTITLE] run
+
+[example_begin]
+% /path/to/[vset PROJECT]/build.tcl install
+[example_end]
+
+This command uses the [syscmd kettle] application found in the
+[variable PATH], and the associated [syscmd tclsh].
+
+[para] The command builds all packages and applications of [vset PTITLE],
+and then installs them so that the associated [syscmd tclsh] has access
+to them. Any applications will become siblings of [syscmd tclsh].
+
+
+[para] For more control about which version of [syscmd kettle] and/or
+[syscmd tclsh] gets used run either
+
+[example_begin]
+% /path/to/kettle /path/to/[vset PROJECT]/build.tcl install
+[example_end]
+
+or even
+
+[example_begin]
+% /path/to/tclsh /path/to/kettle /path/to/[vset PROJECT]/build.tcl install
+[example_end]
+
+to specify the exact files to use.
 
 [para]
 
-This builds all packages and then places them in a directory where the
-[cmd tclsh8.5] will find them. 
+On Windows it is possible to invoke the the file [file build.tcl] with a
+double-click. This will start a graphical interface to the system, with
+buttons for all the possible actions, which includes 'install'ation.
 
 [para]
 
-On Windows you can invoke the file [file build.tcl] with a
-double-click.  This will pop up a small graphical interface for
-entering the destination and performing the installation. This
-handling of a double-click is restricted to Windows only however.
+On unix the same GUI is acessible by invoking [file build.tcl] with the
+arguments [cmd gui], i.e. as 
 
-[para]
-
-On unix the same GUI is acessible by invoking [file build.tcl] without
-any arguments.
+[example_begin]
+% /path/to/[vset PROJECT]/build.tcl gui
+[example_end]
 
 [para]
 
 To get help about the methods of [file build.tcl], and their complete
-syntax, invoke  [file build.tcl] with argument [method help], i.e., like
+syntax, simply invoke [file build.tcl] like
 
-[example {
-    /path/to/tclsh8.5 /path/to/xxx/build.tcl help
-}]
+[example_begin]
+% /path/to/[vset PROJECT]/build.tcl gui
+[example_end]

@@ -3,4 +3,4 @@
 
 Welcome to the [vset PTITLE] project,
 written by [vset AUTHOR],
-and available from [vset REPOSITORY].
+and available from [uri [vset REPOSITORY]].
