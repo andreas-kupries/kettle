@@ -7,7 +7,6 @@
 
 namespace eval ::kettle::special {
     # TODO: Commands for manipulation/configuration of the documentation setup.
-    # - License selection     (set == change)
     # - Requirement selection (add, remove)
     # - Keywords (subjects)   (add, remove)
 
@@ -149,9 +148,9 @@ proc ::kettle::special::Def {name alist helptext body} {
     io puts ""
     io puts "Configurable parts"
     append dst /parts
-    PlacePart $docsrc/license/bsd.inc         $dst/license.inc
-    PlacePart $docsrc/requirements/tcl85.inc  $dst/rq_tcl85.inc
-    PlacePart $docsrc/requirements/kettle.inc $dst/rq_kettle.inc
+    PlacePart [License bsd.inc]    $dst/license.inc
+    PlacePart [Require tcl85.inc]  $dst/rq_tcl85.inc
+    PlacePart [Require kettle.inc] $dst/rq_kettle.inc
 
     # Show current configuration
     io puts ""
@@ -217,6 +216,54 @@ proc ::kettle::special::Def {name alist helptext body} {
     return
 }
 
+
+::kettle::special::Def licenses {} {
+    List the licenses we can apply to the project.
+} {
+    foreach license [glob -directory [License] -tails *.inc] {
+	set license [file rootname $license]
+	io puts "  $license"
+    }
+    return
+}
+
+::kettle::special::Def license {name} {
+    Set the license to use for the project.
+} {
+    variable docbase
+
+    io puts ""
+    io puts "Configuring license ..."
+
+    set src [License ${name}.inc]
+    set dst [path norm $docbase/parts/license.inc]
+
+    if {![file exists $src]} {
+	io err {
+	    io puts "  No file found for license: $name"
+	}
+	return
+    }
+
+    PlacePart $src $dst
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+## API support commands.
+
+proc ::kettle::special::License {{which {}}} {
+    return [file join [Base license] $which]
+}
+
+proc ::kettle::special::Require {{which {}}} {
+    return [file join [Base requirements] $which]
+}
+
+proc ::kettle::special::Base {{which {}}} {
+    return [file join [path norm [option get @kettledir]/doc-parts] $which]
+}
+
 proc ::kettle::special::EditConfig {args} {
     variable docconfig
     set config [path norm $docconfig]
@@ -263,6 +310,7 @@ proc ::kettle::special::PlacePart {src dst} {
 	file copy $src $tmpdir/$dstfile
 
 	path in $tmpdir {
+	    file delete $dstdir/$dstfile
 	    path copy-file $dstfile $dstdir
 	}
     } finally {
