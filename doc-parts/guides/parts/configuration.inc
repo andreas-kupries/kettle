@@ -1,3 +1,4 @@
+[comment {--- Project configuration --}]
 [vset PROJECT     unknown]
 [vset PTITLE      Unknown]
 [vset REPOSITORY  <<internal>>]
@@ -6,3 +7,5 @@
 [vset VC_TYPE     <<unknown>>]
 [vset VERSION     0]
 [vset MAN_SECTION n]
+[vset MODULE_DESC <<unknown>>]
+[vset LICENSE     <<unknown>>]

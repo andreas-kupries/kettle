@@ -25,13 +25,7 @@ directory of your choice.
 [para]
 
 [section Requisites]
-[comment { -- @EDIT Please edit to suit for additional requirements -- }]
-
-[comment {--- /howto-installation requirements /begin}]
-[include parts/rq_tcl85.inc]
-[include parts/rq_kettle.inc]
-[comment {--- /howto-installation requirements /end  }]
-
+[include parts/requirements.inc]
 [section {Build & Installation}]
 [include parts/build.inc]
 

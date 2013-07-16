@@ -1,6 +1,6 @@
 [comment {--- Standard header for all manpages in this module --}]
 [copyright "[vset COPYRIGHT] [vset AUTHOR]"]
 [copyright "[vset COPYRIGHT] Documentation, [vset AUTHOR]"]
-[moddesc { -- @EDIT Please edit to suit (keywords also) -- }]
-[comment {-- keywords /begin}]
-[comment {-- keywords /end  }]
+[moddesc [vset MODULE_DESC]]
+[include keywords.inc]
+

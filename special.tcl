@@ -6,10 +6,6 @@
 ## Export (internals - recipe definitions, other utilities)
 
 namespace eval ::kettle::special {
-    # TODO: Commands for manipulation/configuration of the documentation setup.
-    # - Requirement selection (add, remove)
-    # - Keywords (subjects)   (add, remove)
-
     # Import the supporting utilities used here.
     namespace import ::kettle::path
     namespace import ::kettle::option
@@ -17,7 +13,9 @@ namespace eval ::kettle::special {
     namespace import ::kettle::meta
 
     variable docbase   doc
-    variable docconfig doc/parts/configuration.inc
+    variable cfgfile   doc/parts/configuration.inc
+    variable kwfile    doc/parts/keywords.inc
+    variable rqfile    doc/parts/requirements.inc
     variable help      {}
 }
 
@@ -61,6 +59,8 @@ proc ::kettle::special::Def {name alist helptext body} {
     return
 }
 
+# # ## ### ##### ######## ############# #####################
+
 ::kettle::special::Def setup {args} {
     Generate a basic build.tcl file in the current working
     directory. The arguments, if any, name the API commands
@@ -79,6 +79,8 @@ proc ::kettle::special::Def {name alist helptext body} {
     path write build.tcl [join $lines \n]\n
     return
 }
+
+# # ## ### ##### ######## ############# #####################
 
 ::kettle::special::Def doc-setup {{pname {}}} {
     Generates a basic documentation setup for the named
@@ -124,21 +126,21 @@ proc ::kettle::special::Def {name alist helptext body} {
     }
 
     # 2. Rewrite the configuration file.
-    EditConfig \
+    doc-config \
 	project   $pname \
 	ptitle    $ptitle \
 	copyright [clock format [clock seconds] -format %Y]
 
     meta get-vc-information [pwd] m
     if {[dict get $m vc::system] ne "unknown"} {
-	EditConfig vc_type [dict get $m vc::system]
+	doc-config vc_type [dict get $m vc::system]
     }
 
     # consolidate within meta, extend to git.
     if {[path find.fossil [pwd]] ne {}} {
 	set remote [exec {*}[auto_execok fossil] remote]
 	regsub {/[^@]*@} $remote {/} remote
-	EditConfig repository $remote
+	doc-config repository $remote
     }
 
     # 3. Place standard license (BSD).
@@ -147,15 +149,22 @@ proc ::kettle::special::Def {name alist helptext body} {
 
     io puts ""
     io puts "Configurable parts"
-    append dst /parts
-    PlacePart [License bsd.inc]    $dst/license.inc
-    PlacePart [Require tcl85.inc]  $dst/rq_tcl85.inc
-    PlacePart [Require kettle.inc] $dst/rq_kettle.inc
+
+    license bsd
+    requirements= tcl85 kettle
 
     # Show current configuration
     io puts ""
     io puts "Current configuration..."
     doc-config
+
+    io puts ""
+    io puts "Current keywords..."
+    keywords
+
+    io puts ""
+    io puts "Current requirements..."
+    requirements
 
     # Show current edit points
     io puts ""
@@ -193,31 +202,36 @@ proc ::kettle::special::Def {name alist helptext body} {
     configuration variable. With a list of keys and values
     it changes the configuration accordingly.
 } {
-    variable docconfig
-    set config [path norm $docconfig]
-    set data [Decode [path cat $config]]
+    variable cfgfile
+    set theconfig [path norm $cfgfile]
+    set data [Decode [path cat $theconfig]]
 
     if {![llength $args]} {
 	# show all
-	unset config
-	array set config $data
+	array set config [DecodeConfig [dict get $data config]]
 	parray config
 	return
     }
 
     if {[llength $args] == 1} {
 	# show specified key
-	puts [dict get $data [lindex $args 0]]
+	puts [dict get [DecodeConfig [dict get $data config]] [lindex $args 0]]
 	return
     }
 
     # change keys...
-    path write $config [Encode [dict merge $data $args]]
+    dict set data config \
+	[EncodeConfig \
+	     [dict merge \
+		  [DecodeConfig [dict get $data config]] \
+		  $args]]
+    path write $theconfig [Encode $data vset]
     return
 }
 
+# # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def licenses {} {
+::kettle::special::Def licenses? {} {
     List the licenses we can apply to the project.
 } {
     foreach license [glob -directory [License] -tails *.inc] {
@@ -227,10 +241,15 @@ proc ::kettle::special::Def {name alist helptext body} {
     return
 }
 
-::kettle::special::Def license {name} {
-    Set the license to use for the project.
+::kettle::special::Def license {{name {}}} {
+    Set or query the license to use for the project.
 } {
     variable docbase
+
+    if {$name eq {}} {
+	doc-config license
+	return
+    }
 
     io puts ""
     io puts "Configuring license ..."
@@ -246,11 +265,170 @@ proc ::kettle::special::Def {name alist helptext body} {
     }
 
     PlacePart $src $dst
+    doc-config license $name
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+
+::kettle::special::Def requirements? {} {
+    List the requirements text-blocks we can apply to the project.
+} {
+    foreach rq [lsort -dict [glob -directory [Require] -tails *.inc]] {
+	set rq [file rootname $rq]
+	io puts "  $rq"
+    }
+    return
+}
+
+::kettle::special::Def requirements {} {
+    List the requirements currently applied to the project.
+} {
+    set d [ReadRequirements]
+    dict with d {} ; # header, config
+    foreach rq $config {
+	puts \t$rq
+    }
+    return
+}
+
+::kettle::special::Def requirements= {args} {
+    Set the requirements which apply to the project.
+} {
+    variable docbase
+
+    set d [ReadRequirements]
+    dict set d config $args
+
+    io puts ""
+    io puts "Setting requirements ..."
+
+    foreach rq $args {
+	set src [Require $rq.inc]
+	set dst [path norm $docbase/parts/rq_${rq}.inc]
+
+	if {![file exists $src]} {
+	    io err {
+		io puts "  No file found for requirement: $rq"
+	    }
+	    return
+	}
+	PlacePart $src $dst
+    }
+    WriteRequirements $d
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+
+::kettle::special::Def keywords {} {
+    List the common keywords currently applied to the project.
+} {
+    set d [ReadKeywords]
+    dict with d {} ; # header, config
+    foreach kw [lsort -dict $config] {
+	puts \t$kw
+    }
+    return
+}
+
+::kettle::special::Def keywords= {args} {
+    Set the common keywords which apply to the project.
+} {
+    set d [ReadKeywords]
+    dict set d config $args
+    WriteKeywords $d
+    return
+}
+
+::kettle::special::Def keywords+ {args} {
+    Add common keywords to the project.
+} {
+    set d [ReadKeywords]
+    dict lappend d config {*}$args
+    WriteKeywords $d
+    return
+}
+
+::kettle::special::Def keywords- {args} {
+    Remove common keywords from the project.
+} {
+    set d [ReadKeywords]
+    set k [dict get $d config]
+
+    foreach remove $args {
+	set pos [lsearch -exact $k $remove]
+	if {$pos < 0} continue
+	set k [lreplace $k $pos $pos]
+    }
+
+    dict set d config $k
+    WriteKeywords $d
     return
 }
 
 # # ## ### ##### ######## ############# #####################
 ## API support commands.
+
+proc ::kettle::special::ReadKeywords {} {
+    variable kwfile
+    set data [Decode [path cat [path norm $kwfile]]]
+
+    # config is list of argument-lists.
+    # An argument list is list of keywords.
+    # Rewrite to single list of keywords.
+
+    set new {}
+    foreach words [dict get $data config] {
+	lappend new {*}$words
+    }
+    dict set data config [lsort -unique [lsort -dict $new]]
+    return $data
+}
+
+proc ::kettle::special::WriteKeywords {data} {
+    variable kwfile
+    # Rewrite keyword list into list of arguments lists.
+
+    set new {}
+    foreach k [lsort -unique [lsort -dict [dict get $data config]]] {
+	lappend new [list $k]
+    }
+    dict set data config $new
+    path write [path norm $kwfile] [Encode $data keywords]
+    return
+}
+
+proc ::kettle::special::ReadRequirements {} {
+    variable rqfile
+    set data [Decode [path cat [path norm $rqfile]]]
+
+    # config is list of argument-lists.
+    # An argument list is single-element list of include file.
+    # Rewrite to single list of requirements
+
+    set new {}
+    foreach words [dict get $data config] {
+	lappend new [string range [file rootname [lindex $words 0]] 3 end]
+    }
+    dict set data config $new
+    return $data
+}
+
+proc ::kettle::special::WriteRequirements {data} {
+    variable rqfile
+    # Rewrite requirement list into list of arguments lists.
+
+    set new {}
+    foreach k [dict get $data config] {
+	lappend new [list rq_${k}.inc]
+    }
+    dict set data config $new
+    path write [path norm $rqfile] [Encode $data include]
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
 
 proc ::kettle::special::License {{which {}}} {
     return [file join [Base license] $which]
@@ -264,35 +442,54 @@ proc ::kettle::special::Base {{which {}}} {
     return [file join [path norm [option get @kettledir]/doc-parts] $which]
 }
 
-proc ::kettle::special::EditConfig {args} {
-    variable docconfig
-    set config [path norm $docconfig]
-    path write-modify $config [list ::kettle::special::ChangeConfig $args]
-    return
-}
+# # ## ### ##### ######## ############# #####################
 
-proc ::kettle::special::ChangeConfig {dict contents} {
-    set contents [Decode $contents]
-    set contents [dict merge $contents $dict]
-    Encode $contents
-}
-
-proc ::kettle::special::Decode {contents} {
+proc ::kettle::special::DecodeConfig {assignments} {
     set config {}
-    foreach line [split [string trim $contents] \n] {
-	lassign [string range $line 1 end-1] _ key value
-	dict set config [string tolower $key] $value
+    foreach item $assignments {
+	lassign $item k v
+	dict set config [string tolower $k] $v
     }
     return $config
 }
 
-proc ::kettle::special::Encode {config} {
-    set lines {}
-    foreach k [lsort -dict [dict keys $config]] {
-	lappend lines "\[[list vset [string toupper $k] [dict get $config $k]]\]"
+proc ::kettle::special::EncodeConfig {config} {
+    set new {}
+    foreach {k v} $config {
+	lappend new [list [string toupper $k] $v]
     }
-    return [join $lines \n]
+    return [lsort -unique [lsort -dict $new]]
 }
+
+# # ## ### ##### ######## ############# #####################
+
+proc ::kettle::special::Decode {contents} {
+    set header {}
+    set config {}
+    set first 1
+    foreach line [split [string trim $contents] \n] {
+	if {$first} {
+	    set header $line
+	    set first 0
+	    continue
+	}
+	set words [lrange [string range $line 1 end-1] 1 end]
+	lappend config $words
+    }
+    return [dict create header $header config $config]
+}
+
+proc ::kettle::special::Encode {dict cmd} {
+    dict with dict {} ;# -> header, config
+    set lines [list $header]
+    foreach item $config {
+	set item  "\[$cmd $item\]"
+	lappend lines $item
+    }
+    return [join $lines \n]\n
+}
+
+# # ## ### ##### ######## ############# #####################
 
 proc ::kettle::special::PlacePart {src dst} {
     set dstfile [file tail    $dst]
