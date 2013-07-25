@@ -38,7 +38,7 @@ proc ::kettle::TclSetup {root files pn pv} {
     # itself.
 
     set adjunct [lassign $files primary]
-    meta read-internal $primary package $pn
+    meta read-internal $root/$primary package $pn
     set primary [file tail $primary]
 
     meta add package $pn entrysource $primary
