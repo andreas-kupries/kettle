@@ -215,7 +215,7 @@ proc ::kettle::path::tcl-package-file {file} {
 
 	io trace {    Accepted: $pn $pv @ [relativesrc $file]}
 
-	lappend files $file
+	lappend files [relativesrc $file]
 	# Look for referenced dependent files.
 	foreach line [grep {* @owns: *} $contents] {
 	    if {![regexp {#\s+@owns:\s+(.*)$} $line -> path]} continue
