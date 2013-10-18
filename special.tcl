@@ -26,6 +26,10 @@ proc ::kettle::special::setup {args} {
 
     lappend lines "#!/usr/bin/env kettle"
     lappend lines "# -*- tcl -*-"
+    lappend lines "# For kettle sources, documentation, etc. see"
+    lappend lines "# - http://core.tcl.tk/akupries/kettle"
+    lappend lines "# - http://chiselapp.com/user/andreas_kupries/repository/Kettle"
+
     foreach code $args {
 	lappend lines [list kettle {*}$code]
     }
