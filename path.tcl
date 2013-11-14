@@ -217,7 +217,7 @@ proc ::kettle::path::tcl-package-file {file} {
 	    continue
 	}
 
-	io trace {    Accepted: $pn $pv @ $relativesrc}
+	io trace {    Accepted: $pn $pv @ $relative}
 
 	lappend   files $relative
 	ListOwned files $contents
