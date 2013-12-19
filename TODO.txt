@@ -1,0 +1,47 @@
+(1)	Switch over to cmdr 1 for the cli API.
+
+	- Heavy rewrite of internals, notably option definition and
+	  use to get away from shared options.
+
+(1a)	Store a copy of cmdr framework in the project, to break
+	installation cycle.
+
+	Without: Kettle install requires Cmdr requires Kettle.
+
+(2)	Better integration of the project mgmt features/commands.
+	No special cli code anymore.
+
+(3)	Manage glob patterns for files to ignore when scanning a
+	directory. Saved in the build.tcl file => DSL extension.
+
+(4)	Command(s) to scan a directory and classify the files in it,
+	for setting up the build.tcl file:
+
+	- Tcl packages
+	- Critcl packages
+	- Documentation
+	- Testsuites
+	- Benchmarks
+	- Tcl applications
+	- Files to Ignore
+
+	This classification should detect variety of files in the
+	above classes even when not marked properly, i.e. missing the
+	proper magic strings.
+
+(5)	An outgrowth of (4), validation of the project, i.e. checking
+	it against various rules (must have docs, tests, should have
+	benchmarks) and other external tools, like tclchecker,
+	nagelfar, frink, etc.
+
+(6)	Command history
+
+(7)	Always generate the testsuite X.* files, store results in the
+	project, as files ignored by default.
+
+	New commands to query this database.
+
+(8)	Ditto for benchmarks.
+
+(9)	Helper commands to generate testsuite and benchmark skeletons
+	from templates.
