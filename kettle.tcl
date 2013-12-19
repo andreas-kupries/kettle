@@ -48,6 +48,7 @@ namespace eval ::kettle {
 ## @owns: doc.tcl
 ## @owns: figures.tcl
 ## @owns: gui.tcl
+## @owns: ignore.tcl
 ## @owns: invoke.tcl
 ## @owns: io.tcl
 ## @owns: lambda.tcl
@@ -126,6 +127,7 @@ namespace eval ::kettle {
     source $selfdir/standard.tcl   ; # Standard recipes.
     # # ## ### ##### ######## ############# #####################
     # # ## ### ##### ######## ############# ##################### DSL
+    source $selfdir/ignore.tcl     ; # manage scan ignore patterns
     source $selfdir/depend.tcl     ; # dependency setup.
     source $selfdir/tclapp.tcl     ; # tcl script applications
     source $selfdir/figures.tcl    ; # figures       (diagram)

@@ -11,8 +11,6 @@
 (2)	Better integration of the project mgmt features/commands.
 	No special cli code anymore.
 
-(3)	Manage glob patterns for files to ignore when scanning a
-	directory. Saved in the build.tcl file => DSL extension.
 
 (4)	Command(s) to scan a directory and classify the files in it,
 	for setting up the build.tcl file:
