@@ -3,7 +3,7 @@
 ## Kettle package
 
 # @@ Meta Begin
-# Package kettle 0
+# Package kettle 2
 # Meta platform tcl
 # Meta author      {Andreas Kupries}
 # Meta summary     Build support package.
