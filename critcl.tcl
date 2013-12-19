@@ -236,9 +236,11 @@ proc ::kettle::CritclDo {pkgdir root pnc pn pv args} {
 		if {![file exists $tmp/$pnc]} {
 		    status fail
 		} else {
-		    path install-file-group "package $pn $pv" \
-			$pkgdir \
-			{*}[glob -directory $tmp/$pnc *]
+		    path in $tmp/$pnc {
+			path install-file-group "package $pn $pv" \
+			    $pkgdir \
+			    {*}[glob *]
+		    }
 		}
 	    }
 	} finally {
