@@ -44,7 +44,11 @@ proc ::kettle::Application {} {
 	    set argv     [lassign $argv __ path]
 	    set declfile [path norm $path]
 
-	} elseif {[file exists $first]} {
+	} elseif {[file exists $first] && [file isfile $first]} {
+	    # Note: Ignoring directories here.
+	    # Note: We have doc/, the directory, and doc, the recipe.
+	    # Note: We resolve in favor of the recipe.
+
 	    set argv     [lassign $argv __]
 	    set declfile [path norm $first]
 

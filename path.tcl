@@ -9,6 +9,8 @@ namespace eval ::kettle::path {
     # unable to import kettle::option, circular dependency
     namespace import ::kettle::io
     namespace import ::kettle::status
+
+    variable ownpattern "#\\s+@owns:\\s+(.*)\$"
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -186,7 +188,9 @@ proc ::kettle::path::tcl-package-file {file} {
 	return 0
     }
 
-    io trace {    Testing: [relativesrc $file]}
+    set relative [relativesrc $file]
+
+    io trace {    Testing: $relative}
 
     foreach line $provisions {
 	io trace {        Candidate |$line|}
@@ -213,14 +217,10 @@ proc ::kettle::path::tcl-package-file {file} {
 	    continue
 	}
 
-	io trace {    Accepted: $pn $pv @ [relativesrc $file]}
+	io trace {    Accepted: $pn $pv @ $relative}
 
-	lappend files [relativesrc $file]
-	# Look for referenced dependent files.
-	foreach line [grep {* @owns: *} $contents] {
-	    if {![regexp {#\s+@owns:\s+(.*)$} $line -> path]} continue
-	    lappend files $path
-	}
+	lappend   files $relative
+	ListOwned files $contents
 
 	# For 'scan'.
 	kettle option set @predicate [list $files $pn $pv]
@@ -545,13 +545,19 @@ proc ::kettle::path::copy-file {src dstdir} {
     # Copy single file into destination _directory_
     # Fails goal on an existing file.
 
-    io puts -nonewline "\tInstalling file \"[file tail $src]\": "
+    # src is specified relative to the base source directory.
+    # The result has to be properly relative to the destination directory.
+
+    io puts -nonewline "\tInstalling file \"$src\": "
 
     dry-barrier
 
+    set dstfile [file join $dstdir $src]
+    set dstdir  [file dirname $dstfile]
+
     if {[catch {
 	file mkdir $dstdir
-	file copy $src $dstdir/[file tail $src]
+	file copy $src $dstfile
     } msg]} {
 	io err { io puts "FAIL ($msg)" }
 	status fail "FAIL ($msg)"
@@ -563,8 +569,34 @@ proc ::kettle::path::copy-file {src dstdir} {
 proc ::kettle::path::copy-files {dstdir args} {
     # Copy multiple files into a destination _directory_
     # Fails goal on an existing file.
+
+    set base {}
+    set state normal
+
     foreach src $args {
-	copy-file $src $dstdir
+	switch -exact -- $state {
+	    normal {
+		if {$src eq "--base"} {
+		    set state base
+		    continue
+		}
+		if {$base ne {}} {
+		    set src [strip $src $base]
+		    in $base {
+			copy-file $src $dstdir
+		    }
+		} else {
+		    copy-file $src $dstdir
+		}
+	    }
+	    base {
+		set base $src
+		set state normal
+	    }
+	    default {
+		error "Internal error, bad state: $state"
+	    }
+	}
     }
     return
 }
@@ -638,7 +670,7 @@ proc ::kettle::path::install-script {src dstdir shell {cmd {}}} {
 
     dry-barrier {
 	# Simulated run, has its own dry-barrier.
-	copy-file $src $dstdir
+	copy-file $fname $dstdir
     }
 
     # Save existing file, if any.
@@ -649,7 +681,7 @@ proc ::kettle::path::install-script {src dstdir shell {cmd {}}} {
     }
 
     try {
-	copy-file $src $dstdir
+	copy-file $fname $dstdir
     } trap {KETTLE STATUS FAIL} {e o} {
 	# Failed, restore previous, if any.
 	catch {
@@ -894,6 +926,42 @@ proc ::kettle::path::is.fossil {path} {
 
 # # ## ### ##### ######## ############# #####################
 ## Internal
+
+proc ::kettle::path::ListOwned {acc contents} {
+    variable ownpattern
+    upvar 1 $acc processed
+
+    # Look for referenced dependent files.
+    foreach line [grep {* @owns: *} $contents] {
+	if {![regexp $ownpattern $line -> path]} continue
+	if {$path in $processed} continue
+
+	# Note: Referenced files are not processed, but directories
+	# are, implicitly owning the entire hierarchy.
+
+	if {[file isdirectory $path]} {
+
+	    set fullpath [file normalize $path]
+	    foreach-file $fullpath f {
+		set sf $path/[strip $f $path]
+		if {[file isdirectory $f]} continue
+		io trace {      Owns $sf}
+		lappend processed $sf
+	    }
+	} else {
+	    io trace {      Owns $path}
+	    lappend processed $path
+	}
+    }
+
+    return
+}
+
+proc ::kettle::path::ListOwnedForPath {acc path} {
+    upvar 1 $acc processed
+    ListOwned processed [cat $path]
+    return
+}
 
 proc ::kettle::path::dry-barrier {{dryscript {}}} {
     if {![kettle option get --dry]} return

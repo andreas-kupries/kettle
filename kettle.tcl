@@ -44,6 +44,7 @@ namespace eval ::kettle {
 ## @owns: benchmarks.tcl
 ## @owns: critcl.tcl
 ## @owns: depend.tcl
+## @owns: doc-parts
 ## @owns: doc.tcl
 ## @owns: figures.tcl
 ## @owns: gui.tcl
