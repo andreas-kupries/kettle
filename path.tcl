@@ -3,18 +3,53 @@
 ## Path utility commands.
 
 namespace eval ::kettle::path {
-    namespace export {[a-z]*}
+    namespace export {[a-z-]*}
     namespace ensemble create
 
     # unable to import kettle::option, circular dependency
     namespace import ::kettle::io
     namespace import ::kettle::status
 
+    # RE-pattern for the @owns pragma in .tcl files to associate
+    # related files with a package.
     variable ownpattern "#\\s+@owns:\\s+(.*)\$"
+
+    # List of path glob-patterns to ignore when scanning the project
+    # directory.
+    variable ignore {}
+
+    # Standard ignore patterns - core dumps
+    lappend ignore core
+    lappend ignore core.*
+    lappend ignore */core
+    lappend ignore */core.*
 }
 
 # # ## ### ##### ######## ############# #####################
 ## API commands.
+
+proc ::kettle::path::ignore-add {pattern args} {
+    variable ignore
+    lappend  ignore $pattern {*}$args
+    return
+}
+
+proc ::kettle::path::ignore-reset {} {
+    variable ignore {}
+    return
+}
+
+proc ::kettle::path::ignored {path} {
+    variable ignore
+    foreach pattern $ignore {
+	if {[string match $pattern $path]} {
+	    # path matched a pattern, ignore
+	    return 1
+	}
+    }
+    # path not matching any pattern, keep
+    return 0
+}
 
 proc ::kettle::path::norm {path} {
     # full path normalization
@@ -403,11 +438,10 @@ proc ::kettle::path::scan {label root predicate} {
 	set spath [strip $path $nroot]
 
 	# General checking, outside of the custom predicates.
-	# Skip core files: core, and core.\d+
+	# Files matching an ignore-0pattern are skipped.
 
-	set n [file tail $spath]
-	if {$n eq "core" || [regexp {^core\.\d+$} $n]} {
-	    io trace {    SKIP core dump: $spath}
+	if {[ignored $spath]} {
+	    io trace {    SKIP (ignored): $spath}
 	    continue
 	}
 

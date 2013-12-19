@@ -2,7 +2,7 @@
 # # ## ### ##### ######## ############# #####################
 ## Save requirements, i.e. build dependency information.
 
-namespace eval ::kettle { namespace export require }
+namespace eval ::kettle { namespace export depends-on }
 
 # # ## ### ##### ######## ############# #####################
 ## API.
