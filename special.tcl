@@ -20,14 +20,6 @@ namespace eval ::kettle::special {
 }
 
 # # ## ### ##### ######## ############# #####################
-## Command definition with help.
-
-proc ::kettle::special::Def {name alist body} {
-    cli extend [list $name] $alist [lambda config $body]
-    return
-}
-
-# # ## ### ##### ######## ############# #####################
 ## API
 
 kettle cli extend setup  {
@@ -47,6 +39,7 @@ kettle cli extend setup  {
 } [lambda config {
     ::kettle::special::Setup [$config @args]
 }]
+
 proc ::kettle::special::Setup {commands} {
     lappend lines "#!/usr/bin/env kettle"
     lappend lines "# -*- tcl -*-"
@@ -73,8 +66,8 @@ kettle cli extend {doc setup} {
 	project is not named the last part of the directory
 	name is used as default.
 
-	Use 'doc-config', etc. to query and (re)configure other
-	parts of the setup after the fact.
+	Use 'doc configure', etc. to query and (re)configure
+	other parts of the setup after the fact.
     }
     input project {
 	The name of the project. Defaults to the name of
@@ -119,7 +112,7 @@ proc ::kettle::special::DocSetup {project} {
     }
 
     # 2. Rewrite the configuration file.
-    cli do doc-config \
+    DocConfigure \
 	project   $pname \
 	ptitle    $ptitle \
 	copyright [clock format [clock seconds] -format %Y]
@@ -143,36 +136,43 @@ proc ::kettle::special::DocSetup {project} {
     io puts ""
     io puts "Configurable parts"
 
-    cli do license bsd
-    cli do requirements= tcl85 kettle
+    DocLicense bsd
+    DocRequirements= tcl85 kettle
 
     # Show current configuration
     io puts ""
     io puts "Current configuration..."
-    cli do doc-config
+    DocConfigure
 
     io puts ""
     io puts "Current keywords..."
-    cli do keywords
+    DocKeywords
 
     io puts ""
     io puts "Current requirements..."
-    cli do requirements
+    DocRequirements
 
     # Show current edit points
     io puts ""
     io puts "Files with places to edit (Marker @EDIT)"
-    cli do doc-edit-hooks
+    DocEditHooks
 
     io puts ""
     return
 }
 
-return
-::kettle::special::Def doc-edit-hooks {} {
-    Show all places in the generated documentation where the user
-    can and should edit it to suit the project.
-} {
+# # ## ### ##### ######## ############# #####################
+
+kettle cli extend {doc edit-hooks} {
+    section {Project Management} Documentation
+
+    description {
+	Show all places in the generated documentation where the user
+	can and should edit it to suit the project.
+    }
+} ::kettle::special::DocEditHooks
+
+proc ::kettle::special::DocEditHooks {{config {}}} {
     variable docbase
     set d [path norm $docbase]
     set first 1
@@ -186,16 +186,31 @@ return
     return
 }
 
-::kettle::special::Def doc-config {args} {
-    Query and change the configuration of the documentation
-    setup in the current working directory. Assumes a structure
-    created by @doc-setup.
+# # ## ### ##### ######## ############# #####################
 
-    Without argument prints the whole configuration. With a
-    single argument it prints the value of the so named
-    configuration variable. With a list of keys and values
-    it changes the configuration accordingly.
-} {
+kettle cli extend {doc configure} {
+    section {Project Management} Documentation
+
+    description {
+	Query and change the configuration of the documentation
+	setup in the current working directory. Assumes a structure
+	created by 'doc setup'.
+
+	Without argument prints the whole configuration. With a
+	single argument it prints the value of the so named
+	configuration variable. With a list of keys and values
+	it changes the configuration accordingly.
+    }
+    input args {
+	The keys and values to set, or the key to query.
+    } {
+	optional ; list ; validate str
+    }
+} [lambda config {
+    ::kettle::special::DocConfigure {*}[$config @args]
+}]
+
+proc ::kettle::special::DocConfigure {args} {
     variable cfgfile
     set theconfig [path norm $cfgfile]
     set data [Decode [path cat $theconfig]]
@@ -223,6 +238,8 @@ return
     return
 }
 
+return
+
 # # ## ### ##### ######## ############# #####################
 
 ::kettle::special::Def licenses? {} {
@@ -234,6 +251,8 @@ return
     }
     return
 }
+
+# # ## ### ##### ######## ############# #####################
 
 ::kettle::special::Def license {{name {}}} {
     Set or query the license to use for the project.
@@ -275,6 +294,8 @@ return
     return
 }
 
+# # ## ### ##### ######## ############# #####################
+
 ::kettle::special::Def requirements {} {
     List the requirements currently applied to the project.
 } {
@@ -285,6 +306,8 @@ return
     }
     return
 }
+
+# # ## ### ##### ######## ############# #####################
 
 ::kettle::special::Def requirements= {args} {
     Set the requirements which apply to the project.
@@ -326,6 +349,8 @@ return
     return
 }
 
+# # ## ### ##### ######## ############# #####################
+
 ::kettle::special::Def keywords= {args} {
     Set the common keywords which apply to the project.
 } {
@@ -335,6 +360,8 @@ return
     return
 }
 
+# # ## ### ##### ######## ############# #####################
+
 ::kettle::special::Def keywords+ {args} {
     Add common keywords to the project.
 } {
@@ -343,6 +370,8 @@ return
     WriteKeywords $d
     return
 }
+
+# # ## ### ##### ######## ############# #####################
 
 ::kettle::special::Def keywords- {args} {
     Remove common keywords from the project.
