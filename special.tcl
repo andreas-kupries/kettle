@@ -11,65 +11,43 @@ namespace eval ::kettle::special {
     namespace import ::kettle::option
     namespace import ::kettle::io
     namespace import ::kettle::meta
+    namespace import ::kettle::cli
 
     variable docbase   doc
     variable cfgfile   doc/parts/configuration.inc
     variable kwfile    doc/parts/keywords.inc
     variable rqfile    doc/parts/requirements.inc
-    variable help      {}
 }
 
 # # ## ### ##### ######## ############# #####################
 ## Command definition with help.
 
-proc ::kettle::special::Def {name alist helptext body} {
-    variable help 
-    dict set help @$name [list $alist $helptext]
-    proc $name $alist $body
-
-    namespace export $name
-    namespace ensemble create
+proc ::kettle::special::Def {name alist body} {
+    cli extend [list $name] $alist [lambda config $body]
     return
 }
 
 # # ## ### ##### ######## ############# #####################
 ## API
 
-::kettle::special::Def help {args} {
-    Show help for all or just the named special commands.
-} {
-    variable help
-    # No arguments, show help for all.
-    if {![llength $args]} {
-	foreach cmd [lsort -dict [dict keys $help]] {
-	    lappend args $cmd
-	}
+kettle cli extend setup  {
+    section {Project Management}
+
+    description {
+	Generate a basic build control file in the current working
+	directory. The arguments, if any, name the API commands
+	to put into the file. Defaults to 'tcl'.
     }
-
-    foreach cmd $args {
-	if {![dict exists $help $cmd]} {
-	    io err {
-		io puts "No help available for unknown command $cmd"
-	    }
-	} else {
-	    lassign	[dict get $help $cmd] alist text
-	    io puts "    [list $cmd $alist]\n\t[join [split $text \n] \n\t]"
-	}
+    input args {
+	The DSL commands to place into the generated file.
+    } {
+	optional ; list ; validate str
+	default tcl
     }
-    return
-}
-
-# # ## ### ##### ######## ############# #####################
-
-::kettle::special::Def setup {args} {
-    Generate a basic build.tcl file in the current working
-    directory. The arguments, if any, name the API commands
-    to put into the file. Defaults to 'tcl'.
-} {
-    if {![llength $args]} {
-	lappend args tcl
-    }
-
+} [lambda config {
+    ::kettle::special::Setup [$config @args]
+}]
+proc ::kettle::special::Setup {commands} {
     lappend lines "#!/usr/bin/env kettle"
     lappend lines "# -*- tcl -*-"
     lappend lines "# For kettle sources, documentation, etc. see"
@@ -77,7 +55,7 @@ proc ::kettle::special::Def {name alist helptext body} {
     lappend lines "# - http://chiselapp.com/user/andreas_kupries/repository/Kettle"
     lappend lines "package require kettle"
 
-    foreach code $args {
+    foreach code $commands {
 	lappend lines [list kettle {*}$code]
     }
     path write build.tcl [join $lines \n]\n
@@ -86,24 +64,35 @@ proc ::kettle::special::Def {name alist helptext body} {
 
 # # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def doc-setup {{pname {}}} {
-    Generates a basic documentation setup for the named
-    project, in the current working directory. If the
-    project is not named the last part of the directory
-    name is used as default.
+kettle cli extend {doc setup} {
+    section {Project Management} Documentation
 
-    Use @doc-config, etc. to query and (re)configure other
-    parts of the setup after the fact.
-} {
-    variable docbase
-    set sources [pwd]
+    description {
+	Generates a basic documentation setup for the named
+	project, in the current working directory. If the
+	project is not named the last part of the directory
+	name is used as default.
 
-    if {$pname eq {}} {
-	set pname [file tail $sources]
+	Use 'doc-config', etc. to query and (re)configure other
+	parts of the setup after the fact.
     }
+    input project {
+	The name of the project. Defaults to the name of
+	the directory the project is in.
+    } {
+	optional
+	validate str
+	default [file tail [pwd]]
+    }
+} [lambda config {
+    ::kettle::special::DocSetup [$config @project]
+}]
 
-    set pname  [string tolower $pname]
-    set ptitle [string totitle $pname]
+proc ::kettle::special::DocSetup {project} {
+    variable docbase
+
+    set pname  [string tolower $project]
+    set ptitle [string totitle $project]
 
     # Generate a <docbase> directory in the source directory.
 
@@ -130,7 +119,7 @@ proc ::kettle::special::Def {name alist helptext body} {
     }
 
     # 2. Rewrite the configuration file.
-    doc-config \
+    cli do doc-config \
 	project   $pname \
 	ptitle    $ptitle \
 	copyright [clock format [clock seconds] -format %Y]
@@ -154,31 +143,32 @@ proc ::kettle::special::Def {name alist helptext body} {
     io puts ""
     io puts "Configurable parts"
 
-    license bsd
-    requirements= tcl85 kettle
+    cli do license bsd
+    cli do requirements= tcl85 kettle
 
     # Show current configuration
     io puts ""
     io puts "Current configuration..."
-    doc-config
+    cli do doc-config
 
     io puts ""
     io puts "Current keywords..."
-    keywords
+    cli do keywords
 
     io puts ""
     io puts "Current requirements..."
-    requirements
+    cli do requirements
 
     # Show current edit points
     io puts ""
     io puts "Files with places to edit (Marker @EDIT)"
-    doc-edit-hooks
+    cli do doc-edit-hooks
 
     io puts ""
     return
 }
 
+return
 ::kettle::special::Def doc-edit-hooks {} {
     Show all places in the generated documentation where the user
     can and should edit it to suit the project.

@@ -28,17 +28,10 @@ proc ::kettle::Application {} {
     }
 
     try {
-	# Process arguments: -f, -trace, --* options, and goals
+	# Process special arguments -f and -trace first.
 
+	# I. ?-f? buildfile
 	set first [lindex $argv 0]
-
-	if {[string match @* $first]} {
-	    # Special operation detected, bypass the whole processing
-	    # of options, and goals.
-
-	    special [string range $first 1 end] {*}[lassign $argv __]
-	    ::exit 0
-	}
 
 	if {$first eq {-f}} {
 	    set argv     [lassign $argv __ path]
@@ -61,25 +54,32 @@ proc ::kettle::Application {} {
 	    ::exit 1
 	}
 
-	# Early trace activation.
+	# II. ?-trace? :: Early trace activation.
+	set first [lindex $argv 0]
+
 	if {[lindex $argv 0] eq {-trace}} {
 	    set argv [lrange $argv 1 end]
 	    option set --verbose on
 	}
 
+	# III. Regular command line follows
+	# - goal command and its options.
+	# NOTE: dot-file disabled. not sensible at the moment anymore.
+
 	set goals {}
 
-	set dotfile ~/.kettle/config
+	if {0} {set dotfile ~/.kettle/config
 	if {[file exists   $dotfile] &&
 	    [file isfile   $dotfile] &&
 	    [file readable $dotfile]} {
 	    io trace {Loading dotfile $dotfile ...}
 	    set argv [list {*}[path cat $dotfile] {*}$argv]
-	}
+	}}
 
 	io trace {cmdline = ([join $argv {) (}])}
 
-	while {[llength $argv]} {
+	# Old cli handling disabled
+	if 0 {while {[llength $argv]} {
 	    set o [lindex $argv 0]
 	    switch -glob -- $o {
 		--* {
@@ -95,7 +95,7 @@ proc ::kettle::Application {} {
 		    set argv [lrange $argv 1 end]
 		}
 	    }
-	}
+	}}
 
 	# Process the user's build declarations for the sources (-f)
 
@@ -104,8 +104,13 @@ proc ::kettle::Application {} {
 
 	::source $declfile
 
+	# New command line processor, automatic dispatch to command
+	# implementing a goal.
+
+	cli do {*}$argv
+
 	# And execute the chosen goals
-	recipe run {*}[option get @goals]
+	#recipe run {*}[option get @goals]
 
 	# Were we invoked as sub-process? If yes, save the work state
 	# back for the caller to pick up.
