@@ -42,6 +42,7 @@ namespace eval ::kettle {
 ## @owns: app.tcl
 ## @owns: atexit.tcl
 ## @owns: benchmarks.tcl
+## @owns: cli.tcl
 ## @owns: critcl.tcl
 ## @owns: depend.tcl
 ## @owns: doc-parts
@@ -120,6 +121,7 @@ namespace eval ::kettle {
     source $selfdir/options.tcl    ; # Option management.
     # # ## ### ##### ######## ############# #####################
     kettle::option::set @kettledir $selfdir
+    source $selfdir/cli.tcl        ; # cli core setup.
     # # ## ### ##### ######## ############# #####################
     source $selfdir/recipes.tcl    ; # Recipe management.
     source $selfdir/invoke.tcl     ; # Goal recursion via sub-processes.
