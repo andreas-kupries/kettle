@@ -71,6 +71,10 @@ namespace eval ::kettle {
 
 # # ## ### ##### ######## ############# #####################
 
+## @owns: support
+
+# # ## ### ##### ######## ############# #####################
+
 ## The next two files are not sourced as part of the kettle application.
 ##
 # The first is the main entry point for the 'test' and related
@@ -115,6 +119,8 @@ namespace eval ::kettle {
     source $selfdir/ovalidate.tcl  ; # Option Validation sub layer.
     source $selfdir/options.tcl    ; # Option management.
     # # ## ### ##### ######## ############# #####################
+    kettle::option::set @kettledir $selfdir
+    # # ## ### ##### ######## ############# #####################
     source $selfdir/recipes.tcl    ; # Recipe management.
     source $selfdir/invoke.tcl     ; # Goal recursion via sub-processes.
     source $selfdir/tool.tcl       ; # Manage tool requirements.
@@ -139,13 +145,12 @@ namespace eval ::kettle {
     source $selfdir/tcl.tcl        ; # tcl packages
     source $selfdir/critcl.tcl     ; # critcl v3 packages
     # # ## ### ##### ######## ############# #####################
-    kettle::option::set @kettledir $selfdir
 }} [file dirname [file normalize [info script]]]
 
 # # ## ### ##### ######## ############# #####################
 ## Ready
 
-package provide kettle 1
+package provide kettle 2
 return
 
 # # ## ### ##### ######## ############# #####################

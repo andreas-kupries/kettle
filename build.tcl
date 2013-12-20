@@ -5,5 +5,6 @@ exec ./kettle -f "$0" "${1+$@}"
 # - http://core.tcl.tk/akupries/kettle
 # - http://chiselapp.com/user/andreas_kupries/repository/Kettle
 kettle ignore += doc-parts/*
+kettle ignore += support/*
 kettle tcl
 kettle tclapp kettle

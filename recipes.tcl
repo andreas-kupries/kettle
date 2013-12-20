@@ -3,6 +3,18 @@
 ## Recipe management commands. Core definition and execution.
 
 # # ## ### ##### ######## ############# #####################
+## Import a generic command line processing framework.
+## Try to use whatever the installation supplies first.
+## On failure fall back to the local copy of the framework.
+
+try {
+    package require cmdr
+} on error {e o} {
+    lappend auto_path [kettle option get @kettledir]/support
+    package require cmdr
+}
+
+# # ## ### ##### ######## ############# #####################
 ## Export (internals - recipe definition code, higher control).
 
 namespace eval ::kettle::recipe {
