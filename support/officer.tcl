@@ -212,14 +212,14 @@ oo::class create ::cmdr::officer {
 	    # Reached the bottom of the recursion.
 	    # Generate the private handling arguments and action.
 	    set cmd [lindex $path 0]
-	    Private $cmd $arguments $action
+	    my Private $cmd $arguments $action
 	    return
 	}
 
 	# Recurse, creating the intermediate officers as needed.
 	set path [lassign $path cmd]
-	if {![has $cmd]} {
-	    Officer $cmd {}
+	if {![my has $cmd]} {
+	    my Officer $cmd {}
 	}
 
 	[my lookup $cmd] extend $path $arguments $action

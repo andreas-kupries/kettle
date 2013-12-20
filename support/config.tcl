@@ -166,6 +166,8 @@ oo::class create ::cmdr::config {
 	# Option aliases are listed in options, but not in parameters.
 
 	set options {}
+	set optpara {}
+
 	dict for {o para} $myoption {
 	    # in interactive mode undocumented options can be shown in
 	    # the help if they already have a value defined for them.
