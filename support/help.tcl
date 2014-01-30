@@ -57,7 +57,16 @@ proc ::cmdr::help::query {actor words} {
     # responsible for that command, starting from the specified actor.
     # This is very much a convenience command.
 
-    return [[query-actor $actor $words] help $words]
+    set root   [$actor root]
+    set prefix $words
+
+    if {![$root exists *in-shell*] ||
+	![$root get    *in-shell*]} {
+	# Not in the shell, put executable's name into the prefix.
+	set prefix [linsert $prefix 0 [$root name]]
+    }
+
+    return [[query-actor $actor $words] help $prefix]
 }
 
 proc ::cmdr::help::query-actor {actor words} {
@@ -510,4 +519,4 @@ proc ::cmdr::help::format::SectionOrder {root subc} {
 
 # # ## ### ##### ######## ############# #####################
 ## Ready
-package provide cmdr::help 1.0
+package provide cmdr::help 1.0.1
