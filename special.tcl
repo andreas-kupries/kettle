@@ -24,7 +24,6 @@ namespace eval ::kettle::special {
 
 kettle cli extend setup  {
     section {Project Management}
-
     description {
 	Generate a basic build control file in the current working
 	directory. The arguments, if any, name the API commands
@@ -59,7 +58,6 @@ proc ::kettle::special::Setup {commands} {
 
 kettle cli extend {doc setup} {
     section {Project Management} Documentation
-
     description {
 	Generates a basic documentation setup for the named
 	project, in the current working directory. If the
@@ -119,14 +117,14 @@ proc ::kettle::special::DocSetup {project} {
 
     meta get-vc-information [pwd] m
     if {[dict get $m vc::system] ne "unknown"} {
-	doc-config vc_type [dict get $m vc::system]
+	DocConfigure vc_type [dict get $m vc::system]
     }
 
     # consolidate within meta, extend to git.
     if {[path find.fossil [pwd]] ne {}} {
 	set remote [exec {*}[auto_execok fossil] remote]
 	regsub {/[^@]*@} $remote {/} remote
-	doc-config repository $remote
+	DocConfigure repository $remote
     }
 
     # 3. Place standard license (BSD).
@@ -163,7 +161,7 @@ proc ::kettle::special::DocSetup {project} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {doc edit-hooks} {
+kettle cli extend {doc list-edit-hooks} {
     section {Project Management} Documentation
 
     description {
@@ -207,6 +205,10 @@ kettle cli extend {doc configure} {
 	optional ; list ; validate str
     }
 } [lambda config {
+    # TODO: For direct access filter out all the keys which are
+    # handled by other commands (license, etc.) were using raw
+    # configure can shoot ourselves in the foot.
+
     ::kettle::special::DocConfigure {*}[$config @args]
 }]
 
@@ -238,13 +240,27 @@ proc ::kettle::special::DocConfigure {args} {
     return
 }
 
-return
+proc ::kettle::special::DocCGet {key} {
+    variable cfgfile
+    set theconfig [path norm $cfgfile]
+    set data [Decode [path cat $theconfig]]
+
+    # show specified key
+    puts [dict get [DecodeConfig [dict get $data config]] $key]
+    return
+}
 
 # # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def licenses? {} {
-    List the licenses we can apply to the project.
-} {
+kettle cli extend {licenses} {
+    section {Project Management} License
+
+    description {
+	List the available licenses we can apply to the project.
+    }
+} ::kettle::special::LicenseList
+
+proc ::kettle::special::LicenseList {{config {}}} {
     foreach license [glob -directory [License] -tails *.inc] {
 	set license [file rootname $license]
 	io puts "  $license"
@@ -254,19 +270,28 @@ return
 
 # # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def license {{name {}}} {
-    Set or query the license to use for the project.
-} {
+kettle cli extend {license set} {
+    section {Project Management} License
+
+    description {
+	Set the license to use for the project.
+    }
+    input license {
+	The name of the license chosen for the project.
+    } {
+	validate str ;#TODO: validate against available licenses
+    }
+} ::kettle::special::LicenseSet
+
+proc ::kettle::special::LicenseSet {config} {
     variable docbase
 
-    if {$name eq {}} {
-	doc-config license
-	return
-    }
+    set name [$config @license]
 
     io puts ""
     io puts "Configuring license ..."
 
+    # TODO: Move this into a custom validation type.
     set src [License ${name}.inc]
     set dst [path norm $docbase/parts/license.inc]
 
@@ -278,15 +303,35 @@ return
     }
 
     PlacePart $src $dst
-    doc-config license $name
+    DocConfigure license $name
     return
 }
 
 # # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def requirements? {} {
-    List the requirements text-blocks we can apply to the project.
-} {
+kettle cli extend {license show} {
+    section {Project Management} License
+    description {
+	Show the license currently in use by the project.
+    }
+} ::kettle::special::LicenseShow
+
+proc ::kettle::special::LicenseShow {config} {
+    DocCGet license
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+
+kettle cli extend {requirements available} {
+    section {Project Management} Dependencies
+    description {
+	List the available text-blocks describing the requirements
+	which can be apply to the project.
+    }
+} ::kettle::special::ReqAvailable
+
+proc ::kettle::special::ReqAvailable {config} {
     foreach rq [lsort -dict [glob -directory [Require] -tails *.inc]] {
 	set rq [file rootname $rq]
 	io puts "  $rq"
@@ -296,9 +341,14 @@ return
 
 # # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def requirements {} {
-    List the requirements currently applied to the project.
-} {
+kettle cli extend {requirements used} {
+    section {Project Management} Dependencies
+    description {
+	List the requirements currently applied to the project.
+    }
+} ::kettle::special::ReqUsed
+
+proc ::kettle::special::ReqUsed {config} {
     set d [ReadRequirements]
     dict with d {} ; # header, config
     foreach rq $config {
@@ -309,16 +359,32 @@ return
 
 # # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def requirements= {args} {
-    Set the requirements which apply to the project.
-} {
-    variable docbase
+kettle cli extend {requirements set} {
+    section {Project Management} Dependencies
+    description  {
+	Set the requirements which apply to the project.
+    }
+    input args {
+	The list of requirements to apply to the project,
+	chosen from the available text-blocks.
+    } {
+	list
+	validate str ;# TODO: validate against available blocks.
+    }
+} ::kettle::special::ReqSet
 
+proc ::kettle::special::ReqSet {config} {
+    set args [$config @args]
+
+    variable docbase
     set d [ReadRequirements]
     dict set d config $args
 
     io puts ""
     io puts "Setting requirements ..."
+
+    # TODO: Compare to the previous list of requirements and remove
+    # the files for parts the user got rid of.
 
     foreach rq $args {
 	set src [Require $rq.inc]
@@ -338,9 +404,14 @@ return
 
 # # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def keywords {} {
-    List the common keywords currently applied to the project.
-} {
+kettle cli extend {subjects} {
+    section {Project Management} Subjects
+    description  {
+	List the common keywords currently applied to the project.
+    }
+} ::kettle::special::SubjList
+
+proc ::kettle::special::SubjList {config} {
     set d [ReadKeywords]
     dict with d {} ; # header, config
     foreach kw [lsort -dict $config] {
@@ -351,9 +422,23 @@ return
 
 # # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def keywords= {args} {
-    Set the common keywords which apply to the project.
-} {
+kettle cli extend {subject set} {
+    section {Project Management} Subjects
+    description {
+	Set the keywords which apply to the project.
+    }
+    input args {
+	The list of keywords to apply to the project.
+	Can be empty.
+    } {
+	optional
+	list
+	validate str
+    }
+} ::kettle::special::SubjSet
+
+proc ::kettle::special::SubjSet {config} {
+    set args [$config @args]
     set d [ReadKeywords]
     dict set d config $args
     WriteKeywords $d
@@ -362,20 +447,45 @@ return
 
 # # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def keywords+ {args} {
-    Add common keywords to the project.
-} {
+kettle cli extend {subject add} {
+    section {Project Management} Subjects
+    description {
+	Add keywords to the project.
+    }
+    input args {
+	The list of keywords to add to the project.
+    } {
+	list
+	validate str
+    }
+} ::kettle::special::SubjAdd
+
+proc ::kettle::special::SubjAdd {config} {
+    set args [$config @args]
     set d [ReadKeywords]
     dict lappend d config {*}$args
+    # TODO: Handle duplicates, i.e. remove such.
     WriteKeywords $d
     return
 }
 
 # # ## ### ##### ######## ############# #####################
 
-::kettle::special::Def keywords- {args} {
-    Remove common keywords from the project.
-} {
+kettle cli extend {subject remove} {
+    section {Project Management} Subjects
+    description {
+	Remove keywords from the project.
+    }
+    input args {
+	The list of keywords to remove from the project.
+    } {
+	list
+	validate str
+    }
+} ::kettle::special::SubjRemove
+
+proc ::kettle::special::SubjRemove {config} {
+    set args [$config @args]
     set d [ReadKeywords]
     set k [dict get $d config]
 
