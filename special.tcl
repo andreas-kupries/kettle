@@ -32,14 +32,14 @@ kettle cli extend setup  {
     input args {
 	The DSL commands to place into the generated file.
     } {
-	optional ; list ; validate str
+	optional ; list ; validate str ;# TODO: validate against available
 	default tcl
     }
-} [lambda config {
-    ::kettle::special::Setup [$config @args]
-}]
+} ::kettle::special::Setup 
 
-proc ::kettle::special::Setup {commands} {
+proc ::kettle::special::Setup {config} {
+    set commands [$config @args]
+
     lappend lines "#!/usr/bin/env kettle"
     lappend lines "# -*- tcl -*-"
     lappend lines "# For kettle sources, documentation, etc. see"
@@ -75,12 +75,12 @@ kettle cli extend {doc setup} {
 	validate str
 	default [file tail [pwd]]
     }
-} [lambda config {
-    ::kettle::special::DocSetup [$config @project]
-}]
+} ::kettle::special::DocSetup
 
-proc ::kettle::special::DocSetup {project} {
+proc ::kettle::special::DocSetup {config} {
     variable docbase
+
+    set project [$config @project]
 
     set pname  [string tolower $project]
     set ptitle [string totitle $project]
@@ -190,8 +190,8 @@ kettle cli extend {doc configure} {
     section {Project Management} Documentation
 
     description {
-	Query and change the configuration of the documentation
-	setup in the current working directory. Assumes a structure
+	Query and change the configuration of the project found
+	in the current working directory. Assumes a structure
 	created by 'doc setup'.
 
 	Without argument prints the whole configuration. With a
@@ -204,50 +204,62 @@ kettle cli extend {doc configure} {
     } {
 	optional ; list ; validate str
     }
-} [lambda config {
-    # TODO: For direct access filter out all the keys which are
-    # handled by other commands (license, etc.) were using raw
-    # configure can shoot ourselves in the foot.
+} [lambda@ ::kettle::special config {
+    set args [$config @args]
+    # Note!
+    # All execution paths hide 'license' from the user.
+    # This key is handled by a separate set of commands.
 
-    ::kettle::special::DocConfigure {*}[$config @args]
+    # No arguments. Print the entire configuration.
+    if {![llength $args]} {
+	array set configuration [DocConfigureGetAll]
+	unset     configuration(license)
+	parray    configuration
+	return
+    }
+
+    # Single argument. Print the value for the specified key.
+    if {[llength $args] == 1} {
+	set key [lindex $args 0]
+	if {$key eq "license"} {
+	    return -code error -errorcode {KETTLE SPECIAL DOC CONFIGURE BAD KEY} \
+		"Unknown configuration key \"$key\""
+	}
+	puts [DocConfigureGet $key]
+	return
+    }
+
+    # Dictionary of arguments. Perform the assignments, changing the
+    # configuration.
+    catch { dict unset args license }
+    DocConfigure $args
+    return
 }]
 
-proc ::kettle::special::DocConfigure {args} {
-    variable cfgfile
-    set theconfig [path norm $cfgfile]
-    set data [Decode [path cat $theconfig]]
-
-    if {![llength $args]} {
-	# show all
-	array set config [DecodeConfig [dict get $data config]]
-	parray config
-	return
-    }
-
-    if {[llength $args] == 1} {
-	# show specified key
-	puts [dict get [DecodeConfig [dict get $data config]] [lindex $args 0]]
-	return
-    }
-
-    # change keys...
+proc ::kettle::special::DocConfigure {assignments} {
+    set data [LoadConfig]
     dict set data config \
 	[EncodeConfig \
 	     [dict merge \
 		  [DecodeConfig [dict get $data config]] \
-		  $args]]
-    path write $theconfig [Encode $data vset]
+		  $assignments]]
+    SaveConfig $data
     return
 }
 
-proc ::kettle::special::DocCGet {key} {
-    variable cfgfile
-    set theconfig [path norm $cfgfile]
-    set data [Decode [path cat $theconfig]]
+proc ::kettle::special::DocConfigureGetAll {} {
+    # show all
+    return [DecodeConfig [dict get [LoadConfig] config]]
+}
 
+proc ::kettle::special::DocConfigureGet {key} {
     # show specified key
-    puts [dict get [DecodeConfig [dict get $data config]] $key]
-    return
+    set config [DecodeConfig [dict get [LoadConfig] config]]
+    if {![dict exists $config $key]} {
+	return -code error -errorcode {KETTLE SPECIAL DOC CONFIGURE BAD KEY} \
+	    "Unknown configuration key \"$key\""
+    }
+    return [dict get $config $key]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -317,7 +329,7 @@ kettle cli extend {license show} {
 } ::kettle::special::LicenseShow
 
 proc ::kettle::special::LicenseShow {config} {
-    DocCGet license
+    DocConfigureGet license
     return
 }
 
@@ -441,6 +453,7 @@ proc ::kettle::special::SubjSet {config} {
     set args [$config @args]
     set d [ReadKeywords]
     dict set d config $args
+    # Note: Backend handles removal of duplicates
     WriteKeywords $d
     return
 }
@@ -464,7 +477,7 @@ proc ::kettle::special::SubjAdd {config} {
     set args [$config @args]
     set d [ReadKeywords]
     dict lappend d config {*}$args
-    # TODO: Handle duplicates, i.e. remove such.
+    # Note: Backend handles removal of duplicates
     WriteKeywords $d
     return
 }
@@ -521,7 +534,8 @@ proc ::kettle::special::ReadKeywords {} {
 
 proc ::kettle::special::WriteKeywords {data} {
     variable kwfile
-    # Rewrite keyword list into list of arguments lists.
+    # Rewrite the keyword list into a list of arguments lists.
+    # Duplicates are removed as part of this process.
 
     set new {}
     foreach k [lsort -unique [lsort -dict [dict get $data config]]] {
@@ -576,6 +590,17 @@ proc ::kettle::special::Base {{which {}}} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Configuration data.
+
+proc ::kettle::special::LoadConfig {} {
+    variable cfgfile
+    return [Decode [path cat [path norm $cfgfile]]]
+}
+
+proc ::kettle::special::SaveConfig {data} {
+    variable cfgfile
+    path write [path norm $cfgfile] [Encode $data vset]
+}
 
 proc ::kettle::special::DecodeConfig {assignments} {
     set config {}
@@ -595,6 +620,11 @@ proc ::kettle::special::EncodeConfig {config} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## General data {en,de}coder
+## - Line-based format
+## - 1st line is a descriptive header, not data.
+## - 1st and last character of data lines are non-data (brackets).
+## - data is a list of words, 1st word is irrelevant.
 
 proc ::kettle::special::Decode {contents} {
     set header {}
