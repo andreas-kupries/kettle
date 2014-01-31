@@ -125,12 +125,15 @@ proc ::kettle::Application {} {
 	::exit 1
     } trap {KETTLE STATUS OK} {e o} {
 	::exit 0
-    } trap {KETTLE} {e o} {
+    } trap {KETTLE} {e o} - \
+      trap {CMDR CONFIG WRONG-ARGS} {e o} - \
+      trap {CMDR DO UNKNOWN} {e o} {
 	io err { io puts $e }
 	::exit 1
     } trap {POSIX EPIPE} {e o} {
 	# Broken pipe, try to report on stderr.
 	# May fail, as it may be using the same pipe.
+	# Note that we are not using the 'io' routines here.
 	catch { ::puts stderr $e }
 	::exit 1
     } on error {e o} {

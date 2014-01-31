@@ -190,8 +190,8 @@ kettle cli extend {doc configure} {
     section {Project Management} Documentation
 
     description {
-	Query and change the configuration of the documentation
-	setup in the current working directory. Assumes a structure
+	Query and change the configuration of the project found
+	in the current working directory. Assumes a structure
 	created by 'doc setup'.
 
 	Without argument prints the whole configuration. With a
@@ -204,23 +204,35 @@ kettle cli extend {doc configure} {
     } {
 	optional ; list ; validate str
     }
-} [lambda config {
-    # TODO: For direct access filter out all the keys which are
-    # handled by other commands (license, etc.) were using raw
-    # configure can shoot ourselves in the foot.
+} [lambda@ ::kettle::special config {
     set args [$config @args]
+    # Note!
+    # All execution paths hide 'license' from the user.
+    # This key is handled by a separate set of commands.
 
+    # No arguments. Print the entire configuration.
     if {![llength $args]} {
-	DocConfigureGetAll
+	array set configuration [DocConfigureGetAll]
+	unset     configuration(license)
+	parray    configuration
 	return
     }
 
+    # Single argument. Print the value for the specified key.
     if {[llength $args] == 1} {
-	DocConfigureGet [lindex $args 0]
+	set key [lindex $args 0]
+	if {$key eq "license"} {
+	    return -code error -errorcode {KETTLE SPECIAL DOC CONFIGURE BAD KEY} \
+		"Unknown configuration key \"$key\""
+	}
+	puts [DocConfigureGet $key]
 	return
     }
 
-    ::kettle::special::DocConfigure $args
+    # Dictionary of arguments. Perform the assignments, changing the
+    # configuration.
+    catch { dict unset args license }
+    DocConfigure $args
     return
 }]
 
@@ -237,18 +249,17 @@ proc ::kettle::special::DocConfigure {assignments} {
 
 proc ::kettle::special::DocConfigureGetAll {} {
     # show all
-    array set config [DecodeConfig [dict get [LoadConfig] config]]
-    parray config
-    return
+    return [DecodeConfig [dict get [LoadConfig] config]]
 }
 
 proc ::kettle::special::DocConfigureGet {key} {
     # show specified key
-    puts [dict get \
-	      [DecodeConfig \
-		   [dict get [LoadConfig] config]] \
-	      $key]
-    return
+    set config [DecodeConfig [dict get [LoadConfig] config]]
+    if {![dict exists $config $key]} {
+	return -code error -errorcode {KETTLE SPECIAL DOC CONFIGURE BAD KEY} \
+	    "Unknown configuration key \"$key\""
+    }
+    return [dict get $config $key]
 }
 
 # # ## ### ##### ######## ############# #####################
@@ -442,6 +453,7 @@ proc ::kettle::special::SubjSet {config} {
     set args [$config @args]
     set d [ReadKeywords]
     dict set d config $args
+    # Note: Backend handles removal of duplicates
     WriteKeywords $d
     return
 }
@@ -465,7 +477,7 @@ proc ::kettle::special::SubjAdd {config} {
     set args [$config @args]
     set d [ReadKeywords]
     dict lappend d config {*}$args
-    # TODO: Handle duplicates, i.e. remove such.
+    # Note: Backend handles removal of duplicates
     WriteKeywords $d
     return
 }
@@ -522,7 +534,8 @@ proc ::kettle::special::ReadKeywords {} {
 
 proc ::kettle::special::WriteKeywords {data} {
     variable kwfile
-    # Rewrite keyword list into list of arguments lists.
+    # Rewrite the keyword list into a list of arguments lists.
+    # Duplicates are removed as part of this process.
 
     set new {}
     foreach k [lsort -unique [lsort -dict [dict get $data config]]] {
