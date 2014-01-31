@@ -32,14 +32,14 @@ kettle cli extend setup  {
     input args {
 	The DSL commands to place into the generated file.
     } {
-	optional ; list ; validate str
+	optional ; list ; validate str ;# TODO: validate against available
 	default tcl
     }
-} [lambda config {
-    ::kettle::special::Setup [$config @args]
-}]
+} ::kettle::special::Setup 
 
-proc ::kettle::special::Setup {commands} {
+proc ::kettle::special::Setup {config} {
+    set commands [$config @args]
+
     lappend lines "#!/usr/bin/env kettle"
     lappend lines "# -*- tcl -*-"
     lappend lines "# For kettle sources, documentation, etc. see"
@@ -75,12 +75,12 @@ kettle cli extend {doc setup} {
 	validate str
 	default [file tail [pwd]]
     }
-} [lambda config {
-    ::kettle::special::DocSetup [$config @project]
-}]
+} ::kettle::special::DocSetup
 
-proc ::kettle::special::DocSetup {project} {
+proc ::kettle::special::DocSetup {config} {
     variable docbase
+
+    set project [$config @project]
 
     set pname  [string tolower $project]
     set ptitle [string totitle $project]
@@ -208,45 +208,46 @@ kettle cli extend {doc configure} {
     # TODO: For direct access filter out all the keys which are
     # handled by other commands (license, etc.) were using raw
     # configure can shoot ourselves in the foot.
-
-    ::kettle::special::DocConfigure {*}[$config @args]
-}]
-
-proc ::kettle::special::DocConfigure {args} {
-    variable cfgfile
-    set theconfig [path norm $cfgfile]
-    set data [Decode [path cat $theconfig]]
+    set args [$config @args]
 
     if {![llength $args]} {
-	# show all
-	array set config [DecodeConfig [dict get $data config]]
-	parray config
+	DocConfigureGetAll
 	return
     }
 
     if {[llength $args] == 1} {
-	# show specified key
-	puts [dict get [DecodeConfig [dict get $data config]] [lindex $args 0]]
+	DocConfigureGet [lindex $args 0]
 	return
     }
 
-    # change keys...
+    ::kettle::special::DocConfigure $args
+    return
+}]
+
+proc ::kettle::special::DocConfigure {assignments} {
+    set data [LoadConfig]
     dict set data config \
 	[EncodeConfig \
 	     [dict merge \
 		  [DecodeConfig [dict get $data config]] \
-		  $args]]
-    path write $theconfig [Encode $data vset]
+		  $assignments]]
+    SaveConfig $data
     return
 }
 
-proc ::kettle::special::DocCGet {key} {
-    variable cfgfile
-    set theconfig [path norm $cfgfile]
-    set data [Decode [path cat $theconfig]]
+proc ::kettle::special::DocConfigureGetAll {} {
+    # show all
+    array set config [DecodeConfig [dict get [LoadConfig] config]]
+    parray config
+    return
+}
 
+proc ::kettle::special::DocConfigureGet {key} {
     # show specified key
-    puts [dict get [DecodeConfig [dict get $data config]] $key]
+    puts [dict get \
+	      [DecodeConfig \
+		   [dict get [LoadConfig] config]] \
+	      $key]
     return
 }
 
@@ -317,7 +318,7 @@ kettle cli extend {license show} {
 } ::kettle::special::LicenseShow
 
 proc ::kettle::special::LicenseShow {config} {
-    DocCGet license
+    DocConfigureGet license
     return
 }
 
@@ -576,6 +577,17 @@ proc ::kettle::special::Base {{which {}}} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Configuration data.
+
+proc ::kettle::special::LoadConfig {} {
+    variable cfgfile
+    return [Decode [path cat [path norm $cfgfile]]]
+}
+
+proc ::kettle::special::SaveConfig {data} {
+    variable cfgfile
+    path write [path norm $cfgfile] [Encode $data vset]
+}
 
 proc ::kettle::special::DecodeConfig {assignments} {
     set config {}
@@ -595,6 +607,11 @@ proc ::kettle::special::EncodeConfig {config} {
 }
 
 # # ## ### ##### ######## ############# #####################
+## General data {en,de}coder
+## - Line-based format
+## - 1st line is a descriptive header, not data.
+## - 1st and last character of data lines are non-data (brackets).
+## - data is a list of words, 1st word is irrelevant.
 
 proc ::kettle::special::Decode {contents} {
     set header {}
