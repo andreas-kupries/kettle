@@ -212,8 +212,7 @@ oo::class create ::cmdr::officer {
 	    # Reached the bottom of the recursion.
 	    # Generate the private handling arguments and action.
 	    set cmd [lindex $path 0]
-	    my Private $cmd $arguments $action
-	    return
+	    return [my Private $cmd $arguments $action]
 	}
 
 	# Recurse, creating the intermediate officers as needed.
@@ -223,7 +222,6 @@ oo::class create ::cmdr::officer {
 	}
 
 	[my lookup $cmd] extend $path $arguments $action
-	return
     }
 
     # # ## ### ##### ######## #############
@@ -290,7 +288,7 @@ oo::class create ::cmdr::officer {
 	lappend mychildren $handler
 
 	my Def $name $handler
-	return
+	return $handler
     }
 
     method Def {name handler} {
