@@ -45,11 +45,13 @@ proc ::kettle::recipe::define {name description arguments script args} {
     set description [strutil reflow $description]
     io trace {DEF $name}
 
-    Init $name
+    Init $name $description
+
     dict update recipe $name def {
 	dict lappend def script \
 	    [lambda@ ::kettle $arguments $script {*}$args]
-	dict lappend def help   $description
+
+	#dict lappend def help $description
     }
     return
 }
@@ -62,6 +64,12 @@ proc ::kettle::recipe::parent {name parent} {
     dict update recipe $name def {
 	dict lappend def parent $parent
     }
+
+    set cmd [dict get $recipe $parent handler]
+
+    set d [split [$cmd description] \n]
+    lappend d "\t==> $name"
+    $cmd description: [join [lsort -dict [lsort -unique $d]] \n]
 
     #io trace {PARENTS $name = [dict get $recipe $name parent]}
     return
@@ -78,6 +86,10 @@ proc ::kettle::recipe::names {} {
 }
 
 proc ::kettle::recipe::help {prefix} {
+
+    error not-yet-implemented--redirect-into-cli hierarchy
+    kettle cli help
+
     global   argv0
     variable recipe
     append prefix $argv0 " -f " [path relativecwd [path script]] " "
@@ -134,7 +146,7 @@ proc ::kettle::recipe::run {args} {
 # # ## ### ##### ######## ############# #####################
 ## Internal support.
 
-proc ::kettle::recipe::Init {name} {
+proc ::kettle::recipe::Init {name {description {}}} {
     variable recipe
     if {[dict exists $recipe $name]} return
     dict set recipe $name {
@@ -142,7 +154,24 @@ proc ::kettle::recipe::Init {name} {
 	help   {}
 	parent {}
     }
+
+    set cmd [kettle cli extend $name {
+	section Targets
+	# parameters -> only options, define dynamically
+    } [list ::kettle::recipe::RunIt $name]]
+
+    $cmd description: $description
+
+    # Remember reference to handler for future modifications.
+    dict set recipe $name handler $cmd
     return
+}
+
+proc ::kettle::recipe::RunIt {name config} {
+    # config => options
+    try {
+	Run $name
+    }
 }
 
 proc ::kettle::recipe::Run {name} {
