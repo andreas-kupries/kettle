@@ -22,7 +22,7 @@ namespace eval ::kettle::special {
 # # ## ### ##### ######## ############# #####################
 ## API
 
-kettle cli extend setup  {
+kettle cli extend {project setup} {
     section {Project Management}
     description {
 	Generate a basic build control file in the current working
@@ -56,7 +56,7 @@ proc ::kettle::special::Setup {config} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {doc setup} {
+kettle cli extend {project doc setup} {
     section {Project Management} Documentation
     description {
 	Generates a basic documentation setup for the named
@@ -161,7 +161,7 @@ proc ::kettle::special::DocSetup {config} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {doc list-edit-hooks} {
+kettle cli extend {project doc list-edit-hooks} {
     section {Project Management} Documentation
 
     description {
@@ -186,7 +186,7 @@ proc ::kettle::special::DocEditHooks {{config {}}} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {doc configure} {
+kettle cli extend {project doc configure} {
     section {Project Management} Documentation
 
     description {
@@ -264,7 +264,7 @@ proc ::kettle::special::DocConfigureGet {key} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {licenses} {
+kettle cli extend {project licenses} {
     section {Project Management} License
 
     description {
@@ -282,7 +282,7 @@ proc ::kettle::special::LicenseList {{config {}}} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {license set} {
+kettle cli extend {project license set} {
     section {Project Management} License
 
     description {
@@ -321,7 +321,7 @@ proc ::kettle::special::LicenseSet {config} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {license show} {
+kettle cli extend {project license show} {
     section {Project Management} License
     description {
 	Show the license currently in use by the project.
@@ -335,7 +335,7 @@ proc ::kettle::special::LicenseShow {config} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {requirements available} {
+kettle cli extend {project requirements available} {
     section {Project Management} Dependencies
     description {
 	List the available text-blocks describing the requirements
@@ -353,7 +353,7 @@ proc ::kettle::special::ReqAvailable {config} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {requirements used} {
+kettle cli extend {project requirements used} {
     section {Project Management} Dependencies
     description {
 	List the requirements currently applied to the project.
@@ -371,7 +371,7 @@ proc ::kettle::special::ReqUsed {config} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {requirements set} {
+kettle cli extend {project requirements set} {
     section {Project Management} Dependencies
     description  {
 	Set the requirements which apply to the project.
@@ -416,7 +416,7 @@ proc ::kettle::special::ReqSet {config} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {subjects} {
+kettle cli extend {project subjects} {
     section {Project Management} Subjects
     description  {
 	List the common keywords currently applied to the project.
@@ -434,7 +434,7 @@ proc ::kettle::special::SubjList {config} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {subject set} {
+kettle cli extend {project subject set} {
     section {Project Management} Subjects
     description {
 	Set the keywords which apply to the project.
@@ -460,7 +460,7 @@ proc ::kettle::special::SubjSet {config} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {subject add} {
+kettle cli extend {project subject add} {
     section {Project Management} Subjects
     description {
 	Add keywords to the project.
@@ -484,7 +484,7 @@ proc ::kettle::special::SubjAdd {config} {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle cli extend {subject remove} {
+kettle cli extend {project subject remove} {
     section {Project Management} Subjects
     description {
 	Remove keywords from the project.
