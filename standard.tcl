@@ -12,6 +12,10 @@ kettle recipe define null {
     No operation. Debugging helper (use with -trace).
 } {} {}
 
+kettle recipe define nop {
+    No operation. Debugging helper (use with -trace).
+} {} {}
+
 kettle recipe define forever {
     No operation, infinite loop. Debugging helper (use with -trace).
 } {} {
@@ -22,7 +26,9 @@ kettle recipe define forever {
 
 # # ## ### ##### ######## ############# #####################
 
-kettle recipe define list-recipes {
+# TODO :: check which of the standard introspection goals should be written as proper commands instead of recipes.
+
+if 0 {kettle recipe define list-recipes {
     List all available recipes, without details.
 } {} {
     io puts [lsort -dict [recipe names]]
@@ -41,11 +47,11 @@ kettle recipe define help-dump {
 }
 
 kettle recipe parent help-recipes help
-kettle recipe parent list-recipes list
+kettle recipe parent list-recipes list}
 
 # # ## ### ##### ######## ############# #####################
 
-kettle recipe define list-options {
+if 0 {kettle recipe define list-options {
     List all available options, without details.
 } {} {
     io puts [lsort -dict [option names]]
@@ -58,7 +64,7 @@ kettle recipe define help-options {
 }
 
 kettle recipe parent help-options help
-kettle recipe parent list-options list
+kettle recipe parent list-options list}
 
 # # ## ### ##### ######## ############# #####################
 
