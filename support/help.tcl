@@ -337,6 +337,7 @@ proc ::cmdr::help::format::by-category {root width help} {
     foreach c $categories {
 	ShowCategory $width lines [::list $c] ""
     }
+
     return [join $lines \n]
 }
 
@@ -353,10 +354,14 @@ proc ::cmdr::help::format::ShowCategory {width lv path indent} {
     # Get the commands in the category, preliminary formatting
     # (labels, descriptions).
 
-    foreach def [lsort -dict -unique [dict get $cmds $path]] {
-	lassign $def syntax desc
-	lappend names $syntax
-	lappend descs $desc
+    set names {}
+    set descs {}
+    if {[dict exists $cmds $path]} {
+	foreach def [lsort -dict -unique [dict get $cmds $path]] {
+	    lassign $def syntax desc
+	    lappend names $syntax
+	    lappend descs $desc
+	}
     }
     set labels [cmdr util padr $names]
 
@@ -368,6 +373,7 @@ proc ::cmdr::help::format::ShowCategory {width lv path indent} {
     set w [expr {$width - [string length $blank]}]
 
     # Print the commands, final formatting.
+    set commands 0
     foreach label $labels desc $descs {
 	set desc [textutil::adjust::adjust $desc \
 		      -length $w \
@@ -375,9 +381,10 @@ proc ::cmdr::help::format::ShowCategory {width lv path indent} {
 	set desc [textutil::adjust::indent $desc $blank 1]
 
 	lappend lines $indent$label$sep$desc
+	set commands 1
     }
 
-    lappend lines {}
+    if {$commands} { lappend lines {} }
     if {![dict exists $subc $path]} return
 
     # Print the sub-categories, if any.
@@ -458,15 +465,26 @@ proc ::cmdr::help::format::SectionTree {help {fmtname 1}} {
 
 	foreach category $sections {
 	    lappend cmds($category) $cmd
-	    set parent [lreverse [lassign [lreverse $category] leaf]]
-	    lappend subc($parent) $leaf
+	    LinkParent $category
 	}
     }
 
+    #puts ==========================
     #parray subc
+    #puts ==========================
     #parray cmds
+    #puts ==========================
 
     ::list [array get subc] [array get cmds]
+}
+
+proc ::cmdr::help::format::LinkParent {category} {
+    if {![llength $category]} return
+    upvar 1 subc subc
+    set parent [lreverse [lassign [lreverse $category] leaf]]
+    lappend subc($parent) $leaf
+    LinkParent $parent
+    return
 }
 
 proc ::cmdr::help::format::SectionOrder {root subc} {
