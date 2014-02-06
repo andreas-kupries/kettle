@@ -135,6 +135,30 @@ oo::class create ::cmdr::officer {
 	return [dict get $mymap a,$name]
     }
 
+    method find {words} {
+	# Resolve chain of words (command name path) to the actor
+	# responsible for that command, starting from the current
+	# actor.  This is very much a convenience method built on top
+	# of lookup (see above).
+
+	my _find $words {}
+    }
+
+    method _find {words prefix} {
+	if {![llength $words]} {
+	    return [self]
+	}
+
+	set word [lindex $words 0]
+	if {[llength $words] <= 1} {
+	    return [my lookup $word]
+	}
+
+	[my lookup $word] _find \
+	    [lrange $words 1 end] \
+	    [linsert $prefix end $word]
+    }
+
     method has {name} {
 	debug.cmdr/officer {}
 	my Setup
@@ -641,4 +665,4 @@ oo::class create ::cmdr::officer {
 
 # # ## ### ##### ######## ############# #####################
 ## Ready
-package provide cmdr::officer 1.0
+package provide cmdr::officer 1.1
