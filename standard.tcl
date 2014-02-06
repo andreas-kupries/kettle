@@ -72,4 +72,10 @@ kettle recipe define gui {
 }
 
 # # ## ### ##### ######## ############# #####################
+
+kettle recipe anchor validate {
+    Validation of various parts of the project.
+}
+
+# # ## ### ##### ######## ############# #####################
 return

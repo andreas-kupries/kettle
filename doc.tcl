@@ -85,7 +85,7 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	DtpliteDo $root $dst $isfossil
     } $root $dd $isfossil
 
-    recipe define validate-doc {
+    recipe define {validate doc} {
 	Validate the documentation.
     } {root} {
 	io puts "Validate documentation"
@@ -157,7 +157,7 @@ proc ::kettle::doc {{docsrcdir doc}} {
     recipe parent reinstall-doc-manpages reinstall-doc
     recipe parent reinstall-doc          reinstall
 
-    recipe parent validate-doc validate
+    #recipe parent validate-doc validate
     return
 }
 
