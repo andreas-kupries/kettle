@@ -48,8 +48,6 @@ try {
     }
 }
 
-
-
 # # ## ### ##### ######## ############# #####################
 ## Import Cmdr, the generic command line processing framework.
 ## Try to use whatever the installation supplies first.

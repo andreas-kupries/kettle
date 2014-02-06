@@ -1,3 +1,13 @@
+
+[..] (.)
+	Cmdr - Help - Tcl format (like json, less syntax, directly parse-able).
+	Cmdr - help::query-actor => 'actor find' virtual-method
+				 or 'actor lookup*'
+
+	Cmdr - Triggers for defered conditional creation
+	       (configuration!) of officers when 'extend'ing the tree,
+	       to have proper description and such.
+
 [..] (1)
 	Switch over to cmdr 1 for the cli API.
 

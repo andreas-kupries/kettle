@@ -8,6 +8,11 @@ namespace eval ::kettle { namespace export invoke }
 ## API.
 
 proc ::kettle::recurse {} {
+
+    error {TODO help-dump replacement via cmdr help --tcl}
+    error {TODO forwarding recipes for the user-specified targets}
+    error {TODO standard targets recognition and suppression}
+
     # application replacement. looks for kettle build scripts in all
     # sub directories and invokes them with the current configuration
     # and goals.
@@ -45,6 +50,7 @@ proc ::kettle::recurse {} {
     set map  {}
     set hmap {}
     foreach sub $tmp {
+
 	set help [invoke-return $sub help-dump]
 	foreach r [invoke-return $sub list-recipes] {
 	    dict lappend map  $r $sub
