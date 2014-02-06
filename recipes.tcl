@@ -85,6 +85,7 @@ proc ::kettle::recipe::names {} {
     return [dict keys $recipe]
 }
 
+# Remove
 proc ::kettle::recipe::help {prefix} {
 
     error not-yet-implemented--redirect-into-cli hierarchy
@@ -112,6 +113,7 @@ proc ::kettle::recipe::help {prefix} {
     return
 }
 
+# TODO: Remove/replace
 proc ::kettle::recipe::help-dump {} {
     variable recipe
     foreach goal [lsort -dict [dict keys $recipe]] {
@@ -148,6 +150,7 @@ proc ::kettle::recipe::run {args} {
 
 proc ::kettle::recipe::Init {name {description {}}} {
     variable recipe
+
     if {[dict exists $recipe $name]} return
     dict set recipe $name {
 	script {}
@@ -156,7 +159,7 @@ proc ::kettle::recipe::Init {name {description {}}} {
     }
 
     set cmd [kettle cli extend $name {
-	section Targets
+	section Targets Project
 	# parameters -> only options, define dynamically
     } [list ::kettle::recipe::RunIt $name]]
 
