@@ -8,83 +8,42 @@
 
 # # ## ### ##### ######## ############# #####################
 
-kettle recipe define null {
-    No operation. Debugging helper (use with -trace).
-} {} {}
-
-kettle recipe define nop {
-    No operation. Debugging helper (use with -trace).
-} {} {}
-
-kettle recipe define forever {
-    No operation, infinite loop. Debugging helper (use with -trace).
-} {} {
-    file mkdir [set x [path tmpfile x]]
-    puts $x
-    while {1} {}
-}
-
-# # ## ### ##### ######## ############# #####################
-
-# TODO :: check which of the standard introspection goals should be written as proper commands instead of recipes.
-
-if 0 {kettle recipe define list-recipes {
-    List all available recipes, without details.
-} {} {
-    io puts [lsort -dict [recipe names]]
-}
-
-kettle recipe define help-recipes {
-    Print the help.
-} {} {
-    recipe help {Usage: }
-}
-
-kettle recipe define help-dump {
-    Print the help in Tcl format.
-} {} {
-    recipe help-dump
-}
-
-kettle recipe parent help-recipes help
-kettle recipe parent list-recipes list}
-
-# # ## ### ##### ######## ############# #####################
-
-if 0 {kettle recipe define list-options {
-    List all available options, without details.
-} {} {
-    io puts [lsort -dict [option names]]
-}
-
-kettle recipe define help-options {
-    Print the help about options.
-} {} {
-    option help
-}
-
-kettle recipe parent help-options help
-kettle recipe parent list-options list}
-
-# # ## ### ##### ######## ############# #####################
-
-kettle recipe define show-configuration {
-    Show the state of the option database.
-} {} {
-    set names [lsort -dict [option names]]
-    io puts {}
-    foreach name $names padded [strutil padr $names] {
-	set value [option get $name]
-	if {[string match *\n* $value]} {
-	    set value \n[strutil reflow $value "\t    "]
-	}
-        io puts "\t$padded = $value"
+kettle cli extend null {
+    section Targets Standard
+    description {
+	No operation.
+	Debugging helper (use with -trace).
     }
-}
+} [lambda {config} {}]
 
-kettle recipe define show-state {
-    Show the state
-} {} {
+# TODO: Make it a proper alias of 'null' above.
+kettle cli extend nop {
+    #section Targets Standard
+    section Targets Standard
+    description {
+	No operation.
+	Debugging helper (use with -trace).
+    }
+} [lambda {config} {}]
+
+kettle cli extend forever {
+    section Targets Standard
+    description {
+	Infinite loop.
+	Debugging helper (use with -trace).
+    }
+} [lambda {config} { vwait forever }]
+
+# # ## ### ##### ######## ############# #####################
+
+kettle cli extend {show state} {
+    section Targets Standard
+    description {
+	Show the state of internal kettle variables controlling
+	its behaviour, like relevant directories, paths to tools,
+	etc.
+    }
+} [lambda@ ::kettle {config} {
     set names [lsort -dict [option names @*]]
     io puts {}
     foreach name $names padded [strutil padr $names] {
@@ -94,10 +53,7 @@ kettle recipe define show-state {
 	}
         io puts "\t$padded = $value"
     }
-}
-
-kettle recipe parent show-configuration show
-kettle recipe parent show-state         show
+}]
 
 # # ## ### ##### ######## ############# #####################
 
