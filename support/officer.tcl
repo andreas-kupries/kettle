@@ -242,10 +242,27 @@ oo::class create ::cmdr::officer {
 	# Recurse, creating the intermediate officers as needed.
 	set path [lassign $path cmd]
 	if {![my has $cmd]} {
-	    my Officer $cmd {}
+	    # Look for and use a defered specification of the interior
+	    # node, or default to an empty specification if there is
+	    # no such.
+	    set key  [list *defered* {*}[my fullname] $cmd]
+	    set root [my root]
+	    set spec [expr {[$root exists $key]
+			    ? [$root get $key]
+			    : {}}]
+
+	    my Officer $cmd $spec
 	}
 
 	[my lookup $cmd] extend $path $arguments $action
+    }
+
+    method defered {path specification} {
+	set root [my root]
+	set key  [list *defered* {*}[my fullname] {*}$path]
+
+	$root set $key $specification
+	return
     }
 
     # # ## ### ##### ######## #############

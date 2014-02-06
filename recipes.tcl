@@ -35,6 +35,42 @@ namespace eval ::kettle::recipe {
 # # ## ### ##### ######## ############# #####################
 ## Management API commands.
 
+proc ::kettle::recipe::anchor {name description} {
+    kettle cli defered $name [subst -nocommands -nobackslashes {
+	description {}
+	private all {
+	    section Targets Project
+	    description {$description}
+	} ::kettle::recipe::RunSiblings
+	default all
+    }]
+}
+
+proc ::kettle::recipe::RunSiblings {config} {
+    # Determine the sibling commands, and run them.
+
+    set super [$config context super]
+    set self  [$super default]
+
+    foreach sibling [lsort -dict [$super known]] {
+	# Ignore ourselves and the autuo-generated commands.
+	if {$sibling eq $self} continue
+	if {$sibling in {exit help}} continue
+
+	# Alternate: Exclude privates which do not have the recipe
+	# action callback.
+
+	# Run the sibling.
+	# TODO: see if we can propagate the config into the sub-ordinates.
+	# - Might require our own dispatch to directly access the action callback.
+	# - Or a variant of do taking the config to use.
+	# - This becomes critical when construction reaches option handling.
+
+	[$super lookup $sibling] do
+    }
+    return
+}
+
 proc ::kettle::recipe::define {name description arguments script args} {
     variable recipe
 
