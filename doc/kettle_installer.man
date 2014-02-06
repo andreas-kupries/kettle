@@ -60,6 +60,7 @@ dependencies they talk about are indeed installed.
 [include include/rq_tk.inc]
 [include include/rq_tklib.inc]
 [include include/rq_tcltest.inc]
+[include include/rq_cmdr.inc]
 
 [section {Build & Installation}]
 
