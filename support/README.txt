@@ -1,8 +1,5 @@
-Local copy of cmdr framework, revision [d46922cc52]
+Local copy of cmdr framework, revision [2659fd6b13]
 Manual package index file.
 
-=== 2014-01-30 ===
-18:09:43 [f1bb89c324] *CURRENT* Fixed command scope problems in "extend".
-         (user: andreask tags: trunk)
-18:09:12 [3a146bdf51] Fixed missing initialization in the main help generator.
-         (user: andreask tags: trunk)
+=== 2014-02-06 ===
+18:35:12 [2659fd6b13] *CURRENT* Regenerated embedded docs. (user: aku tags: trunk)

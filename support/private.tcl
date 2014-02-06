@@ -70,6 +70,24 @@ oo::class create ::cmdr::private {
 
     # # ## ### ##### ######## #############
 
+    method find {words} {
+	my _find $words {}
+    }
+
+    method _find {words prefix} {
+	if {![llength $words]} {
+	    return [self]
+	}
+	# Privates do not have subordinates to look up.
+	# We now have a bad command name argument to help.
+	set word  [lindex $words 0]
+	return -code error \
+	    -errorcode [list CMDR ACTION BAD $word] \
+	    "The command \"$prefix\" has no sub-commands, unexpected word \"$word\""
+    }
+
+    # # ## ### ##### ######## #############
+
     method ehandler {cmd} {
 	debug.cmdr/private {}
 	set myhandler $cmd
@@ -169,4 +187,4 @@ oo::class create ::cmdr::private {
 
 # # ## ### ##### ######## ############# #####################
 ## Ready
-package provide cmdr::private 1.0
+package provide cmdr::private 1.1
