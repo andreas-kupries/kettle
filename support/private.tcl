@@ -71,10 +71,10 @@ oo::class create ::cmdr::private {
     # # ## ### ##### ######## #############
 
     method find {words} {
-	my _find $words {}
+	my internal_find $words {}
     }
 
-    method _find {words prefix} {
+    method internal_find {words prefix} {
 	if {![llength $words]} {
 	    return [self]
 	}
