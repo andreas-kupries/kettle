@@ -141,10 +141,10 @@ oo::class create ::cmdr::officer {
 	# actor.  This is very much a convenience method built on top
 	# of lookup (see above).
 
-	my _find $words {}
+	my internal_find $words {}
     }
 
-    method _find {words prefix} {
+    method internal_find {words prefix} {
 	if {![llength $words]} {
 	    return [self]
 	}
@@ -154,7 +154,7 @@ oo::class create ::cmdr::officer {
 	    return [my lookup $word]
 	}
 
-	[my lookup $word] _find \
+	[my lookup $word] internal_find \
 	    [lrange $words 1 end] \
 	    [linsert $prefix end $word]
     }
