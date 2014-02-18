@@ -125,6 +125,7 @@ proc ::kettle::meta::insert {dst type name} {
     variable mbegin
     variable mend
 
+    set ver 0
     set md [Get $type $name ver]
     set pfx "# "
     set block $pfx[join [Assemble $name $ver $type $md] "\n$pfx"]
@@ -252,6 +253,7 @@ proc ::kettle::meta::Get {type name vv} {
 	io warn {
 	    io puts "[string totitle $type] $name: No user-specified teapot meta data found."
 	}
+	return
     }
 
     set m [dict get $md $key]

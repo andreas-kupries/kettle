@@ -66,7 +66,7 @@ proc ::kettle::tclapp {fname} {
     # manually.
 
     if {![meta defined? application $name]} {
-	recipe define meta-generate-application-$fname "Generate empty data for application $fname" {root files pn pv} {
+	recipe define meta-generate-application-$fname "Generate empty data for application $fname" {src name} {
 
 	    dict set m platform    tcl
 	    dict set m author      ?
@@ -84,7 +84,7 @@ proc ::kettle::tclapp {fname} {
 	    set m [meta format-internal application $name ? $m]
 	    path write-modify $src \
 		[list kettle path add-top-comment $m]
-	} $src
+	} $src $name
 
 	recipe parent meta-generate-application-$fname  meta-generate-tcl-applications
 	recipe parent meta-generate-tcl-applications    meta-generate-applications
