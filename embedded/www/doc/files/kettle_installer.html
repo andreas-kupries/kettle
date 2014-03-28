@@ -92,7 +92,7 @@
     }
 --></style>
 </head>
-<! -- Generated from file '/net/nas/data/andreask/Dev/Kettle/kettle/embedded/www/doc/files/kettle_installer.html' by tcllib/doctools with format 'html'
+<! -- Generated from file 'kettle_installer.man' by tcllib/doctools with format 'html'
    -->
 <! -- CVS: $Id$ kettle_install_guide.n
    -->
@@ -121,7 +121,13 @@
 <li class="subsection"><a href="#subsection5">tcltest</a></li>
 </ul>
 </li>
-<li class="section"><a href="#section3">Build &amp; Installation</a></li>
+<li class="section"><a href="#section3">Build &amp; Installation Instructions</a>
+<ul>
+<li class="subsection"><a href="#subsection6">Build &amp; Installation (Unix)</a></li>
+<li class="subsection"><a href="#subsection7">Build &amp; Installation (Windows)</a></li>
+<li class="subsection"><a href="#subsection8">Build &amp; Installation (Help)</a></li>
+</ul>
+</li>
 <li class="section"><a href="#section4">Bugs, Ideas, Feedback</a></li>
 <li class="section"><a href="#keywords">Keywords</a></li>
 <li class="section"><a href="#category">Category</a></li>
@@ -355,7 +361,12 @@ together with Tcl itself.</p>
 against Tcl, or the vendor of your Tcl distribution, and not Kettle.</p>
 </div>
 </div>
-<div id="section3" class="section"><h2><a name="section3">Build &amp; Installation</a></h2>
+<div id="section3" class="section"><h2><a name="section3">Build &amp; Installation Instructions</a></h2>
+<div id="subsection6" class="subsection"><h3><a name="subsection6">Build &amp; Installation (Unix)</a></h3>
+<p>This section describes the actions required to install Kettle on Unix
+systems (Linux, BSD, and related, including OS X).
+If you have to install Kettle on a Windows machine see section
+<span class="sectref"><a href="#subsection7">Build &amp; Installation (Windows)</a></span> instead.</p>
 <p>To install Kettle simply run</p>
 <pre class="example">
     /path/to/tclsh8.5 /path/to/kettle/build.tcl install
@@ -366,18 +377,56 @@ against Tcl, or the vendor of your Tcl distribution, and not Kettle.</p>
 directories where the <b class="cmd">tclsh8.5</b> will find them. Note that the
 installed kettle application is modified to use the chosen tclsh
 instead of searching for one on the <b class="variable">PATH</b>.</p>
-<p>On Windows you can invoke the file &quot;<b class="file">build.tcl</b>&quot; with a
-double-click.  This will pop up a small graphical interface for
-entering the destination and performing the installation. This
-handling of a double-click is restricted to Windows only however.</p>
-<p>On unix the same GUI is acessible by invoking &quot;<b class="file">build.tcl</b>&quot; using
-<b class="const">gui</b> instead of <b class="const">install</b> in the example above.</p>
+<p>The build system provides a small GUI for those not comfortable with
+the command line.
+This GUI is accessible by invoking &quot;<b class="file">build.tcl</b>&quot; without any
+arguments.</p>
 <p>To get help about the methods of &quot;<b class="file">build.tcl</b>&quot;, and their complete
-syntax, invoke &quot;<b class="file">build.tcl</b>&quot; with argument <b class="method">help</b>, i.e., like</p>
+syntax, invoke &quot;<b class="file">build.tcl</b>&quot; with argument <b class="method">help</b>, i.e.,
+like</p>
 <pre class="example">
     /path/to/tclsh8.5 /path/to/kettle/build.tcl help
 </pre>
-<p>Other methods for gfetting various types of help are:</p>
+</div>
+<div id="subsection7" class="subsection"><h3><a name="subsection7">Build &amp; Installation (Windows)</a></h3>
+<p>This section describes the actions required to install Kettle on Windows(tm)
+systems.
+If you have to install Kettle on a Unix machine (Linux, BSD, and
+related, including OS X) see section
+<span class="sectref"><a href="#subsection6">Build &amp; Installation (Unix)</a></span> instead.</p>
+<p>To install Kettle simply run</p>
+<pre class="example">
+    /path/to/tclsh8.5 /path/to/kettle/kettle -f /path/to/kettle/build.tcl install
+</pre>
+<p>where &quot;<b class="file">/path/to/tclsh8.5</b>&quot; is the tclsh of your Tcl installation,
+and &quot;<b class="file">/path/to/kettle</b>&quot; the location of the Kettle sources on your
+system.
+Please note that and how we are using the non-installed
+<b class="syscmd"><a href="kettle.html">kettle</a></b> application found in the sources to install itself.</p>
+<p>This will build the package and application and then places them into
+directories where the <b class="cmd">tclsh8.5</b> will find them. Note that the
+installed kettle application is modified to use the chosen tclsh
+instead of searching for one on the <b class="variable">PATH</b>.</p>
+<p>The above is written without assuming any associations from
+extensions (like &quot;<b class="file">.tcl</b>&quot;) to executables responsible for the file
+with that extension.
+Actually, given that &quot;<b class="file">build.tcl</b>&quot; is technically a
+&quot;<b class="file">kettle</b>&quot;-script, which in turn is a &quot;<b class="file">.tcl</b>&quot;-script I am not
+sure if Windows is able to handle such a chain of interpreters.
+The command given above simply spells out the entire chain.</p>
+<p>The build system provides a small GUI for those not comfortable with
+the command line.
+This GUI is accessible by invoking &quot;<b class="file">build.tcl</b>&quot; without any
+arguments from the command line.</p>
+<p>To get help about the methods of &quot;<b class="file">build.tcl</b>&quot;, and their complete
+syntax, invoke &quot;<b class="file">build.tcl</b>&quot; with argument <b class="method">help</b>, i.e.,
+like</p>
+<pre class="example">
+    /path/to/tclsh8.5 /path/to/kettle/kettle -f /path/to/kettle/build.tcl help
+</pre>
+</div>
+<div id="subsection8" class="subsection"><h3><a name="subsection8">Build &amp; Installation (Help)</a></h3>
+<p>Kettle commands for getting various types of help are:</p>
 <ol class="enumerated">
 <li><p>help-recipes</p></li>
 <li><p>help-options</p></li>
@@ -387,6 +436,7 @@ syntax, invoke &quot;<b class="file">build.tcl</b>&quot; with argument <b class=
 <li><p>list</p></li>
 <li><p>show-configuration</p></li>
 </ol>
+</div>
 </div>
 <div id="section4" class="section"><h2><a name="section4">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
