@@ -1,74 +1,81 @@
 '\"
-'\" Generated from file '/net/nas/data/andreask/Dev/Kettle/kettle/embedded/man/files/kettle_dsl.n' by tcllib/doctools with format 'nroff'
+'\" Generated from file 'kettle_dsl\&.man' by tcllib/doctools with format 'nroff'
 '\"
-'\" The definitions below are for supplemental macros used in Tcl/Tk
-'\" manual entries.
-'\"
-'\" .AP type name in/out ?indent?
-'\"	Start paragraph describing an argument to a library procedure.
-'\"	type is type of argument (int, etc.), in/out is either "in", "out",
-'\"	or "in/out" to describe whether procedure reads or modifies arg,
-'\"	and indent is equivalent to second arg of .IP (shouldn't ever be
-'\"	needed;  use .AS below instead)
-'\"
-'\" .AS ?type? ?name?
-'\"	Give maximum sizes of arguments for setting tab stops.  Type and
-'\"	name are examples of largest possible arguments that will be passed
-'\"	to .AP later.  If args are omitted, default tab stops are used.
-'\"
-'\" .BS
-'\"	Start box enclosure.  From here until next .BE, everything will be
-'\"	enclosed in one large box.
-'\"
-'\" .BE
-'\"	End of box enclosure.
-'\"
-'\" .CS
-'\"	Begin code excerpt.
-'\"
-'\" .CE
-'\"	End code excerpt.
-'\"
-'\" .VS ?version? ?br?
-'\"	Begin vertical sidebar, for use in marking newly-changed parts
-'\"	of man pages.  The first argument is ignored and used for recording
-'\"	the version when the .VS was added, so that the sidebars can be
-'\"	found and removed when they reach a certain age.  If another argument
-'\"	is present, then a line break is forced before starting the sidebar.
-'\"
-'\" .VE
-'\"	End of vertical sidebar.
-'\"
-'\" .DS
-'\"	Begin an indented unfilled display.
-'\"
-'\" .DE
-'\"	End of indented unfilled display.
-'\"
-'\" .SO
-'\"	Start of list of standard options for a Tk widget.  The
-'\"	options follow on successive lines, in four columns separated
-'\"	by tabs.
-'\"
-'\" .SE
-'\"	End of list of standard options for a Tk widget.
-'\"
-'\" .OP cmdName dbName dbClass
-'\"	Start of description of a specific option.  cmdName gives the
-'\"	option's name as specified in the class command, dbName gives
-'\"	the option's name in the option database, and dbClass gives
-'\"	the option's class in the option database.
-'\"
-'\" .UL arg1 arg2
-'\"	Print arg1 underlined, then print arg2 normally.
-'\"
-'\" RCS: @(#) $Id: man.macros,v 1.1 2009/01/30 04:56:47 andreas_kupries Exp $
-'\"
-'\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
+.TH "kettle_dsl" n 1 doc "Kettle - The Quick Brew System"
+.\" The -*- nroff -*- definitions below are for supplemental macros used
+.\" in Tcl/Tk manual entries.
+.\"
+.\" .AP type name in/out ?indent?
+.\"	Start paragraph describing an argument to a library procedure.
+.\"	type is type of argument (int, etc.), in/out is either "in", "out",
+.\"	or "in/out" to describe whether procedure reads or modifies arg,
+.\"	and indent is equivalent to second arg of .IP (shouldn't ever be
+.\"	needed;  use .AS below instead)
+.\"
+.\" .AS ?type? ?name?
+.\"	Give maximum sizes of arguments for setting tab stops.  Type and
+.\"	name are examples of largest possible arguments that will be passed
+.\"	to .AP later.  If args are omitted, default tab stops are used.
+.\"
+.\" .BS
+.\"	Start box enclosure.  From here until next .BE, everything will be
+.\"	enclosed in one large box.
+.\"
+.\" .BE
+.\"	End of box enclosure.
+.\"
+.\" .CS
+.\"	Begin code excerpt.
+.\"
+.\" .CE
+.\"	End code excerpt.
+.\"
+.\" .VS ?version? ?br?
+.\"	Begin vertical sidebar, for use in marking newly-changed parts
+.\"	of man pages.  The first argument is ignored and used for recording
+.\"	the version when the .VS was added, so that the sidebars can be
+.\"	found and removed when they reach a certain age.  If another argument
+.\"	is present, then a line break is forced before starting the sidebar.
+.\"
+.\" .VE
+.\"	End of vertical sidebar.
+.\"
+.\" .DS
+.\"	Begin an indented unfilled display.
+.\"
+.\" .DE
+.\"	End of indented unfilled display.
+.\"
+.\" .SO ?manpage?
+.\"	Start of list of standard options for a Tk widget. The manpage
+.\"	argument defines where to look up the standard options; if
+.\"	omitted, defaults to "options". The options follow on successive
+.\"	lines, in three columns separated by tabs.
+.\"
+.\" .SE
+.\"	End of list of standard options for a Tk widget.
+.\"
+.\" .OP cmdName dbName dbClass
+.\"	Start of description of a specific option.  cmdName gives the
+.\"	option's name as specified in the class command, dbName gives
+.\"	the option's name in the option database, and dbClass gives
+.\"	the option's class in the option database.
+.\"
+.\" .UL arg1 arg2
+.\"	Print arg1 underlined, then print arg2 normally.
+.\"
+.\" .QW arg1 ?arg2?
+.\"	Print arg1 in quotes, then arg2 normally (for trailing punctuation).
+.\"
+.\" .PQ arg1 ?arg2?
+.\"	Print an open parenthesis, arg1 in quotes, then arg2 normally
+.\"	(for trailing punctuation) and then a closing parenthesis.
+.\"
+.\"	# Set up traps and other miscellaneous stuff for Tcl/Tk man pages.
 .if t .wh -1.3i ^B
 .nr ^l \n(.l
 .ad b
-'\"	# Start an argument description
+.\"	# Start an argument description
 .de AP
 .ie !"\\$4"" .TP \\$4
 .el \{\
@@ -77,7 +84,7 @@
 .\}
 .ta \\n()Au \\n()Bu
 .ie !"\\$3"" \{\
-\&\\$1	\\fI\\$2\\fP	(\\$3)
+\&\\$1 \\fI\\$2\\fP (\\$3)
 .\".b
 .\}
 .el \{\
@@ -90,7 +97,7 @@
 .\}
 .\}
 ..
-'\"	# define tabbing values for .AP
+.\"	# define tabbing values for .AP
 .de AS
 .nr )A 10n
 .if !"\\$1"" .nr )A \\w'\\$1'u+3n
@@ -100,9 +107,9 @@
 .nr )C \\n()Bu+\\w'(in/out)'u+2n
 ..
 .AS Tcl_Interp Tcl_CreateInterp in/out
-'\"	# BS - start boxed text
-'\"	# ^y = starting y location
-'\"	# ^b = 1
+.\"	# BS - start boxed text
+.\"	# ^y = starting y location
+.\"	# ^b = 1
 .de BS
 .br
 .mk ^y
@@ -112,7 +119,7 @@
 .if n \l'\\n(.lu\(ul'
 .if n .fi
 ..
-'\"	# BE - end boxed text (draw box now)
+.\"	# BE - end boxed text (draw box now)
 .de BE
 .nf
 .ti 0
@@ -132,16 +139,16 @@
 .br
 .nr ^b 0
 ..
-'\"	# VS - start vertical sidebar
-'\"	# ^Y = starting y location
-'\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
+.\"	# VS - start vertical sidebar
+.\"	# ^Y = starting y location
+.\"	# ^v = 1 (for troff;  for nroff this doesn't matter)
 .de VS
 .if !"\\$2"" .br
 .mk ^Y
 .ie n 'mc \s12\(br\s0
 .el .nr ^v 1u
 ..
-'\"	# VE - end of vertical sidebar
+.\"	# VE - end of vertical sidebar
 .de VE
 .ie n 'mc
 .el \{\
@@ -156,9 +163,9 @@
 .\}
 .nr ^v 0
 ..
-'\"	# Special macro to handle page bottom:  finish off current
-'\"	# box/sidebar if in box/sidebar mode, then invoked standard
-'\"	# page bottom macro.
+.\"	# Special macro to handle page bottom:  finish off current
+.\"	# box/sidebar if in box/sidebar mode, then invoked standard
+.\"	# page bottom macro.
 .de ^B
 .ev 2
 'ti 0
@@ -185,34 +192,36 @@
 .mk ^Y
 .\}
 ..
-'\"	# DS - begin display
+.\"	# DS - begin display
 .de DS
 .RS
 .nf
 .sp
 ..
-'\"	# DE - end display
+.\"	# DE - end display
 .de DE
 .fi
 .RE
 .sp
 ..
-'\"	# SO - start of list of standard options
+.\"	# SO - start of list of standard options
 .de SO
+'ie '\\$1'' .ds So \\fBoptions\\fR
+'el .ds So \\fB\\$1\\fR
 .SH "STANDARD OPTIONS"
 .LP
 .nf
-.ta 4c 8c 12c
+.ta 5.5c 11c
 .ft B
 ..
-'\"	# SE - end of list of standard options
+.\"	# SE - end of list of standard options
 .de SE
 .fi
 .ft R
 .LP
-See the \\fBoptions\\fR manual entry for details on the standard options.
+See the \\*(So manual entry for details on the standard options.
 ..
-'\"	# OP - start of full description for a single option
+.\"	# OP - start of full description for a single option
 .de OP
 .LP
 .nf
@@ -223,26 +232,48 @@ Database Class:	\\fB\\$3\\fR
 .fi
 .IP
 ..
-'\"	# CS - begin code excerpt
+.\"	# CS - begin code excerpt
 .de CS
 .RS
 .nf
 .ta .25i .5i .75i 1i
 ..
-'\"	# CE - end code excerpt
+.\"	# CE - end code excerpt
 .de CE
 .fi
 .RE
 ..
+.\"	# UL - underline word
 .de UL
 \\$1\l'|0\(ul'\\$2
 ..
-.TH "kettle_dsl" n 1 doc "Kettle - The Quick Brew System"
+.\"	# QW - apply quotation marks to word
+.de QW
+.ie '\\*(lq'"' ``\\$1''\\$2
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\$2
+..
+.\"	# PQ - apply parens and quotation marks to word
+.de PQ
+.ie '\\*(lq'"' (``\\$1''\\$2)\\$3
+.\"" fix emacs highlighting
+.el (\\*(lq\\$1\\*(rq\\$2)\\$3
+..
+.\"	# QR - quoted range
+.de QR
+.ie '\\*(lq'"' ``\\$1''\\-``\\$2''\\$3
+.\"" fix emacs highlighting
+.el \\*(lq\\$1\\*(rq\\-\\*(lq\\$2\\*(rq\\$3
+..
+.\"	# MT - "empty" string
+.de MT
+.QW ""
+..
 .BS
 .SH NAME
 kettle_dsl \- Kettle - Build Declarations
 .SH SYNOPSIS
-package require \fBTcl  8.5\fR
+package require \fBTcl  8\&.5\fR
 .sp
 \fBkettle tcl\fR
 .sp
@@ -250,7 +281,7 @@ package require \fBTcl  8.5\fR
 .sp
 \fBkettle critcl3\fR
 .sp
-\fBkettle depends-on\fR \fIpath\fR...
+\fBkettle depends-on\fR \fIpath\fR\&.\&.\&.
 .sp
 \fBkettle doc-destination\fR \fIpath\fR
 .sp
@@ -267,27 +298,27 @@ package require \fBTcl  8.5\fR
 .PP
 .PP
 Welcome to Kettle, a set of packages providing support for writing
-build code for Tcl packages.
+build code for Tcl packages\&.
 .PP
 Please read the document \fIKettle - Introduction to Kettle\fR,
-if you have not done so already, to get an overview of the whole system.
+if you have not done so already, to get an overview of the whole system\&.
 .PP
 Here we document the build (declaration) commands available to a user
-of kettle, i.e. a package developer using (or wishing to use) kettle
-as the build system for their code.
+of kettle, i\&.e\&. a package developer using (or wishing to use) kettle
+as the build system for their code\&.
 .PP
 These commands are provided by the kettle core, as shown in the
-archtectural diagram below.
+archtectural diagram below\&.
 .PP
 IMAGE: arch_core
 .SH "BUILD COMMANDS"
 .TP
 \fBkettle tcl\fR
 This command declares the presence of one or more Tcl packages in the
-package source directory.
+package source directory\&.
 .sp
 The package source directory is scanned to locate
-them. Packages are detected by finding a marker (Tcl command) of the
+them\&. Packages are detected by finding a marker (Tcl command) of the
 form
 .CS
 
@@ -297,8 +328,8 @@ form
 .CE
 .IP
 in a file, where both \fBNAME\fR and \fBVERSION\fR must be literal
-strings, not commands, nor variable references. It is best recognized
-when found alone on its line.
+strings, not commands, nor variable references\&. It is best recognized
+when found alone on its line\&.
 Note that files containing an \fIanti-marker\fR of the form
 .CS
 
@@ -307,8 +338,8 @@ Note that files containing an \fIanti-marker\fR of the form
 
 .CE
 .IP
-are rejected as Tcl packages. Use the command \fBkettle critcl3\fR
-to detect such packages, mixing Tcl and C.
+are rejected as Tcl packages\&. Use the command \fBkettle critcl3\fR
+to detect such packages, mixing Tcl and C\&.
 In each accepted package file the command further looks for and
 recognizes embedded pragmas of the form
 .CS
@@ -317,8 +348,8 @@ recognizes embedded pragmas of the form
 .CE
 .IP
 which provides kettle with information about files belonging to the
-same package without directly providing it. This can be data files, or
-other Tcl files sourced by the main package file.
+same package without directly providing it\&. This can be data files, or
+other Tcl files sourced by the main package file\&.
 .sp
 For each detected package \fBP\fR two recipes are defined, to
 install and uninstall this package, namely:
@@ -361,43 +392,43 @@ generating a recipe tree matching
 
 .CE
 .sp
-The extended recipes may be created by this process. As other
+The extended recipes may be created by this process\&. As other
 declarations create similar trees these get merged together, enabling
 a user to install parts of the sources at various levels of specifity,
-from just a specific package up to all and sundry.
+from just a specific package up to all and sundry\&.
 .sp
 Tcl packages are installed into the directory specified by
-option \fB--lib-dir\fR despite technically not being binary files.
+option \fB--lib-dir\fR despite technically not being binary files\&.
 .RS
 .TP
 \fB--lib-dir\fR path
 This configuration option specifies the path to the directory packages
-(binary and script) will be installed into.
+(binary and script) will be installed into\&.
 .sp
 The default value is the [\fBinfo library\fR] directory
-of the \fBtclsh\fR used to run the \fBkettle\fR application.
+of the \fBtclsh\fR used to run the \fBkettle\fR application\&.
 .sp
 If the option \fB--exec-prefix\fR is modified the default
-value changes to "\fI\fB--exec-prefix\fR/lib\fR".
+value changes to "\fI\fB--exec-prefix\fR/lib\fR"\&.
 .RE
 .sp
 To simplify usage the command heuristically detects
 documentation and testsuites by means of internally calling the
 commands \fBkettle doc\fR and \fBkettle testsuite\fR with default
-path arguments ("\fIdoc\fR" and "\fItests\fR" respectively).
+path arguments ("\fIdoc\fR" and "\fItests\fR" respectively)\&.
 .sp
 If documentation and/or testsuite are placed in non-standard
 locations these commands have to be run before \fBkettle tcl\fR,
-with the proper paths.
+with the proper paths\&.
 .sp
 If dependencies have been specified, via
 \fBkettle depends-on\fR, the package specific install and debug
 recipes will recusively invoke install or debug on them before
-building the package itself.
+building the package itself\&.
 .TP
 \fBkettle tclapp\fR \fIpath\fR
 This command declares the presence of a Tcl script application found
-at the \fIpath\fR under the package source directory.
+at the \fIpath\fR under the package source directory\&.
 .sp
 If the specified application is found the command will define
 two recipes to install and uninstall this application, namely:
@@ -440,34 +471,34 @@ generating a recipe tree matching
 
 .CE
 .sp
-The extended recipes may be created by this process. As other
+The extended recipes may be created by this process\&. As other
 declarations create similar trees these get merged together, enabling
 a user to install parts of the sources at various levels of specifity,
-from just a specific application up to all and sundry.
+from just a specific application up to all and sundry\&.
 .sp
 Script applications are installed into the directory specified
 by option \fB--bin-dir\fR despite technically not being binary
-files.
+files\&.
 .RS
 .TP
 \fB--bin-dir\fR path
 This configuration option specifies the path to the directory
-applications (binary and script) will be installed into.
+applications (binary and script) will be installed into\&.
 .sp
 The default value is the directory of the \fBtclsh\fR used
-to run the \fBkettle\fR application.
+to run the \fBkettle\fR application\&.
 .sp
 If the option \fB--exec-prefix\fR is modified the default
-value changes to "\fI\fB--exec-prefix\fR/bin\fR".
+value changes to "\fI\fB--exec-prefix\fR/bin\fR"\&.
 .RE
 .TP
 \fBkettle critcl3\fR
 This command declares the presence of one or more critcl-based Tcl
-packages in the package source directory, mixing C and Tcl.
+packages in the package source directory, mixing C and Tcl\&.
 .sp
 The package source directory is scanned to locate
-them. Packages are detected by finding two markers (Tcl commands) in
-the file. These markers are of the form
+them\&. Packages are detected by finding two markers (Tcl commands) in
+the file\&. These markers are of the form
 .CS
 
 
@@ -484,11 +515,11 @@ and
 .CE
 .IP
 Both \fBNAME\fR and \fBVERSION\fR must be literal strings, not
-commands, nor variable references. They are best recognized when found
-alone on their respective lines.
+commands, nor variable references\&. They are best recognized when found
+alone on their respective lines\&.
 .sp
 For each detected package \fBP\fR three recipes are defined, to
-install and uninstall this package. Installation comes in two
+install and uninstall this package\&. Installation comes in two
 variants, regular and debug:
 .RS
 .TP
@@ -542,144 +573,144 @@ generating a recipe tree matching
 
 .CE
 .sp
-The extended recipes may be created by this process. As other
+The extended recipes may be created by this process\&. As other
 declarations create similar trees these get merged together, enabling
 a user to install parts of the sources at various levels of specifity,
-from just a specific package up to all and sundry.
+from just a specific package up to all and sundry\&.
 .sp
 Critcl-based packages are installed into the directory
-specified by option \fB--lib-dir\fR.
+specified by option \fB--lib-dir\fR\&.
 Critcl's choice of the target configuration to build for can be
-overrriden via option \fB--target\fR.
+overrriden via option \fB--target\fR\&.
 Kettle's choice of which critcl application to use cane overriden by
 option \fB--with-critcl3\fR, except if kettle found a
 \fBcritcl\fR package and runs everything itself instead of
-invoking critcl child processes.
+invoking critcl child processes\&.
 .RS
 .TP
 \fB--lib-dir\fR path
 This configuration option specifies the path to the directory packages
-(binary and script) will be installed into.
+(binary and script) will be installed into\&.
 .sp
 The default value is the [\fBinfo library\fR] directory
-of the \fBtclsh\fR used to run the \fBkettle\fR application.
+of the \fBtclsh\fR used to run the \fBkettle\fR application\&.
 .sp
 If the option \fB--exec-prefix\fR is modified the default
-value changes to "\fI\fB--exec-prefix\fR/lib\fR".
+value changes to "\fI\fB--exec-prefix\fR/lib\fR"\&.
 .TP
 \fB--target\fR string
 The value of this option is the target name \fBcritcl\fR should use
-to build C code.
+to build C code\&.
 .sp
 The default value is the empty string, leaving the choice of
-target to \fBcritcl\fR itself.
+target to \fBcritcl\fR itself\&.
 .TP
 \fB--with-critcl3\fR path
 This configuration option specifies the path to the tool
 \fBcritcl3\fR for the compilation and installation of critcl-based
-C code.
+C code\&.
 .sp
 The default value is the path to the first of
 .RS
 .IP [1]
 "\fIcritcl3\fR",
 .IP [2]
-"\fIcritcl3.kit\fR",
+"\fIcritcl3\&.kit\fR",
 .IP [3]
-"\fIcritcl3.tcl\fR",
+"\fIcritcl3\&.tcl\fR",
 .IP [4]
-"\fIcritcl3.exe\fR",
+"\fIcritcl3\&.exe\fR",
 .IP [5]
 "\fIcritcl\fR",
 .IP [6]
-"\fIcritcl.kit\fR",
+"\fIcritcl\&.kit\fR",
 .IP [7]
-"\fIcritcl.tcl\fR", and
+"\fIcritcl\&.tcl\fR", and
 .IP [8]
-"\fIcritcl.exe\fR"
+"\fIcritcl\&.exe\fR"
 .RE
 .IP
-found on the \fBPATH\fR. None of these matter however should the
+found on the \fBPATH\fR\&. None of these matter however should the
 system find the package \fBcritcl\fR version 3 or higher among the
 packages known to the \fBtclsh\fR running the \fBkettle\fR
-application. In that case kettle will run everything in itself,
-without invoking critcl child processes.
+application\&. In that case kettle will run everything in itself,
+without invoking critcl child processes\&.
 .RE
 .sp
 To simplify usage the command heuristically detects
 documentation and testsuites by means of internally calling the
 commands \fBkettle doc\fR and \fBkettle testsuite\fR with default
-path arguments ("\fIdoc\fR" and "\fItests\fR" respectively).
+path arguments ("\fIdoc\fR" and "\fItests\fR" respectively)\&.
 .sp
 If documentation and/or testsuite are placed in non-standard
 locations these commands have to be run before \fBkettle critcl3\fR,
-with the proper paths.
+with the proper paths\&.
 .sp
 If dependencies have been specified, via
 \fBkettle depends-on\fR, the package specific install and debug
 recipes will recusively invoke install or debug on them before
-building the package itself.
+building the package itself\&.
 .TP
-\fBkettle depends-on\fR \fIpath\fR...
+\fBkettle depends-on\fR \fIpath\fR\&.\&.\&.
 This command declares that the current sources depend on the packages
-in the specified directories. These are best specified as relative
+in the specified directories\&. These are best specified as relative
 directories and most useful in package bundles where multiple
-dependent packages are managed in a single source repository.
+dependent packages are managed in a single source repository\&.
 .sp
-The arguments can be paths to files too. In that case the files
+The arguments can be paths to files too\&. In that case the files
 are assumed to be the build declaration files of the required packages
-in question. In case of a directory path kettle will search for the
-build declaration file it needs.
+in question\&. In case of a directory path kettle will search for the
+build declaration file it needs\&.
 This information is currently only used by the package-specific
 "install" and "debug" recipes generated by the kettle commands
-\fBkettle tcl\fR and \fBkettle critcl\fR.
+\fBkettle tcl\fR and \fBkettle critcl\fR\&.
 .TP
 \fBkettle doc-destination\fR \fIpath\fR
 The "doc" recipe generated by the \fBkettle doc\fR command (see
 below) saves the conversion results into the sub-directory specified
-by option \fB--with-doc-destination\fR.
+by option \fB--with-doc-destination\fR\&.
 .sp
 This command declares that the results should be put into the
 specified non-standard \fIpath\fR instead of the default of
-"\fIembedded\fR".
+"\fIembedded\fR"\&.
 To take effect it has to be run \fIbefore\fR \fBkettle doc\fR is
-run.
+run\&.
 \fINote\fR that the user is still able to override with by setting
-\fB--with-doc-destination\fR on the command line.
+\fB--with-doc-destination\fR on the command line\&.
 .RS
 .TP
 \fB--with-doc-destination\fR path
 This configuration option specifies the path to the directory the
 generated documentation should be placed into for the documentation
-installa recipes to pick up from.
+installa recipes to pick up from\&.
 .sp
 This should be a relative path, which will interpreted relative
-to the package source directory.
+to the package source directory\&.
 .sp
-The default value is "\fIembedded\fR".
+The default value is "\fIembedded\fR"\&.
 .sp
 A build declaration file can override this default with the
-\fBkettle doc-destination\fR command.
+\fBkettle doc-destination\fR command\&.
 .RE
 .TP
 \fBkettle doc\fR ?\fIdocroot\fR?
 This command declares the presence of \fBdoctools\fR-based
 documentation files under the directory \fIdocroot\fR, which is a path
-relative to the source directory.
+relative to the source directory\&.
 .sp
-If not specified \fIdocroot\fR defaults to "\fIdoc\fR".
+If not specified \fIdocroot\fR defaults to "\fIdoc\fR"\&.
 .sp
 While this command can be invoked multiple times, only the
-first invokation will have an effect. Every invokation after that is
-ignored.
+first invokation will have an effect\&. Every invokation after that is
+ignored\&.
 The commands \fBkettle tcl\fR, \fBkettle critcl3\fR, and
 \fBkettle gh-pages\fR run this command implicitly, with the default
-paths.
+paths\&.
 This means that if documentation is stored in a non-standard location
-\fBkettle doc\fR must be run explicitly before them, with the proper path.
+\fBkettle doc\fR must be run explicitly before them, with the proper path\&.
 .sp
 The package documentation directory is scanned to locate the
-documentation files. They are recognized by containing any of the
+documentation files\&. They are recognized by containing any of the
 marker strings
 .RS
 .IP \(bu
@@ -687,28 +718,28 @@ marker strings
 .IP \(bu
 "\fB--- doctools ---\fR"
 .IP \(bu
-"\fBtcl.tk//DSL doctools//EN//\fR"
+"\fBtcl\&.tk//DSL doctools//EN//\fR"
 .RE
 .IP
-in their first 1024 characters. Possible documentation files are
+in their first 1024 characters\&. Possible documentation files are
 rejected should they contain any of the anti-markers
 .RS
 .IP \(bu
 "\fB--- !doctools ---\fR"
 .IP \(bu
-"\fB!tcl.tk//DSL doctools//EN//\fR"
+"\fB!tcl\&.tk//DSL doctools//EN//\fR"
 .RE
 .IP
-in their first 1024 characters. This last is necessary as doctools
+in their first 1024 characters\&. This last is necessary as doctools
 include file feature allows the actual document content to start in an
 include file which cannot operate without being includes from a master
-file configuring it.
+file configuring it\&.
 .sp
 When documentation files are found the command will define
 recipes to convert the documentation into manpages and HTML files,
-plus recipes install the conversion results. The conversion results
+plus recipes install the conversion results\&. The conversion results
 themselves are stored as specified by \fBkettle doc-destination\fR
-(see above) and associated options.
+(see above) and associated options\&.
 .RS
 .TP
 \fBdoc\fR
@@ -750,81 +781,81 @@ generating a recipe tree matching
 
 .CE
 .sp
-The extended recipes may be created by this process. As other
+The extended recipes may be created by this process\&. As other
 declarations create similar trees these get merged together, enabling
 a user to install parts of the sources at various levels of specifity,
-from just a specific type of documentation up to all and sundry.
+from just a specific type of documentation up to all and sundry\&.
 .sp
 HTML documentation is stored under the directory specified by
-option \fB--html-dir\fR.
+option \fB--html-dir\fR\&.
 Manpages are stored under the directory specified by
-option \fB--man-dir\fR.
+option \fB--man-dir\fR\&.
 The "doc" recipe uses the \fBdtplite\fR application to perform the
-various conversions.
+various conversions\&.
 .RS
 .TP
 \fB--html-dir\fR path
 This configuration option specifies the path to the directory package
-documentation in HTML format will be installed into.
+documentation in HTML format will be installed into\&.
 .sp
-The default value is "\fI\fB--prefix\fR/html\fR".
+The default value is "\fI\fB--prefix\fR/html\fR"\&.
 .TP
 \fB--man-dir\fR path
 This configuration option specifies the path to the directory package
-documentation (manpages, in *roff format) will be installed into.
+documentation (manpages, in *roff format) will be installed into\&.
 .sp
-The default value is "\fI\fB--prefix\fR/man\fR".
+The default value is "\fI\fB--prefix\fR/man\fR"\&.
 .TP
 \fB--with-dtplite\fR path
 This configuration option specifies the path to the tool
-\fBdtplite\fR for doctools-based documentation processing.
+\fBdtplite\fR for doctools-based documentation processing\&.
 .sp
 The default value is the path to the first of
 "\fIdtplite\fR",
-"\fIdtplite.kit\fR",
-"\fIdtplite.tcl\fR", and
-"\fIdtplite.exe\fR"
-found on the \fBPATH\fR.
+"\fIdtplite\&.kit\fR",
+"\fIdtplite\&.tcl\fR", and
+"\fIdtplite\&.exe\fR"
+found on the \fBPATH\fR\&.
 .RE
 .sp
 To simplify usage the command heuristically detects
 tklib/diagram based figures by means of internally calling the command
 \fBkettle figures\fR with default path arguments
-("\fI\fBdoc-sources\fR/figures}\fR".
+("\fI\fBdoc-sources\fR/figures}\fR"\&.
 .sp
 If the figures are placed in a non-standard location this
 command has to be run before \fBkettle doc\fR, with the proper
-paths.
+paths\&.
 .TP
 \fBkettle figures\fR ?\fIfigroot\fR?
 This command declares the presence of \fBdiagram\fR-based figures
 under the directory \fIfigroot\fR, which is a path relative to the
-source directory.
+source directory\&.
 .sp
-If not specified \fIfigroot\fR defaults to "\fIdoc/figures\fR".
+If not specified \fIfigroot\fR defaults to "\fIdoc/figures\fR"\&.
 .sp
 While this command can be invoked multiple times, only the
-first invokation will have an effect. Every invokation after that is
-ignored.
+first invokation will have an effect\&. Every invokation after that is
+ignored\&.
 The command \fBkettle doc\fR (and indirectly \fBkettle tcl\fR and
 \fBkettle critcl3\fR) runs this command implicitly, with the default
-paths.
+paths\&.
 This means that if diagrams are stored in a non-standard location
 \fBkettle figures\fR must be run explicitly before them, with the
-proper path.
+proper path\&.
 .sp
 The package diagram directory is scanned to locate the diagram
-files. They are recognized by containing the marker string
+files\&. They are recognized by containing the marker string
 .RS
 .IP \(bu
-"\fBtcl.tk//DSL diagram//EN//\fR"
+"\fBtcl\&.tk//DSL diagram//EN//\fR"
 .RE
 .IP
-in their first 1024 characters.
+in their first 1024 characters\&.
 .sp
 When diagram files are found the command will define recipes to
 convert the diagrams into PNG raster images (saved as siblings to
-their source files), and to render the diagrams on a Tk canvas.
+their source files), and to render the diagrams on a Tk canvas\&.
 .RS
 .TP
 \fBfigures\fR
@@ -833,119 +864,119 @@ their source files), and to render the diagrams on a Tk canvas.
 .RE
 .sp
 The recipes use the \fBdia\fR application (of \fBtklib\fR)
-to perform the conversions, and GUI rendering.
+to perform the conversions, and GUI rendering\&.
 .RS
 .TP
 \fB--with-dia\fR path
 This configuration option specifies the path to the tool
-\fBdia\fR for tklib/diagram-based diagram processing.
+\fBdia\fR for tklib/diagram-based diagram processing\&.
 .sp
 The default value is the path to the first of
 "\fIdia\fR",
-"\fIdia.kit\fR",
-"\fIdia.tcl\fR", and
-"\fIdia.exe\fR"
-found on the \fBPATH\fR.
+"\fIdia\&.kit\fR",
+"\fIdia\&.tcl\fR", and
+"\fIdia\&.exe\fR"
+found on the \fBPATH\fR\&.
 .RE
 .TP
 \fBkettle gh-pages\fR
 This command declares the presence of a \fIgh-pages\fR branch in the
-repository, as is used by, for example, \fIhttp://github.com\fR, to
-manage the web-site for a project in the rpeository of the project.
+repository, as is used by, for example, \fIhttp://github\&.com\fR, to
+manage the web-site for a project in the rpeository of the project\&.
 .sp
 The command confirms the presence of documentation and that the
-local repository is \fBgit\fR-based. If neither is true nothing
-done.
+local repository is \fBgit\fR-based\&. If neither is true nothing
+done\&.
 .sp
 While this command can be invoked multiple times, only the
-first invokation will have an effect. Every invokation after that is
-ignored.
+first invokation will have an effect\&. Every invokation after that is
+ignored\&.
 It runs the command \fBkettle doc\fR command implicitly, with the
 default paths, to ensure that its own check for documentation work
-properly.
+properly\&.
 This means that if documentation is stored in a non-standard location
 \fBkettle doc\fR must be run explicitly before this command, with
-the proper path.
+the proper path\&.
 .sp
 When the above tests pass the command will define a recipe
 named \fBgh-pages\fR, which performs all the automatable steps to
 copy the embedded documentation of the project into its
-\fIgh-pages\fR branch. Afterward the checkout is left at the
-\fIgh-pages\fR branch, for the user to review and commit. While the
-last step could be automated the review cannot, making the point moot.
+\fIgh-pages\fR branch\&. Afterward the checkout is left at the
+\fIgh-pages\fR branch, for the user to review and commit\&. While the
+last step could be automated the review cannot, making the point moot\&.
 .TP
 \fBkettle testsuite\fR ?\fItestroot\fR?
 This command declares the presence of a \fBtcltest\fR-based
 testsuite under the directory \fItestroot\fR, which is a path relative
-to the source directory.
+to the source directory\&.
 .sp
-If not specified \fItestroot\fR defaults to "\fItests\fR".
+If not specified \fItestroot\fR defaults to "\fItests\fR"\&.
 .sp
 While this command can be invoked multiple times, only the
-first invokation will have an effect. Every invokation after that is
-ignored.
+first invokation will have an effect\&. Every invokation after that is
+ignored\&.
 The commands \fBkettle tcl\fR and \fBkettle critcl3\fR) run this
-command implicitly, with the default paths.
+command implicitly, with the default paths\&.
 This means that if a testsuite is stored in a non-standard location
 \fBkettle testsuite\fR must be run explicitly before them, with the
-proper path.
+proper path\&.
 .sp
 The package testsuite directory is scanned to locate the test
-files. They are recognized by containing the marker string
+files\&. They are recognized by containing the marker string
 .RS
 .IP \(bu
-"\fBtcl.tk//DSL tcltest//EN//\fR"
+"\fBtcl\&.tk//DSL tcltest//EN//\fR"
 .RE
 .IP
-in their first 1024 characters.
+in their first 1024 characters\&.
 .sp
 When testsuites are found the command will define a recipe to
-run them. This recipe will recursively invoke the recipes "debug" (or
+run them\&. This recipe will recursively invoke the recipes "debug" (or
 "install" if the former does not exist, or fails) before performing
 the tests, installing the package under test (and its dependencies) in
-a local directory for use by the testsuites. The supporting commands
+a local directory for use by the testsuites\&. The supporting commands
 provided by kettle (see \fIKettle - Testsuite Support\fR) know how
-to use this.
+to use this\&.
 .RS
 .TP
 \fBtest\fR
 .RE
 .sp
 The verbosity of testsuite output to the terminal is specified
-by the option \fB--log-mode\fR.
+by the option \fB--log-mode\fR\&.
 The ability to save testsuite output to a series of files is specified
-by the option \fB--log\fR.
+by the option \fB--log\fR\&.
 The tclsh shell used for running the testsuites is specified by option
-\fB--with-shell\fR.
+\fB--with-shell\fR\&.
 .RS
 .TP
 \fB--log-mode\fR compact|full
-An option for recipe 'test', if defined. Its value determines the
-verbosity of test suite information printed to the terminal or log window.
+An option for recipe 'test', if defined\&. Its value determines the
+verbosity of test suite information printed to the terminal or log window\&.
 .sp
-The default is \fBcompact\fR.
+The default is \fBcompact\fR\&.
 .TP
 \fB--log\fR path
-An option for recipe 'test', if defined. Its value is the path "stem"
-for a series of files testsuite information is saved into. The actual
+An option for recipe 'test', if defined\&. Its value is the path "stem"
+for a series of files testsuite information is saved into\&. The actual
 files use the specified stem and add their specifc file extension to
-it.
+it\&.
 .sp
 The default is the empty string, disabling the saving of
-testsuite information.
+testsuite information\&.
 .TP
 \fB--with-shell\fR path
 .RE
 .PP
 .SH LICENSE
-This package, written by Andreas Kupries, is BSD licensed.
+This package, written by Andreas Kupries, is BSD licensed\&.
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
-bugs and other problems.
+bugs and other problems\&.
 Please report such at the
-\fIKettle Tracker\fR [https://chiselapp.com/user/andreas_kupries/repository/Kettle/index].
+\fIKettle Tracker\fR [https://chiselapp\&.com/user/andreas_kupries/repository/Kettle/index]\&.
 Please also report any ideas for enhancements you may have for either
-package and/or documentation.
+package and/or documentation\&.
 .SH KEYWORDS
 build tea
 .SH CATEGORY
