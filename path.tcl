@@ -863,7 +863,11 @@ proc ::kettle::path::find.fossil {path} {
 
 proc ::kettle::path::revision.git {path} {
     in $path {
-	set v [::exec {*}[auto_execok git] describe]
+	try {
+	    set v [::exec {*}[auto_execok git] describe]
+	} on error {e o} {
+	    set v [lindex [split [dict get $o -errorinfo] \n] 0]
+	}
     }
     return [string trim $v]
 }
