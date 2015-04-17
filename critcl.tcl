@@ -133,9 +133,23 @@ proc ::kettle::critcl3 {} {
 		 {path critcl3-package-file}] \
 	root packages
 
+    set px {}
     foreach {file pn pv} $packages {
 	CritclSetup $root $file $pn $pv
+	lappend px $pn $pv
     }
+
+    recipe define content-critcl-packages "Show Critcl packages found in the build" {packages} {
+	set pnames [lsort -dict [dict keys $packages]]
+	puts ""
+	foreach pn $pnames label [kettle strutil padr $pnames] {
+	    set pv [dict get $packages $pn]
+	    puts "* critcl - ${label} : $pv"
+	}
+    } $px
+
+    recipe parent content-critcl-packages content-critcl
+    recipe parent content-critcl          content
     return
 }
 

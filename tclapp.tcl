@@ -90,6 +90,17 @@ proc ::kettle::tclapp {fname} {
 	recipe parent meta-generate-tcl-applications    meta-generate-applications
 	recipe parent meta-generate-applications        meta-generate
     }
+
+
+    recipe define content-app-$fname "Show found application $fname" {name} {
+	puts ""
+	puts "* app - $name"
+    } $name
+
+    recipe parent content-app-$fname content-app
+    recipe parent content-app        content
+
+
     return
 }
 

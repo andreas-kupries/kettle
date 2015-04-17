@@ -25,9 +25,23 @@ proc ::kettle::tcl {} {
 		 {path tcl-package-file}] \
 	root packages
 
+    set px {}
     foreach {files pn pv} $packages {
 	TclSetup $root $files $pn $pv
+	lappend px $pn $pv
     }
+
+    recipe define content-tcl-packages "Show Tcl packages found in the build" {packages} {
+	set pnames [lsort -dict [dict keys $packages]]
+	puts ""
+	foreach pn $pnames label [kettle strutil padr $pnames] {
+	    set pv [dict get $packages $pn]
+	    puts "* tcl - ${label} : $pv"
+	}
+    } $px
+
+    recipe parent content-tcl-packages content-tcl
+    recipe parent content-tcl          content
     return
 }
 
