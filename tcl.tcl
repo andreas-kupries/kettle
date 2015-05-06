@@ -86,9 +86,9 @@ proc ::kettle::TclSetup {root files pn pv} {
 		    $pkgdir {*}$files $indexfile {*}$mdfile
 
 	    } finally {
-		file delete $indexfile
-		file delete $mdfile
-		file delete -force $tmpdir
+		catch { file delete $indexfile }
+		catch { file delete $mdfile }
+		catch { file delete -force $tmpdir }
 	    }
 	}
     } $pkgdir $root $files $pn $pv

@@ -873,10 +873,15 @@ proc ::kettle::path::revision.git {path} {
 }
 
 proc ::kettle::path::revision.fossil {path} {
-    in $path {
-	set info [::exec {*}[auto_execok fossil] info]
+    set fossilcmd [auto_execok fossil]
+    if {[llength $fossilcmd]} {
+	in $path {
+	    set info [::exec {*}$fossilcmd info]
+	}
+	return [lindex [grep {checkout:*} $info] 0 1]
+    } else {
+	return Unknown
     }
-    return [lindex [grep {checkout:*} $info] 0 1]
 }
 
 proc ::kettle::path::is.git {path} {

@@ -229,9 +229,14 @@ proc ::kettle::meta::fix-location {var} {
     if {![dict exists $m location] &&
 	([path find.fossil [path sourcedir]] ne {})
     } {
-	set remote [exec {*}[auto_execok fossil] remote]
-	regsub {/[^@]*@} $remote {/} remote
-	dict set m location $remote
+	set fossilcmd [auto_execok fossil]
+	if {[llength $fossilcmd]} {
+	    set remote [exec {*}$fossilcmd remote]
+	    regsub {/[^@]*@} $remote {/} remote
+	    dict set m location $remote
+	} else {
+	    dict set m location Unknown
+	}
     }
     return
 }
