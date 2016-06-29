@@ -53,18 +53,22 @@ proc ::kettle::doc {{docsrcdir doc}} {
     # Overwrite self, we run only once for effect.
     proc ::kettle::doc args {}
 
+    # - - -- --- ----- -------- -------------
     # Heuristic search for figures
     figures $docsrcdir/figures
 
+    # - - -- --- ----- -------- -------------
     # Heuristic search for documentation files.
-    # Aborts caller when nothing is found.
+    # Aborts caller when nothing is found, preventing recipe definition.
     lassign [path scan \
 		 tcllib/doctools \
 		 $docsrcdir \
 		 {path doctools-file}] \
 	root manpages
 
+    # - - -- --- ----- -------- -------------
     # Put the documentation into recipes.
+    # Determine the various paths needed by the backend commands.
 
     set dd      [path sourcedir [option get --with-doc-destination]]
     set mansrc  $dd/man/files
@@ -75,99 +79,152 @@ proc ::kettle::doc {{docsrcdir doc}} {
 
     set isfossil [expr {[path find.fossil [path sourcedir]] ne {}}]
 
-    recipe define doc {
+    # - - -- --- ----- -------- -------------
+    # Generate documentation
+
+    recipe defx {doc regenerate} {
 	(Re)generate the documentation embedded in the repository.
-    } {root dst isfossil} {
-	if {[option get @dtplite] eq "external"} {
-	    # Validate tool presence before actually doing anything
-	    tool get dtplite
-	}
-	DtpliteDo $root $dst $isfossil
-    } $root $dd $isfossil
+    } [list ::kettle::doc::Regenerate $root $dd $isfossil]
 
-    recipe define {validate doc} {
+    # - - -- --- ----- -------- -------------
+    # Validate documentation (multiple paths to the same functionality).
+
+    recipe defx {validate doc} {
 	Validate the documentation.
-    } {root} {
-	io puts "Validate documentation"
-	path exec dtplite validate .
-    } $root
+    } [list ::kettle::doc::Validate $root]
 
-    recipe define install-doc-manpages {
-	Install manpages
-    } {src dst} {
-	path in $src {
-	    path install-file-set \
-		"manpages" \
-		$dst {*}[glob -tails -directory $src *.n]
-	}
-	return
-    } $mansrc $mandst
+    recipe defx {doc validate} {
+	Validate the documentation.
+    } [list ::kettle::doc::Validate $root]
 
-    recipe define install-doc-html {
-	Install HTML documentation
-    } {src dst} {
-	path in $src {
-	    path install-file-group \
-		"HTML documentation" \
-		$dst {*}[glob -tails -directory $src *]
-	}
-	return
-    } $htmlsrc $htmldst
+    # - - -- --- ----- -------- -------------
+    # Installation (multiple paths to the same functionality).
 
-    recipe define uninstall-doc-manpages {
+    recipe defx {install doc manpages} {
+	Install the manpages.
+    } [list ::kettle::doc::InstallManpages $mansrc $mandst]
+
+    recipe defx {doc install manpages} {
+	Install the manpages.
+    } [list ::kettle::doc::InstallManpages $mansrc $mandst]
+
+    recipe defx {install doc html} {
+	Install the HTML documentation.
+    } [list ::kettle::doc::InstallHTML $htmlsrc $htmldst]
+
+    recipe defx {doc install html} {
+	Install the HTML documentation.
+    } [list ::kettle::doc::InstallHTML $htmlsrc $htmldst]
+
+
+    # - - -- --- ----- -------- -------------
+    # Uninstallation (multiple paths to the same functionality).
+
+    recipe defx {uninstall doc manpages} {
 	Uninstall manpages
-    } {src dst} {
-	path uninstall-file-set \
-	    "manpages" \
-	    $dst {*}[glob -directory $src -tails *.n]
-	return
-    } $mansrc $mandst
+    }  [list ::kettle::doc::UninstallManpages $mansrc $mandst]
 
-    recipe define uninstall-doc-html {
+    recipe defx {doc uninstall manpages} {
+	Uninstall manpages
+    }  [list ::kettle::doc::UninstallManpages $mansrc $mandst]
+
+    recipe defx {uninstall doc html} {
 	Uninstall HTML documentation
-    } {dst} {
-	path uninstall-file-group \
-	    "HTML documentation" \
-	    $dst
-    } $htmldst
+    }  [list ::kettle::doc::UninstallHTML $htmldst]
 
-    recipe define reinstall-doc-manpages {
+    recipe defx {doc uninstall html} {
+	Uninstall HTML documentation
+    }  [list ::kettle::doc::UninstallHTML $htmldst]
+
+    # - - -- --- ----- -------- -------------
+    # Reinstallation (multiple paths to the same functionality).
+
+    recipe defx {reinstall doc manpages} {
 	Reinstall manpages
-    } {} {
-	invoke self uninstall-doc-manpages
-	invoke self install-doc-manpages
-    }
+    } ::kettle::doc::ReinstallManpages
 
-    recipe define reinstall-doc-html {
+    recipe defx {doc reinstall manpages} {
+	Reinstall manpages
+    } ::kettle::doc::ReinstallManpages
+
+    recipe defx {reinstall doc html} {
 	Reinstall HTML documentation
-    } {} {
-	invoke self uninstall-doc-html
-	invoke self install-doc-html
-    }
+    } ::kettle::doc::ReinstallHTML
 
-    recipe parent install-doc-html     install-doc
-    recipe parent install-doc-manpages install-doc
-    recipe parent install-doc          install
+    recipe defx {doc reinstall html} {
+	Reinstall HTML documentation
+    } ::kettle::doc::ReinstallHTML
 
-    recipe parent uninstall-doc-html     uninstall-doc
-    recipe parent uninstall-doc-manpages uninstall-doc
-    recipe parent uninstall-doc          uninstall
-
-    recipe parent reinstall-doc-html     reinstall-doc
-    recipe parent reinstall-doc-manpages reinstall-doc
-    recipe parent reinstall-doc          reinstall
-
-    #recipe parent validate-doc validate
     return
 }
 
 # # ## ### ##### ######## ############# #####################
+## Handle a github gh-pages branch.
 
-proc ::kettle::DtpliteDo {root dst isfossil} {
+proc ::kettle::gh-pages {} {
+    # Overwrite self, we run only once for effect.
+    proc ::kettle::gh-pages args {}
+
+    doc
+
+    # - - -- --- ----- -------- -------------
+    io trace {Testing for gh-pages}
+
+    # No need to handle a gh-pages documentation branch if there is no
+    # documentation to work with.
+    if {![recipe exists doc]} {
+	io trace {  No gh-pages: No documentation}
+	return
+    }
+
+    # Ditto if this is not a git-based project.
+    if {[path find.git [path sourcedir]] eq {}} {
+	io trace {  No gh-pages: Not git based}
+	return
+    }
+ 
+    # Now we check if the branch we need is present. Note that if we
+    # can't find the tool, i.e. "git", we assume that the branch is
+    # present and let the recipe error out on the missing tool.
+
+    if {![catch {
+	path grep *gh-pages* [exec {*}[tool get git] branch -a]
+    } res] && ![llength $res]} {
+	io trace {  No gh-pages: branch not present}
+	return
+    }
+
+    # - - -- --- ----- -------- -------------
+
+    recipe define {doc gh-pages} {
+	Install embedded documentation into a "gh-pages"
+	branch of the local git repository.
+    } ::kettle::doc::GithubPages
+
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+## Recipe Callbacks
+
+namespace eval ::kettle::doc {
+    # No ensemble!
+    namespace import ::kettle::tool
+    namespace import ::kettle::option
+    namespace import ::kettle::path
+    namespace import ::kettle::io
+    namespace import ::kettle::invoke
+}
+
+proc ::kettle::doc::Regenerate {root dst isfossil} {
+    if {[option get @dtplite] eq "external"} {
+	# Validate tool presence before actually doing anything
+	tool get dtplite
+    }
+
     io trace {  do fossil=$isfossil}
 
     path in $root {
-
 	io puts "Removing old documentation..."
 	file delete -force $dst
 
@@ -196,9 +253,123 @@ proc ::kettle::DtpliteDo {root dst isfossil} {
 	cd  $dst/man ; file delete -force .idxdoc .tocdoc
 	cd  ../www   ; file delete -force .idxdoc .tocdoc
     }
+    return
 }
 
-proc ::kettle::DtpliteRun {args} {
+proc ::kettle::doc::Validate {root} {
+    io puts "Validate documentation"
+    path in $root {
+	DtpliteRun validate .
+    }
+    return
+}
+
+proc ::kettle::doc::InstallManpages {src dst} {
+    path in $src {
+	path install-file-set \
+	    "manpages" \
+	    $dst {*}[glob -tails -directory $src *.n]
+    }
+    return
+}
+
+proc ::kettle::doc::InstallHTML {src dst} {
+    path in $src {
+	path install-file-group \
+	    "HTML documentation" \
+	    $dst {*}[glob -tails -directory $src *]
+    }
+    return
+}
+
+proc ::kettle::doc::UninstallManpages {src dst} {
+    path uninstall-file-set \
+	"manpages" \
+	$dst {*}[glob -directory $src -tails *.n]
+    return
+}
+
+proc ::kettle::doc::UninstallHTML {dst} {
+    path uninstall-file-group \
+	"HTML documentation" \
+	$dst
+    return
+}
+
+proc ::kettle::doc::ReinstallManpages {} {
+    invoke self  doc uninstall manpages
+    invoke self  doc install   manpages
+    return
+}
+
+proc ::kettle::doc::ReinstallHTML {} {
+    invoke self  doc uninstall html
+    invoke self  doc install   html
+    return
+}
+
+proc ::kettle::doc::GithubPages {} {
+    # Validate tool presence before actually doing anything
+    tool get git
+
+    # PWD is the local git checkout.
+
+    # Determine git revision information, informational use only
+    set commit  [exec {*}[tool get git] log -1 --pretty=format:%H]
+    try {
+	set version [exec {*}[tool get git] describe]
+    } on error {} {
+	set version unknown
+    }
+    regsub -- {^.*/} [string trim [path cat .git/HEAD]] {} branch
+
+    io puts "\n  Commit:      $commit"
+    io puts "  Branch:      $branch"
+    io puts "  Version:     $version"
+
+    set tmpdir [path tmpdir]/[path tmpfile ghp_]
+    file mkdir $tmpdir
+    path ensure-cleanup $tmpdir
+
+    # Save the documentation outside of checkout ... ... ...
+    set docs [option get --with-doc-destination]/www
+    io puts "  Doc Origin:  $docs"
+    io puts "  Saving to:   $tmpdir"
+    file copy -force $docs $tmpdir/doc
+
+    # Switch to gh-pages branch, i.e. the github website
+    io puts {Switching to gh-pages...}
+    path exec {*}[tool get git] checkout gh-pages
+
+    # Place the saved documentation
+    io puts {Updating documentation...}
+    file delete -force doc
+    file copy -force $tmpdir/doc doc
+    file delete -force $tmpdir
+
+    # Assumming doctools-originated files, remove various
+    # irrelevant files.
+    file delete doc/.idx doc/.toc doc/.xrf
+
+    ## Reminder ... ... ...
+    io puts ""
+    io puts "You are now in branch"
+    io puts \t[io mred gh-pages]
+    io puts "coming from commit"
+    io puts \t[io mok $commit]
+    io puts ""
+    io puts "[io mnote Verify] the changes now,"
+    io puts "then [io mnote {commit and push}] them,"
+    io puts "and lastly [io mnote {switch back}] to where you were via"
+    io puts \t[io mnote "git checkout $branch"]
+    io puts ""
+    return
+}
+
+# # ## ### ##### ######## ############# #####################
+## Internal Support
+
+proc ::kettle::doc::DtpliteRun {args} {
     io trace { dtplite [path::T $args]}
     if {[option get --dry]} return
 
@@ -207,110 +378,19 @@ proc ::kettle::DtpliteRun {args} {
 	io trace {  dtplite: internal}
 	io trace {[package ifneeded dtplite [package present dtplite]]}
 
-	dtplite::do $args
+	try {
+	    dtplite::do $args
+	} trap STOP             {e o} - \
+	  trap {DTPLITE STOP}   {e o} - \
+	  trap {DOCTOOLS INPUT} {e o} {
+	    io err {
+		io puts $e
+	    }
+	}
     } else {
 	io trace {  dtplite: external}
 	path exec {*}[tool get dtplite] {*}$args
     }
-    return
-}
-
-# # ## ### ##### ######## ############# #####################
-## Handle a github gh-pages branch.
-
-proc ::kettle::gh-pages {} {
-    # Overwrite self, we run only once for effect.
-    proc ::kettle::gh-pages args {}
-
-    doc
-
-    io trace {Testing for gh-pages}
-
-    # No need to handle a gh-pages documentation branch if there is no
-    # documentation to work with.
-    if {![recipe exists doc]} {
-	io trace {  No gh-pages: No documentation}
-	return
-    }
-
-    # Ditto if this is not a git-based project.
-    if {[path find.git [path sourcedir]] eq {}} {
-	io trace {  No gh-pages: Not git based}
-	return
-    }
- 
-    # Now we check if the branch we need is present. Note that if we
-    # can't find the tool, i.e. "git", we assume that the branch is
-    # present and let the recipe error out on the missing tool.
-
-    if {![catch {
-	path grep *gh-pages* [exec {*}[tool get git] branch -a]
-    } res] && ![llength $res]} {
-	io trace {  No gh-pages: branch not present}
-	return
-    }
-
-    recipe define gh-pages {
-	Install embedded documentation into a gh-pages
-	branch of the local git repository.
-    } {} {
-	# Validate tool presence before actually doing anything
-	tool get git
-
-	# PWD is the local git checkout.
-
-	# Determine git revision information, informational use only
-	set commit  [exec {*}[tool get git] log -1 --pretty=format:%H]
-	try {
-	    set version [exec {*}[tool get git] describe]
-	} on error {} {
-	    set version unknown
-	}
-	regsub -- {^.*/} [string trim [path cat .git/HEAD]] {} branch
-
-	io puts "\n  Commit:      $commit"
-	io puts "  Branch:      $branch"
-	io puts "  Version:     $version"
-
-	set tmpdir [path tmpdir]/[path tmpfile ghp_]
-	file mkdir $tmpdir
-	path ensure-cleanup $tmpdir
-
-	# Save the documentation outside of checkout ... ... ...
-	set docs [option get --with-doc-destination]/www
-	io puts "  Doc Origin:  $docs"
-	io puts "  Saving to:   $tmpdir"
-	file copy -force $docs $tmpdir/doc
-
-	# Switch to gh-pages branch, i.e. the github website
-	io puts {Switching to gh-pages...}
-	path exec {*}[tool get git] checkout gh-pages
-
-	# Place the saved documentation
-	io puts {Updating documentation...}
-	file delete -force doc
-	file copy -force $tmpdir/doc doc
-	file delete -force $tmpdir
-
-	# Assumming doctools-originated files, remove various
-	# irrelevant files.
-	file delete doc/.idx doc/.toc doc/.xrf
-
-	## Reminder ... ... ...
-	io puts ""
-	io puts "You are now in branch"
-	io puts \t[io mred gh-pages]
-	io puts "coming from commit"
-	io puts \t[io mok $commit]
-	io puts ""
-	io puts "[io mnote Verify] the changes now,"
-	io puts "then [io mnote {commit and push}] them,"
-	io puts "and lastly [io mnote {switch back}] to where you were via"
-	io puts \t[io mnote "git checkout $branch"]
-	io puts ""
-	return
-    }
-
     return
 }
 

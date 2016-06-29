@@ -16,15 +16,9 @@ kettle cli extend null {
     }
 } [lambda {config} {}]
 
-# TODO: Make it a proper alias of 'null' above.
-kettle cli extend nop {
-    #section Targets Standard
-    section Targets Standard
-    description {
-	No operation.
-	Debugging helper (use with -trace).
-    }
-} [lambda {config} {}]
+kettle cli learn {
+    alias nop = null
+}
 
 kettle cli extend forever {
     section Targets Standard
@@ -72,9 +66,53 @@ kettle recipe define gui {
 }
 
 # # ## ### ##### ######## ############# #####################
+## Anchors for project-based recipes to hook into.
 
 kettle recipe anchor validate {
-    Validation of various parts of the project.
+    Validate the entire project.
+}
+
+kettle recipe anchor doc {
+    Manage the project documentation.
+} !all
+
+kettle recipe anchor {doc install} {
+    Install the project documentation.
+}
+
+kettle recipe anchor {doc uninstall} {
+    Uninstall the project documentation.
+}
+
+kettle recipe anchor {doc reinstall} {
+    Reinstall the project documentation.
+}
+
+# # ## ### ##### ######## ############# #####################
+
+kettle recipe anchor install {
+    Install the project.
+}
+kettle recipe anchor {install doc} {
+    Install the project documentation.
+}
+
+# # ## ### ##### ######## ############# #####################
+
+kettle recipe anchor uninstall {
+    Uninstall the project.
+}
+kettle recipe anchor {uninstall doc} {
+    Uninstall the project documentation.
+}
+
+# # ## ### ##### ######## ############# #####################
+
+kettle recipe anchor reinstall {
+    Reinstall the project. I.e. uninstall it, then install it again.
+}
+kettle recipe anchor {reinstall doc} {
+    Reinstall the project documentation.
 }
 
 # # ## ### ##### ######## ############# #####################

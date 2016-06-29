@@ -35,15 +35,23 @@ namespace eval ::kettle::recipe {
 # # ## ### ##### ######## ############# #####################
 ## Management API commands.
 
-proc ::kettle::recipe::anchor {name description} {
-    kettle cli defered $name [subst -nocommands -nobackslashes {
-	description {}
-	private all {
-	    section Targets Project
+proc ::kettle::recipe::anchor {path description {mode all}} {
+    if {$mode eq "all"} {
+	set spec  [subst -nocommands -nobackslashes {
+	    description {}
+	    private all {
+		section Targets Project
+		description {$description}
+	    } ::kettle::recipe::RunSiblings
+	    default all
+	}]
+    } else {
+	set spec [subst -nocommands -nobackslashes {
 	    description {$description}
-	} ::kettle::recipe::RunSiblings
-	default all
-    }]
+	}]
+    }
+    kettle cli phantom $path $spec
+    return
 }
 
 proc ::kettle::recipe::RunSiblings {config} {
@@ -53,7 +61,7 @@ proc ::kettle::recipe::RunSiblings {config} {
     set self  [$super default]
 
     foreach sibling [lsort -dict [$super known]] {
-	# Ignore ourselves and the autuo-generated commands.
+	# Ignore ourselves and the auto-generated commands.
 	if {$sibling eq $self} continue
 	if {$sibling in {exit help}} continue
 
@@ -71,6 +79,53 @@ proc ::kettle::recipe::RunSiblings {config} {
     return
 }
 
+proc ::kettle::recipe::defx {name description cmdprefix} {
+    # Note! The scripts are evaluated in the context of namespace
+    # ::kettle. This provide access to various internal commands
+    # without making them visible to the user/DSL.
+
+    set description [strutil reflow $description]
+    io trace {DEF $name}
+
+    kettle cli extend $name [subst -nocommands -nobackslashes {
+	section Targets Project
+	# parameters -> only options, define dynamically
+	description {$description}
+    }] [list ::kettle::recipe::RunCmd $name $cmdprefix]
+    return
+}
+
+proc ::kettle::recipe::RunCmd {name cmdprefix config} {
+    # config => options
+    # dynamically save the information somewhere.
+    # maybe just save 'config'
+
+    try {
+	status begin $name
+
+	# Now run the recipe itself
+	io trace {RUN ($name) ... BEGIN}
+
+	if {![option get --machine]} {
+	    io note { io puts -nonewline "\n${name}: " }
+	}
+
+	try {
+	    {*}$cmdprefix
+	    status ok
+	} trap {KETTLE STATUS OK}   {e o} {
+	    io trace {RUN ($name) ... OK}
+	    # nothing - implied continue
+	} trap {KETTLE STATUS FAIL} {e o} {
+	    io trace {RUN ($name) ... FAIL}
+	    # nothing - implied break
+	}
+    }
+    return
+}
+
+# # ## ### ##### ######## ############# ##########
+
 proc ::kettle::recipe::define {name description arguments script args} {
     variable recipe
 
@@ -86,13 +141,12 @@ proc ::kettle::recipe::define {name description arguments script args} {
     dict update recipe $name def {
 	dict lappend def script \
 	    [lambda@ ::kettle $arguments $script {*}$args]
-
-	#dict lappend def help $description
     }
     return
 }
 
 proc ::kettle::recipe::parent {name parent} {
+return
     variable recipe
 
     Init $name
@@ -194,12 +248,11 @@ proc ::kettle::recipe::Init {name {description {}}} {
 	parent {}
     }
 
-    set cmd [kettle cli extend $name {
+    set cmd [kettle cli extend $name [subst -nocommands -nobackslashes {
 	section Targets Project
 	# parameters -> only options, define dynamically
-    } [list ::kettle::recipe::RunIt $name]]
-
-    $cmd description: $description
+	description {$description}
+    }] [list ::kettle::recipe::RunIt $name]]
 
     # Remember reference to handler for future modifications.
     dict set recipe $name handler $cmd
