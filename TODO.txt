@@ -1,5 +1,5 @@
 
-[..] (.)
+[OK] (.)
 	Cmdr - Help - Tcl format (like json, less syntax, directly parse-able).
 	Cmdr - help::query-actor => 'actor find' virtual-method
 				 or 'actor lookup*'
