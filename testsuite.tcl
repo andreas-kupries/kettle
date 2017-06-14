@@ -423,8 +423,8 @@ proc ::kettle::Test::FormatTimings {state} {
 	lappend tmp [list $shell $suite $ntests $sec $usec]
     }
 
-    # Sort tuples by time per test, and transpose into
-    # columns. Add the header and footer lines.
+    # Sort tuples by time per test (longest taken at the top), and
+    # transpose into columns. Add the header and footer lines.
 
     lappend sh Shell     =====
     lappend ts Testsuite =========
@@ -432,7 +432,7 @@ proc ::kettle::Test::FormatTimings {state} {
     lappend ns Seconds   =======
     lappend us uSec/Test =========
 
-    foreach item [lsort -index 4 -decreasing $tmp] {
+    foreach item [lsort -index 4 -integer -decreasing $tmp] {
 	lassign $item shell suite ntests sec usec
 	lappend sh $shell
 	lappend ts $suite
