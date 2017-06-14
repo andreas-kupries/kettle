@@ -74,7 +74,7 @@ proc ::kettle::meta::read-internal {file etype ename} {
     variable md
     variable mduser
 
-    #puts I|$file
+    #puts I|$file|$etype|$ename
     set block [lindex [GetInternal [path cat $file]] 1]
     if {$block eq {}} {
 	return 0

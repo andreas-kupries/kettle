@@ -22,7 +22,9 @@ proc ::kettle::tclapp {fname} {
 	return
     }
 
-    set name [file rootname $fname]
+    # Derive application name from the path. Ignore extension and the
+    # directory the app file is in.
+    set name [file tail [file rootname $fname]]
     meta read-internal $src application $name
 
     io trace {    Accepted: $fname}
