@@ -180,7 +180,7 @@ proc ::kettle::path::add-top-comment {comment contents} {
 }
 
 proc ::kettle::path::tcl-package-file {file} {
-    set contents   [cat $file]
+    set contents   [c/z [cat $file]]
     set provisions [grep {*package provide *} $contents]
     if {![llength $provisions]} {
 	return 0
@@ -237,7 +237,7 @@ proc ::kettle::path::tcl-package-file {file} {
 }
 
 proc ::kettle::path::critcl3-package-file {file} {
-    set contents   [cat $file]
+    set contents   [c/z [cat $file]]
     set provisions [grep {*package provide *} $contents]
     if {![llength $provisions]} {
 	return 0
@@ -285,7 +285,7 @@ proc ::kettle::path::critcl3-package-file {file} {
 }
 
 proc ::kettle::path::doctools-file {path} {
-    set test [cathead $path 1024 -translation binary]
+    set test [c/z [cathead $path 1024 -translation binary]]
     # anti marker
     if {[regexp -- {--- !doctools ---}            $test]} { return 0 }
     if {[regexp -- "!tcl\.tk//DSL doctools//EN//" $test]} { return 0 }
@@ -298,7 +298,7 @@ proc ::kettle::path::doctools-file {path} {
 }
 
 proc ::kettle::path::diagram-file {path} {
-    set test [cathead $path 1024 -translation binary]
+    set test [c/z [cathead $path 1024 -translation binary]]
     # marker
     if {[regexp {tcl.tk//DSL diagram//EN//1.0} $test]} { return 1 }
     # no usable marker
@@ -306,7 +306,7 @@ proc ::kettle::path::diagram-file {path} {
 }
 
 proc ::kettle::path::tcltest-file {path} {
-    set test [cathead $path 1024 -translation binary]
+    set test [c/z [cathead $path 1024 -translation binary]]
     # marker
     if {[regexp {tcl.tk//DSL tcltest//EN//} $test]} { return 1 }
     # no usable marker
@@ -314,7 +314,7 @@ proc ::kettle::path::tcltest-file {path} {
 }
 
 proc ::kettle::path::teapot-file {path} {
-    set test [cathead $path 1024 -translation binary]
+    set test [c/z [cathead $path 1024 -translation binary]]
     # marker
     if {[regexp {tcl.tk//DSL teapot//EN//} $test]} { return 1 }
     # no usable marker
@@ -322,7 +322,7 @@ proc ::kettle::path::teapot-file {path} {
 }
 
 proc ::kettle::path::bench-file {path} {
-    set test [cathead $path 1024 -translation binary]
+    set test [c/z [cathead $path 1024 -translation binary]]
     # marker
     if {[regexp {tcl.tk//DSL tclbench//EN//} $test]} { return 1 }
     # no usable marker
@@ -330,7 +330,7 @@ proc ::kettle::path::bench-file {path} {
 }
 
 proc ::kettle::path::kettle-build-file {path} {
-    set test [cathead $path 100 -translation binary]
+    set test [c/z [cathead $path 100 -translation binary]]
     # marker (no anti-markers)
     if {[regexp {kettle -f} $test]} { return 1 }
     return 0
@@ -495,6 +495,10 @@ proc ::kettle::path::ensure-cleanup {path} {
     ::atexit [lambda {path} {
 	file delete -force $path
     } [norm $path]]
+}
+
+proc ::kettle::path::c/z {content} {
+    return [lindex [split $content \x1A] 0]
 }
 
 proc ::kettle::path::cat {path args} {
