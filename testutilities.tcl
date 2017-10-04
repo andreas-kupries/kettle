@@ -80,6 +80,28 @@ proc ::kt::local {type name args} {
     return
 }
 
+proc ::kt::local* {type name args} {
+    variable tag
+    # Specialized package require. Its search is restricted to the
+    # local installation, via a custom unknown handler temporarily
+    # replacing the regular functionality.
+
+    set saved [package unknown]
+    try {
+	package unknown ::kt::PU
+	package require $name {*}$args
+    } on error {e o} {
+	puts "    Aborting the tests found in \"[file tail [info script]]\""
+	puts "    Required local package $name not found: $e"
+	return -code return
+    } finally {
+	package unknown $saved
+    }
+
+    puts "LOCAL  [dict get $tag $type] $name [package present $name]"
+    return
+}
+
 proc ::kt::PU {name args} {
     global   auto_path
     variable localprefix
