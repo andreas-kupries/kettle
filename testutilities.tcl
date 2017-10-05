@@ -71,6 +71,7 @@ proc ::kt::local {type name args} {
     } on error {e o} {
 	puts "    Aborting the tests found in \"[file tail [info script]]\""
 	puts "    Required local package $name not found: $e"
+	puts "    |[join [split [dict get $o -errorinfo] \n] "\n    |"]"
 	return -code return
     } finally {
 	package unknown $saved
@@ -93,6 +94,7 @@ proc ::kt::local* {type name args} {
     } on error {e o} {
 	puts "    Aborting the tests found in \"[file tail [info script]]\""
 	puts "    Required local package $name not found: $e"
+	puts "    |[join [split [dict get $o -errorinfo] \n] "\n    |"]"
 	return -code return
     } finally {
 	package unknown $saved
