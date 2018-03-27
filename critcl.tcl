@@ -9,6 +9,12 @@ kettle option define --target {
     configuration.
 }
 
+kettle option define --test-include {
+    Critcl test option. Adds additional include-dirs the build needs.
+    Because the test recipe overrides the regular --include-dir to
+    redirect the build into a local destination
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Locate a suitable critcl package or application (3+),
 ## and prepare system for its use.
@@ -169,6 +175,9 @@ proc ::kettle::CritclSetup {root file pn pv} {
 	set t [option get --target]
 	if {$t ne {}} { lappend cmd -target $t }
 
+	set t [option get --test-include]
+	if {$t ne {}} { lappend cmd -includedir $t }
+
 	lappend cmd -includedir [path incdir]
 	lappend cmd -pkg $file
 
@@ -184,6 +193,9 @@ proc ::kettle::CritclSetup {root file pn pv} {
 
 	set t [option get --target]
 	if {$t ne {}} { lappend cmd -target $t }
+
+	set t [option get --test-include]
+	if {$t ne {}} { lappend cmd -includedir $t }
 
 	lappend cmd -debug      all
 	lappend cmd -keep
