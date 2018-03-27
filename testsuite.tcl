@@ -1029,6 +1029,8 @@ proc ::kettle::Test::CaptureStop {} {
 
 	    stream to result.${fname}.expected {$expected}
 	    stream to result.${fname}.actual   {$actual}
+	    stream done result.${fname}.expected
+	    stream done result.${fname}.actual
 	}
 
 	if {$setup ne {}} {

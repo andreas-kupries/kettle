@@ -77,6 +77,15 @@ proc ::kettle::stream::to {name text} {
     return
 }
 
+proc ::kettle::stream::done {name} {
+    variable stream
+    if {![active]} return
+    if {![dict exists $stream $name]} return
+    close [dict get $stream $name]
+    dict unset stream $name
+    return
+}
+
 # # ## ### ##### ######## ############# #####################
 ## Terminal log.
 
