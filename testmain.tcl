@@ -1,8 +1,10 @@
-# -*- tcl -*- Copyright (c) 2012 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2012-2018 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
 ## Test Application (Entry point into .test files)
 ##
-## argv = testfile (tcltest arguments ...)
+## Syntax: <localprefix> <testfile> <mode> <options>
+##         kt::localprefix kt::testfile kt::mode kt::argv
+## mode in {scan, run}
 
 # Kettle is designed to accomodate 8.5+
 package require Tcl 8.5
@@ -18,6 +20,8 @@ catch {wm withdraw .}
 namespace eval ::kt {}
 
 set argv  [lassign $argv kt::localprefix kt::testfile kt::mode]
+set kt::main $argv0
+set kt::argv $argv
 set argv0 $kt::testfile
 
 # # ## ### ##### ######## ############# #####################
@@ -55,8 +59,9 @@ catch {
 ## Management utilities for communication with the 'test' recipe
 ## support code in our caller.
 
-if {$kt::mode eq "scan"} {
-    # Reduce reporting in scan mode.
+if {($kt::mode eq "scan") ||
+    ($kt::mode eq "sub")} {
+    # Prevent reporting in scan and sub modes.
     proc kt::Note {args} {}
 } else {
     proc kt::Note {k v} {
@@ -68,7 +73,64 @@ if {$kt::mode eq "scan"} {
 
 proc kt::Now {} {return [clock seconds]}
 
-# Ensure an fully normalized absolute path to the test suite location.
+if {$kt::mode eq "scan"} {
+    # In scan mode we must not report, even from a sub-shell.
+    proc kt::Report {} {}
+} elseif {$kt::mode eq "sub"} {
+    # In a subshell the results have to be passed up the chain to the
+    # caller for integration. See kt::sub below.
+    proc kt::Report {} {
+	variable ::tcltest::numTests
+	variable ::tcltest::skippedBecause
+	variable ::tcltest::createdNewFiles
+	tcltest::makeFile \
+	    [list tcltest::ReportedFromSlave \
+		 $numTests(Total) $numTests(Passed) $numTests(Skipped) \
+		 $numTests(Failed) [array get skippedBecause] \
+		 [array get createdNewFiles]]\n \
+	    report
+	return
+    }
+}
+
+# Place a test script into a sub-shell.
+proc kt::sub {name script args} {
+    # Build test file
+    set data ""
+    # Import the specified context (variables by name, and assignments).
+    foreach v $args {
+	if {[regexp {^([^=]*)=(.*)$} $v -> var val]} {
+	    append data [list set $var $val]\n
+	} else {
+	    upvar 1 $v val
+	    append data [list set $v $val]\n
+	}
+    }
+    # Add the user's script, and report always, even in the presence of errors.
+    append data "try \{\n"
+    append data $script
+    append data "\n\} finally \{\n"
+    # See kt::Report above.
+    append data kt::Report\n
+    append data "\}\n"
+    set path [tcltest::makeFile $data $name]
+    # Run the file like we are run (same context and arguments, except
+    # for mode.
+    set mode sub
+    if {$kt::mode eq "scan"} { set mode scan }
+    try {
+	exec 2>@ stderr >@ stdout [info nameofexecutable] $kt::main \
+	    $kt::localprefix $path $mode {*}$kt::argv
+	# Integrate the child's report into this process' statistics
+	eval [viewFile report]
+	tcltest::removeFile report
+    } finally {
+	tcltest::removeFile $path
+    }
+    return
+}
+
+# Ensure a fully normalized absolute path to the test suite location.
 set ::tcltest::testsDirectory \
     [file dirname [file normalize $::tcltest::testsDirectory]/___]
 
