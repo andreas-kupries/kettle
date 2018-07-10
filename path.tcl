@@ -208,7 +208,7 @@ proc ::kettle::path::tcl-package-file {file} {
 	    io trace {        * $pkgver: Not a version number}
 	    continue
 	}
-	if {[llength [rgrep {package\s+require\s+critcl} $contents]]} {
+	if {[llength [rgrep {^\s*package\s+require\s+critcl} $contents]]} {
 	    io trace {        * critcl required: Not pure Tcl}
 	    continue
 	}
