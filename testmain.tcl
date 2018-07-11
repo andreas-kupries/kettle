@@ -19,10 +19,21 @@ catch {wm withdraw .}
 
 namespace eval ::kt {}
 
-set argv  [lassign $argv kt::localprefix kt::testfile kt::mode]
+set argv [lassign $argv kt::localprefix kt::testfile kt::mode]
+
+# Check for valgrind
+set valgrind 0
+set pos [lsearch -exact $argv --valgrind]
+if {$pos >= 0} {
+    set argv [lreplace $argv $pos $pos]
+    set valgrind 1
+}
+
 set kt::main $argv0
 set kt::argv $argv
 set argv0 $kt::testfile
+
+#puts X_k[pid]\t[join $::auto_path \nX_k[pid]\t]
 
 # # ## ### ##### ######## ############# #####################
 ## Import tcltest. This will process the remaining argv elements.
@@ -118,9 +129,17 @@ proc kt::sub {name script args} {
     # for mode.
     set mode sub
     if {$kt::mode eq "scan"} { set mode scan }
+
+    if {$::valgrind} {
+	lappend cmd [auto_execok valgrind]
+    }
+    lappend cmd [info nameofexecutable] $kt::main $kt::localprefix \
+	$path $mode {*}$kt::argv
+    if {$::valgrind} {
+	lappend cmd --valgrind
+    }
     try {
-	exec 2>@ stderr >@ stdout [info nameofexecutable] $kt::main \
-	    $kt::localprefix $path $mode {*}$kt::argv
+	exec 2>@ stderr >@ stdout {*}$cmd
 	# Integrate the child's report into this process' statistics
 	eval [viewFile report]
 	tcltest::removeFile report

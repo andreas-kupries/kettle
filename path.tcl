@@ -1,4 +1,4 @@
-# -*- tcl -*- Copyright (c) 2012-2013 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2012-2018 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
 ## Path utility commands.
 

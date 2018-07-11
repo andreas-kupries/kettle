@@ -1,4 +1,4 @@
-# -*- tcl -*- Copyright (c) 2012 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2012-2018 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
 ## Handle a tcltest-based testsuite
 
@@ -31,6 +31,10 @@ kettle option define --single {
     Run each test case completely independent.
 } 0 boolean
 
+kettle option define --valgrind {
+    Run the tests under valgrind
+} 0 boolean
+
 kettle option define --tskip {
     Tcl list of glob patterns for tests to be skipped.
 } {} listsimple
@@ -41,6 +45,7 @@ kettle option no-work-key --limitconstraints
 kettle option no-work-key --tmatch
 kettle option no-work-key --notfile
 kettle option no-work-key --single
+kettle option no-work-key --valgrind
 kettle option no-work-key --tskip
 
 # # ## ### ##### ######## ############# #####################
@@ -179,6 +184,15 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     }
 
     path in $srcdir {
+	set valgrind [option get --valgrind]
+	if {$valgrind} {
+	    lappend cmd {*}[auto_execok valgrind]
+	}
+	lappend cmd [option get --with-shell] $main $localprefix
+	if {$valgrind} {
+	    lappend options --valgrind
+	}
+	
 	if {[option get --single]} {
 	    dict set state singled 1 ;# Test::Summary
 
@@ -206,8 +220,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 		    path pipe line {
 			io trace {TEST: $line}
 			ProcessLine $line
-		    } [option get --with-shell] $main $localprefix \
-			$test run {*}$options -match $testcase
+		    } {*}$cmd $test run {*}$options -match $testcase
 		}
 	    }
 	} else {
@@ -227,8 +240,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 		path pipe line {
 		    io trace {TEST: $line}
 		    ProcessLine $line
-		} [option get --with-shell] $main $localprefix \
-		    $test run {*}$options
+		} {*}$cmd $test run {*}$options
 	    }
 	}
     }
