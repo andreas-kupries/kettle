@@ -10,9 +10,21 @@ namespace eval ::kt {
 # # ## ### ##### ######## ############# #####################
 ## API. Use of files relative to the test directory.
 
+proc ::kt::in {path script} {
+    # change context to a different test suite
+    variable ::tcltest::testsDirectory
+    set saved $testsDirectory
+    set testsDirectory [file normalize [file join $testsDirectory $path]]
+    try {
+	uplevel 1 $script
+    } finally {
+	set testsDirectory $saved
+    }
+}
+
 proc ::kt::source {path} {
     variable ::tcltest::testsDirectory
-    uplevel 1 [list ::source [file join $testsDirectory $path]]
+    uplevel 1 [list ::source [file normalize [file join $testsDirectory $path]]]
 }
 
 proc ::kt::find {pattern} {
@@ -101,6 +113,35 @@ proc ::kt::local* {type name args} {
     }
 
     puts "LOCAL  [dict get $tag $type] $name [package present $name]"
+    return
+}
+
+proc ::kt::semi-local* {type name args} {
+    variable tag
+    # Specialized package require. It searches the local installation
+    # first, via a custom unknown handler temporarily replacing the
+    # regular functionality. If that fails the regular set of packages
+    # is checked too.
+
+    set saved [package unknown]
+    try {
+	package unknown ::kt::PU
+	package require $name {*}$args
+	puts "LOCAL  [dict get $tag $type] $name [package present $name]"
+    } on error {e o} {
+	package unknown $saved
+	try {
+	    package require $name {*}$args
+	    puts "SYSTEM [dict get $tag $type] $name [package present $name]"
+	} on error {e o} {
+	    puts "    Aborting the tests found in \"[file tail [info script]]\""
+	    puts "    Required semi-local package $name not found: $e"
+	    puts "    |[join [split [dict get $o -errorinfo] \n] "\n    |"]"
+	    return -code return
+	}
+    } finally {
+	package unknown $saved
+    }
     return
 }
 
