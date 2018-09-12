@@ -25,7 +25,7 @@ kettle option define --tmatch {
 
 kettle option define --notfile {
     Tcl list of glob patterns for test files to be skipped.
-} {} listsimple
+} {l.*.test} listsimple
 
 kettle option define --single {
     Run each test case completely independent.
@@ -145,6 +145,36 @@ proc ::kettle::Test::SetupAnd {args} {
     return
 }
 
+proc ::kettle::Test::Skip {skiplist testfiles} {
+    lmap t $testfiles {
+	if {[Skip1 $skiplist $t]} continue
+	set t
+    }
+}
+
+proc ::kettle::Test::Skip1 {skiplist path} {
+    set path [file tail $path]
+    foreach pattern $skiplist {
+	if {[string match $pattern $path]} { return 1 }
+    }
+    return 0
+}
+
+proc ::kettle::Test::Match {matchlist testfiles} {
+    lmap t $testfiles {
+	if {![Match1 $matchlist $t]} continue
+	set t
+    }
+}
+
+proc ::kettle::Test::Match1 {matchlist path} {
+    set path [file tail $path]
+    foreach pattern $matchlist {
+	if {[string match $pattern $path]} { return 1 }
+    }
+    return 0
+}
+
 proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     # We are running each test file in a separate sub process, to
     # catch crashes, etc. ... We assume that the test file is self
@@ -154,18 +184,19 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     # tcl executable as interpreter.
 
     # Translate kettle test options into tcltest options.
+    # The file matching options are handled by ourselves.
     set options {}
     foreach {o v} {
 	constraints      constraints
 	limitconstraints limitconstraints
 	tmatch		 match		 
 	tskip		 skip
-	file		 file
-	notfile		 notfile
     } {
 	lappend options -$v [option get --$o]
     }
 
+    set testfiles [Skip [option get --notfile] [Match [option get --file] $testfiles]]
+    
     stream to log ============================================================
 
     set main [path norm [option get @kettledir]/testmain.tcl]
