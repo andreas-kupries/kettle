@@ -123,6 +123,10 @@ proc ::kettle::path::htmldir {{path {}}} {
     return [norm [file join [kettle option get --html-dir] $path]]
 }
 
+proc ::kettle::path::markdowndir {{path {}}} {
+    return [norm [file join [kettle option get --markdown-dir] $path]]
+}
+
 proc ::kettle::path::set-executable {path} {
     io trace {	!chmod ugo+x   $path}
     dry-barrier

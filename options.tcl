@@ -351,11 +351,12 @@ apply {{} {
     onchange --prefix {} {
 	# Implied arguments: option old new
 	::set new [path norm $new]
-	set!        --prefix      $new
-	set-default --exec-prefix $new
-	set-default --man-dir     $new/man
-	set-default --html-dir    $new/html
-	set-default --include-dir $new/include
+	set!        --prefix       $new
+	set-default --exec-prefix  $new
+	set-default --man-dir      $new/man
+	set-default --html-dir     $new/html
+	set-default --markdown-dir $new/md
+	set-default --include-dir  $new/include
     }
 
     # - -- --- ----- -------- -------------
@@ -371,6 +372,13 @@ apply {{} {
 	Default is $(--prefix)/html.
     } {} directory
     onchange --html-dir    {} { set! --html-dir [path norm $new] }
+
+    # - -- --- ----- -------- -------------
+    define --markdown-dir {
+	Path to the root directory to install markdown documentation into.
+	Default is $(--prefix)/md.
+    } {} directory
+    onchange --markdown-dir {} { set! --markdown-dir [path norm $new] }
 
     # - -- --- ----- -------- -------------
     define --include-dir {
