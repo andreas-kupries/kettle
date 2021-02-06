@@ -1,5 +1,4 @@
-
-<html><head>
+<!DOCTYPE html><html><head>
 <title>kettle_install_guide - Kettle - The Quick Brew System</title>
 <style type="text/css"><!--
     HTML {
@@ -25,7 +24,7 @@
 	background: 	transparent;
 	text-align:		left;
     }
-    H1.title {
+    H1.doctools_title {
 	text-align: center;
     }
     UL,OL {
@@ -42,11 +41,11 @@
     DT {
 	padding-top: 	1ex;
     }
-    UL.toc,UL.toc UL, UL.toc UL UL {
+    UL.doctools_toc,UL.doctools_toc UL, UL.doctools_toc UL UL {
 	font:		normal 12pt/14pt sans-serif;
 	list-style:	none;
     }
-    LI.section, LI.subsection {
+    LI.doctools_section, LI.doctools_subsection {
 	list-style: 	none;
 	margin-left: 	0em;
 	text-indent:	0em;
@@ -63,18 +62,18 @@
 	padding-right:	1ex;
 	width:		100%;
     }
-    PRE.example {
+    PRE.doctools_example {
 	color: 		black;
 	background: 	#f5dcb3;
 	border:		1px solid black;
     }
-    UL.requirements LI, UL.syntax LI {
+    UL.doctools_requirements LI, UL.doctools_syntax LI {
 	list-style: 	none;
 	margin-left: 	0em;
 	text-indent:	0em;
 	padding:	0em;
     }
-    DIV.synopsis {
+    DIV.doctools_synopsis {
 	color: 		black;
 	background: 	#80ffff;
 	border:		1px solid black;
@@ -82,74 +81,74 @@
 	margin-top: 	1em;
 	margin-bottom: 	1em;
     }
-    UL.syntax {
+    UL.doctools_syntax {
 	margin-top: 	1em;
 	border-top:	1px solid black;
     }
-    UL.requirements {
+    UL.doctools_requirements {
 	margin-bottom: 	1em;
 	border-bottom:	1px solid black;
     }
 --></style>
 </head>
-<! -- Generated from file 'kettle_installer.man' by tcllib/doctools with format 'html'
+<!-- Generated from file 'kettle_installer.man' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id$ kettle_install_guide.n
+<!-- kettle_install_guide.n
    -->
-<body><div class="doctools">
-<hr> [
+<body><hr> [
    <a href="../../../../../../home">Home</a>
 | <a href="../../toc.html">Main Table Of Contents</a>
 | <a href="../toc.html">Table Of Contents</a>
 | <a href="../../index.html">Keyword Index</a>
  ] <hr>
-<h1 class="title">kettle_install_guide(n) 1 doc &quot;Kettle - The Quick Brew System&quot;</h1>
-<div id="name" class="section"><h2><a name="name">Name</a></h2>
+<div class="doctools">
+<h1 class="doctools_title">kettle_install_guide(n) 1 doc &quot;Kettle - The Quick Brew System&quot;</h1>
+<div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>kettle_install_guide - Kettle - The Installer's Guide</p>
 </div>
-<div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
-<ul class="toc">
-<li class="section"><a href="#toc">Table Of Contents</a></li>
-<li class="section"><a href="#synopsis">Synopsis</a></li>
-<li class="section"><a href="#section1">Description</a></li>
-<li class="section"><a href="#section2">Requisites</a>
+<div id="toc" class="doctools_section"><h2><a name="toc">Table Of Contents</a></h2>
+<ul class="doctools_toc">
+<li class="doctools_section"><a href="#toc">Table Of Contents</a></li>
+<li class="doctools_section"><a href="#synopsis">Synopsis</a></li>
+<li class="doctools_section"><a href="#section1">Description</a></li>
+<li class="doctools_section"><a href="#section2">Requisites</a>
 <ul>
-<li class="subsection"><a href="#subsection1">Tcl</a></li>
-<li class="subsection"><a href="#subsection2">Tclx</a></li>
-<li class="subsection"><a href="#subsection3">Tk</a></li>
-<li class="subsection"><a href="#subsection4">Tklib</a></li>
-<li class="subsection"><a href="#subsection5">tcltest</a></li>
+<li class="doctools_subsection"><a href="#subsection1">Tcl</a></li>
+<li class="doctools_subsection"><a href="#subsection2">Tclx</a></li>
+<li class="doctools_subsection"><a href="#subsection3">Tk</a></li>
+<li class="doctools_subsection"><a href="#subsection4">Tklib</a></li>
+<li class="doctools_subsection"><a href="#subsection5">tcltest</a></li>
 </ul>
 </li>
-<li class="section"><a href="#section3">Build &amp; Installation Instructions</a>
+<li class="doctools_section"><a href="#section3">Build &amp; Installation Instructions</a>
 <ul>
-<li class="subsection"><a href="#subsection6">Build &amp; Installation (Unix)</a></li>
-<li class="subsection"><a href="#subsection7">Build &amp; Installation (Windows)</a></li>
-<li class="subsection"><a href="#subsection8">Build &amp; Installation (Help)</a></li>
+<li class="doctools_subsection"><a href="#subsection6">Build &amp; Installation (Unix)</a></li>
+<li class="doctools_subsection"><a href="#subsection7">Build &amp; Installation (Windows)</a></li>
+<li class="doctools_subsection"><a href="#subsection8">Build &amp; Installation (Help)</a></li>
 </ul>
 </li>
-<li class="section"><a href="#section4">Bugs, Ideas, Feedback</a></li>
-<li class="section"><a href="#keywords">Keywords</a></li>
-<li class="section"><a href="#category">Category</a></li>
+<li class="doctools_section"><a href="#section4">Bugs, Ideas, Feedback</a></li>
+<li class="doctools_section"><a href="#keywords">Keywords</a></li>
+<li class="doctools_section"><a href="#category">Category</a></li>
 </ul>
 </div>
-<div id="synopsis" class="section"><h2><a name="synopsis">Synopsis</a></h2>
-<div class="synopsis">
-<ul class="requirements">
+<div id="synopsis" class="doctools_section"><h2><a name="synopsis">Synopsis</a></h2>
+<div class="doctools_synopsis">
+<ul class="doctools_requirements">
 <li>package require <b class="pkgname">Tcl 8.5</b></li>
 </ul>
 </div>
 </div>
-<div id="section1" class="section"><h2><a name="section1">Description</a></h2>
-<p>Welcome to Kettle, a set of packages providing support for writing
-build code for Tcl packages.</p>
+<div id="section1" class="doctools_section"><h2><a name="section1">Description</a></h2>
+<p>Welcome to Kettle, an application and set of packages providing
+support for the easy building and installation of pure Tcl packages.</p>
 <p>Please read the document <i class="term"><a href="kettle_intro.html">Kettle - Introduction to Kettle</a></i>,
 if you have not done so already, to get an overview of the whole system.</p>
 <p>The audience of this document is anyone wishing to build the
 packages, for either themselves, or others.</p>
 <p>For a developer intending to extend or modify the packages we
 additionally provide</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p><i class="term"><a href="kettle_license.html">Kettle - License</a></i>.</p></li>
 <li><p><i class="term"><a href="kettle_devguide.html">Kettle - The Developer's Guide</a></i>.</p></li>
 </ol>
@@ -157,10 +156,10 @@ additionally provide</p>
 not done already. Here we assume that the sources are already
 available in a directory of your choice.</p>
 </div>
-<div id="section2" class="section"><h2><a name="section2">Requisites</a></h2>
+<div id="section2" class="doctools_section"><h2><a name="section2">Requisites</a></h2>
 <p>Before Kettle can be build and used a number of requisites must and/or
 should be installed. These are:</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p>The scripting language Tcl.
 	This requisite is mandatory.
 	For details see <span class="sectref"><a href="#subsection1">Tcl</a></span>.</p></li>
@@ -180,7 +179,7 @@ essentially clean. Of course, if parts of the dependencies listed
 below are already installed the associated steps can be skipped. It is
 still recommended to read their sections though, to validate that the
 dependencies they talk about are indeed installed.</p>
-<div id="subsection1" class="subsection"><h3><a name="subsection1">Tcl</a></h3>
+<div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">Tcl</a></h3>
 <p>As we are building a Tcl package and application it should be pretty
 much obvious that a working installation of Tcl itself is needed, and
 I will not belabor the point.</p>
@@ -199,7 +198,7 @@ with it.</p>
 ActiveTcl 8.5 for your platform and install it as directed by
 ActiveState.</p>
 <p>Assuming that ActiveTcl got installed I usually run the command</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup update
 </pre>
 <p>to install all packages ActiveState provides, and the kitchensink, as
@@ -209,20 +208,20 @@ present, and more.</p>
 <p>If that is not your liking you have to read the other sections
 about Kettle's dependencies to determine the exact set of packages
 required, and install only these using</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup install $packagename
 </pre>
 <p>Both <b class="syscmd">teacup</b> commands above assume that ActiveState's
 TEApot repository at <a href="http://teapot.activestate.com">http://teapot.activestate.com</a> is in the
 list of repositories accessible to <b class="syscmd">teacup</b>. This is automatically
 ensured for the ActiveTcl distribution. Others may have to run</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup archive add http://teapot.activestate.com
 </pre>
 <p>to make this happen.</p>
 <p>For those wishing to build and install Tcl on their own, the
 relevant sources can be found at</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt>Tcl</dt>
 <dd><p><a href="http://core.tcl.tk/tcl/">http://core.tcl.tk/tcl/</a></p></dd>
 </dl>
@@ -231,7 +230,7 @@ relevant sources can be found at</p>
 please file a bug against Tcl, or the vendor of your distribution, and
 not Kettle.</p>
 </div>
-<div id="subsection2" class="subsection"><h3><a name="subsection2">Tclx</a></h3>
+<div id="subsection2" class="doctools_subsection"><h3><a name="subsection2">Tclx</a></h3>
 <p>The <b class="package">Tclx</b> package is an optional requisite of Kettle.
 If it is not installed/available to Kettle it will continue to work,
 with features depending on Tclx disabled.</p>
@@ -254,17 +253,17 @@ ActiveTcl distribution and TEApot.</p>
 <p>See the previous section (<span class="sectref"><a href="#subsection1">Tcl</a></span>) for disclosure and
 information on how to get it.</p>
 <p>Assuming that ActiveTcl got installed running the command</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup install Tclx
 </pre>
 <p>will install Tclx for your platform, if you have not done the more inclusive</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup update
 </pre>
 <p>to get everything and the kitchensink.</p>
 <p>For those wishing to build and install Tclx on their own, the
 relevant sources can be found at</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt>Tclx</dt>
 <dd><p><a href="http://sourceforge.net/projects/tclx">http://sourceforge.net/projects/tclx</a></p></dd>
 </dl>
@@ -273,7 +272,7 @@ relevant sources can be found at</p>
 please file a bug against Tclx, or the vendor of your distribution,
 and not Kettle.</p>
 </div>
-<div id="subsection3" class="subsection"><h3><a name="subsection3">Tk</a></h3>
+<div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">Tk</a></h3>
 <p>Kettle's &quot;gui&quot; recipe requires Tk, obviously, and three packages found
 in Tklib (see next section). If Tk or the other packages are not
 installed the &quot;gui&quot; recipe cannot be used, and attempting to do so
@@ -296,7 +295,7 @@ information on how to get it.</p>
 well.</p>
 <p>For or those wishing to build and install Tk on their own, the
 relevant sources can be found at</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt>Tk</dt>
 <dd><p><a href="http://core.tcl.tk/tk/">http://core.tcl.tk/tk/</a></p></dd>
 </dl>
@@ -305,11 +304,11 @@ relevant sources can be found at</p>
 please file a bug against Tk, or the vendor of your distribution, and
 not Kettle.</p>
 </div>
-<div id="subsection4" class="subsection"><h3><a name="subsection4">Tklib</a></h3>
+<div id="subsection4" class="doctools_subsection"><h3><a name="subsection4">Tklib</a></h3>
 <p>Kettle's &quot;gui&quot; recipe requires the following three packages found in
 Tklib. If Tk or these packages are not installed the &quot;gui&quot; recipe
 cannot be used, and attempting to do so will fail.</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p><b class="package">widget::scrolledwindow</b></p></li>
 <li><p><b class="package">widget::listsimple</b></p></li>
 <li><p><b class="package">widget::dialog</b></p></li>
@@ -328,20 +327,20 @@ ActiveTcl distribution and TEApot.</p>
 <p>See the previous section (<span class="sectref"><a href="#subsection1">Tcl</a></span>) for disclosure and
 information on how to get it.</p>
 <p>Assuming that ActiveTcl got installed running the commands</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup install widget::scrolledwindow
     teacup install widget::listsimple
     teacup install widget::dialog
 </pre>
 <p>will install them for your platform, if you have not done the more
 inclusive</p>
-<pre class="example">
+<pre class="doctools_example">
     teacup update
 </pre>
 <p>to get everything and the kitchensink.</p>
 <p>For those wishing to build and install Tklib on their own, the
 relevant sources can be found at</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt>Tcllib/Tklib</dt>
 <dd><p><a href="http://sourceforge.net/projects/tcllib">http://sourceforge.net/projects/tcllib</a></p></dd>
 </dl>
@@ -350,7 +349,7 @@ relevant sources can be found at</p>
 and its packages please file a bug against Tklib, or the vendor of
 your distribution, and not Kettle.</p>
 </div>
-<div id="subsection5" class="subsection"><h3><a name="subsection5">tcltest</a></h3>
+<div id="subsection5" class="doctools_subsection"><h3><a name="subsection5">tcltest</a></h3>
 <p>Kettle's &quot;test&quot; recipe requires the <b class="package">tcltest</b> package.  If
 this package is not installed the &quot;test&quot; recipe cannot be used, and
 attempting to do so will fail.</p>
@@ -361,14 +360,14 @@ together with Tcl itself.</p>
 against Tcl, or the vendor of your Tcl distribution, and not Kettle.</p>
 </div>
 </div>
-<div id="section3" class="section"><h2><a name="section3">Build &amp; Installation Instructions</a></h2>
-<div id="subsection6" class="subsection"><h3><a name="subsection6">Build &amp; Installation (Unix)</a></h3>
+<div id="section3" class="doctools_section"><h2><a name="section3">Build &amp; Installation Instructions</a></h2>
+<div id="subsection6" class="doctools_subsection"><h3><a name="subsection6">Build &amp; Installation (Unix)</a></h3>
 <p>This section describes the actions required to install Kettle on Unix
 systems (Linux, BSD, and related, including OS X).
 If you have to install Kettle on a Windows machine see section
 <span class="sectref"><a href="#subsection7">Build &amp; Installation (Windows)</a></span> instead.</p>
 <p>To install Kettle simply run</p>
-<pre class="example">
+<pre class="doctools_example">
     /path/to/tclsh8.5 /path/to/kettle/build.tcl install
 </pre>
 <p>where &quot;<b class="file">/path/to/tclsh8.5</b>&quot; is the tclsh of your Tcl installation, and
@@ -384,18 +383,18 @@ arguments.</p>
 <p>To get help about the methods of &quot;<b class="file">build.tcl</b>&quot;, and their complete
 syntax, invoke &quot;<b class="file">build.tcl</b>&quot; with argument <b class="method">help</b>, i.e.,
 like</p>
-<pre class="example">
+<pre class="doctools_example">
     /path/to/tclsh8.5 /path/to/kettle/build.tcl help
 </pre>
 </div>
-<div id="subsection7" class="subsection"><h3><a name="subsection7">Build &amp; Installation (Windows)</a></h3>
+<div id="subsection7" class="doctools_subsection"><h3><a name="subsection7">Build &amp; Installation (Windows)</a></h3>
 <p>This section describes the actions required to install Kettle on Windows(tm)
 systems.
 If you have to install Kettle on a Unix machine (Linux, BSD, and
 related, including OS X) see section
 <span class="sectref"><a href="#subsection6">Build &amp; Installation (Unix)</a></span> instead.</p>
 <p>To install Kettle simply run</p>
-<pre class="example">
+<pre class="doctools_example">
     /path/to/tclsh8.5 /path/to/kettle/kettle -f /path/to/kettle/build.tcl install
 </pre>
 <p>where &quot;<b class="file">/path/to/tclsh8.5</b>&quot; is the tclsh of your Tcl installation,
@@ -421,13 +420,13 @@ arguments from the command line.</p>
 <p>To get help about the methods of &quot;<b class="file">build.tcl</b>&quot;, and their complete
 syntax, invoke &quot;<b class="file">build.tcl</b>&quot; with argument <b class="method">help</b>, i.e.,
 like</p>
-<pre class="example">
+<pre class="doctools_example">
     /path/to/tclsh8.5 /path/to/kettle/kettle -f /path/to/kettle/build.tcl help
 </pre>
 </div>
-<div id="subsection8" class="subsection"><h3><a name="subsection8">Build &amp; Installation (Help)</a></h3>
+<div id="subsection8" class="doctools_subsection"><h3><a name="subsection8">Build &amp; Installation (Help)</a></h3>
 <p>Kettle commands for getting various types of help are:</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p>help-recipes</p></li>
 <li><p>help-options</p></li>
 <li><p>help</p></li>
@@ -438,7 +437,7 @@ like</p>
 </ol>
 </div>
 </div>
-<div id="section4" class="section"><h2><a name="section4">Bugs, Ideas, Feedback</a></h2>
+<div id="section4" class="doctools_section"><h2><a name="section4">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at the
@@ -446,10 +445,10 @@ Please report such at the
 Please also report any ideas for enhancements you may have for either
 package and/or documentation.</p>
 </div>
-<div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
+<div id="keywords" class="doctools_section"><h2><a name="keywords">Keywords</a></h2>
 <p><a href="../../index.html#key0">build tea</a></p>
 </div>
-<div id="category" class="section"><h2><a name="category">Category</a></h2>
+<div id="category" class="doctools_section"><h2><a name="category">Category</a></h2>
 <p>Build support</p>
 </div>
 </div></body></html>

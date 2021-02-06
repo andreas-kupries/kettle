@@ -12,7 +12,7 @@ of kettle, i.e. a package developer using (or wishing to use) kettle
 as the build system for their code.
 
 [para] These commands are provided by the kettle core, as shown in the
-archtectural diagram below.
+architectural diagram below.
 
 [para][image arch_core]
 

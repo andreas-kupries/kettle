@@ -206,11 +206,9 @@ proc ::kettle::DtpliteDo {root dst isfossil} {
 	# Note: Might be better to run them separately.
 	# Note @: Or we shuffle the results a bit more in the post processing stage.
 
-	if {$isfossil} {
-	    set cmd [list -nav Home ../../../../home -merge -o $dst/www html .]
-	} else {
-	    set cmd [list -merge -o $dst/www html .]
-	}
+	catch { unset cmd }
+	if {$isfossil} { lappend cmd -nav Home ../../../../home }
+	lappend cmd -merge -o $dst/www html .
 
 	io puts "\nGenerating HTML... Pass 1, draft..."
 	DtpliteRun {*}$cmd
@@ -221,11 +219,9 @@ proc ::kettle::DtpliteDo {root dst isfossil} {
 	# Note: Might be better to run them separately.
 	# Note @: Or we shuffle the results a bit more in the post processing stage.
 
-	if {$isfossil} {
-	    set cmd [list -nav Home ../../../../home -merge -o $dst/md markdown .]
-	} else {
-	    set cmd [list -merge -o $dst/md markdown .]
-	}
+	catch { unset cmd }
+	if {$isfossil} { lappend cmd -nav Home ../../../../home }
+	lappend cmd -merge -o $dst/md -ext md markdown .
 
 	io puts "\nGenerating Markdown... Pass 1, draft..."
 	DtpliteRun {*}$cmd
@@ -280,7 +276,7 @@ proc ::kettle::gh-pages {} {
 	io trace {  No gh-pages: Not git based}
 	return
     }
- 
+
     # Now we check if the branch we need is present. Note that if we
     # can't find the tool, i.e. "git", we assume that the branch is
     # present and let the recipe error out on the missing tool.

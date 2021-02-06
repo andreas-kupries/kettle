@@ -505,8 +505,8 @@ package require \fBTcl  8\&.5\fR
 .SH DESCRIPTION
 .PP
 .PP
-Welcome to Kettle, a set of packages providing support for writing
-build code for Tcl packages\&.
+Welcome to Kettle, an application and set of packages providing
+support for the easy building and installation of pure Tcl packages\&.
 .PP
 Please read the document \fIKettle - Introduction to Kettle\fR,
 if you have not done so already, to get an overview of the whole system\&.

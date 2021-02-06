@@ -919,7 +919,7 @@ proc ::kettle::path::is.fossil {path} {
 
 proc ::kettle::path::dry-barrier {{dryscript {}}} {
     if {![kettle option get --dry]} return
-    # dry run: notify, ... 
+    # dry run: notify, ...
     if {$dryscript eq {}} {
 	io cyan { io puts {!dry run!} }
     } else {

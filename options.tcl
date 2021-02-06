@@ -133,7 +133,7 @@ proc ::kettle::option::set {o value} {
     } else {
 	::set has 0
 	::set old {}
-    }  
+    }
 
     dict set config $o $value
     dict set def    $o user 1

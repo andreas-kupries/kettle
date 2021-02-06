@@ -113,7 +113,7 @@ proc ::kettle::TclSetup {root files pn pv} {
     recipe parent uninstall-tcl-packages uninstall-packages
     recipe parent uninstall-packages     uninstall
 
-    recipe parent install-package-$pn debug-package-$pn  
+    recipe parent install-package-$pn debug-package-$pn
     recipe parent debug-package-$pn   debug-tcl-packages
     recipe parent debug-tcl-packages  debug-packages
     recipe parent debug-packages      debug

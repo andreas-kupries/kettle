@@ -394,7 +394,7 @@ proc ::kettle::mdref::Evalid {e {mv {}}} {
     if {$mv ne ""} {upvar 1 $mv message}
 
     set ex [string tolower $e]
-    set ok [expr {$x in {package application}}]    
+    set ok [expr {$x in {package application}}]
 
     if {!$ok} {
 	set message "Unknown entity type \"$e\", expected application, or package"
