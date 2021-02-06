@@ -278,8 +278,8 @@ package require \fBTcl  8\&.5\fR
 .BE
 .SH DESCRIPTION
 .PP
-Welcome to Kettle, a set of packages providing support for writing
-build code for Tcl packages\&.
+Welcome to Kettle, an application and set of packages providing
+support for the easy building and installation of pure Tcl packages\&.
 Kettle is a system to make building Tcl packages quick and easy\&. More
 importantly, possibly, to make writing the build system for Tcl
 packages easy\&.

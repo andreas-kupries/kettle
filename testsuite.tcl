@@ -189,14 +189,14 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     foreach {o v} {
 	constraints      constraints
 	limitconstraints limitconstraints
-	tmatch		 match		 
+	tmatch		 match
 	tskip		 skip
     } {
 	lappend options -$v [option get --$o]
     }
 
     set testfiles [Skip [option get --notfile] [Match [option get --file] $testfiles]]
-    
+
     stream to log ============================================================
 
     set main [path norm [option get @kettledir]/testmain.tcl]
@@ -223,7 +223,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 	if {$valgrind} {
 	    lappend options --valgrind
 	}
-	
+
 	if {[option get --single]} {
 	    dict set state singled 1 ;# Test::Summary
 
@@ -235,7 +235,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 
 		# Per file initialization...
 		dict set state suite/status ok
-		#dict set state 
+		#dict set state
 
 		dict set state numcases [llength $cases]
 		dict set state xtotal   0
@@ -266,7 +266,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
 		# Per file initialization...
 		dict set state summary 0
 		dict set state suite/status ok
-		#dict set state 
+		#dict set state
 
 		path pipe line {
 		    io trace {TEST: $line}
@@ -356,7 +356,7 @@ proc ::kettle::Test::Scan {srcdir testfiles localprefix} {
     set tn [llength $testcases]
     stream to log {\#Testcases $tn}
 
-    # Report the found tests.    
+    # Report the found tests.
     set testcases [join [lsort -dict $testcases] \n]
 
     if {![stream active]} {
@@ -423,7 +423,7 @@ proc ::kettle::Test::Check {srcdir testfiles localprefix} {
 
     if {![stream active]} {
 	stream term always "Duplicates: [dict size $testcases]"
-    } 
+    }
     stream to log {Duplicates: [dict size $testcases]}
 
     if {[dict size $testcases]} {

@@ -123,6 +123,10 @@ proc ::kettle::path::htmldir {{path {}}} {
     return [norm [file join [kettle option get --html-dir] $path]]
 }
 
+proc ::kettle::path::markdowndir {{path {}}} {
+    return [norm [file join [kettle option get --markdown-dir] $path]]
+}
+
 proc ::kettle::path::set-executable {path} {
     io trace {	!chmod ugo+x   $path}
     dry-barrier
@@ -915,7 +919,7 @@ proc ::kettle::path::is.fossil {path} {
 
 proc ::kettle::path::dry-barrier {{dryscript {}}} {
     if {![kettle option get --dry]} return
-    # dry run: notify, ... 
+    # dry run: notify, ...
     if {$dryscript eq {}} {
 	io cyan { io puts {!dry run!} }
     } else {

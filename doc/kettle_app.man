@@ -12,7 +12,7 @@ i.e. a package developer using (or wishing to use) kettle as the build
 system for their code.
 
 [para] This application resides between the kettle core and the build
-script written by the package developer, as shown in the archtectural
+script written by the package developer, as shown in the architectural
 diagram below.
 
 [para][image arch_app]

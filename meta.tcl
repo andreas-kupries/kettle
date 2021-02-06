@@ -324,11 +324,11 @@ proc ::kettle::meta::GetInternal {str} {
 	if {[regexp "^$mbegin" $line]} {
 	    io trace {META BEGIN}
 	    set collect meta
-	    continue 
+	    continue
 	} elseif {[regexp "^$mend" $line]} {
 	    io trace {META END}
 	    set collect trailer
-	    continue 
+	    continue
 	}
 
 	if {$collect eq "meta"} {

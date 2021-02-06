@@ -69,9 +69,11 @@ proc ::kettle::doc {{docsrcdir doc}} {
     set dd      [path sourcedir [option get --with-doc-destination]]
     set mansrc  $dd/man/files
     set htmlsrc $dd/www
+    set mdsrc   $dd/md
 
-    set mandst  [path mandir  mann]
-    set htmldst [path htmldir [file tail [path sourcedir]]]
+    set mandst  [path mandir      mann]
+    set htmldst [path htmldir     [file tail [path sourcedir]]]
+    set mddst   [path markdowndir [file tail [path sourcedir]]]
 
     set isfossil [expr {[path find.fossil [path sourcedir]] ne {}}]
 
@@ -110,6 +112,15 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	return
     } $htmlsrc $htmldst
 
+    recipe define install-doc-markdown {
+	Install Markdown documentation
+    } {src dst} {
+	path install-file-group \
+	    "Markdown documentation" \
+	    $dst {*}[glob -directory $src *]
+	return
+    } $mdsrc $mddst
+
     recipe define uninstall-doc-manpages {
 	Uninstall manpages
     } {src dst} {
@@ -127,6 +138,14 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	    $dst
     } $htmldst
 
+    recipe define uninstall-doc-markdown {
+	Uninstall Markdown documentation
+    } {dst} {
+	path uninstall-file-group \
+	    "Markdown documentation" \
+	    $dst
+    } $mddst
+
     recipe define reinstall-doc-manpages {
 	Reinstall manpages
     } {} {
@@ -141,14 +160,24 @@ proc ::kettle::doc {{docsrcdir doc}} {
 	invoke self install-doc-html
     }
 
+    recipe define reinstall-doc-markdown {
+	Reinstall Markdown documentation
+    } {} {
+	invoke self uninstall-doc-markdown
+	invoke self install-doc-markdown
+    }
+
+    recipe parent install-doc-markdown install-doc
     recipe parent install-doc-html     install-doc
     recipe parent install-doc-manpages install-doc
     recipe parent install-doc          install
 
+    recipe parent uninstall-doc-markdown uninstall-doc
     recipe parent uninstall-doc-html     uninstall-doc
     recipe parent uninstall-doc-manpages uninstall-doc
     recipe parent uninstall-doc          uninstall
 
+    recipe parent reinstall-doc-markdown reinstall-doc
     recipe parent reinstall-doc-html     reinstall-doc
     recipe parent reinstall-doc-manpages reinstall-doc
     recipe parent reinstall-doc          reinstall
@@ -169,6 +198,7 @@ proc ::kettle::DtpliteDo {root dst isfossil} {
 
 	file mkdir $dst/man
 	file mkdir $dst/www
+	file mkdir $dst/md
 
 	io puts "Generating man pages..."
 	DtpliteRun -ext n -o $dst/man nroff .
@@ -176,11 +206,9 @@ proc ::kettle::DtpliteDo {root dst isfossil} {
 	# Note: Might be better to run them separately.
 	# Note @: Or we shuffle the results a bit more in the post processing stage.
 
-	if {$isfossil} {
-	    set cmd [list -nav Home ../../../../home -merge -o $dst/www html .]
-	} else {
-	    set cmd [list -merge -o $dst/www html .]
-	}
+	catch { unset cmd }
+	if {$isfossil} { lappend cmd -nav Home ../../../../home }
+	lappend cmd -merge -o $dst/www html .
 
 	io puts "\nGenerating HTML... Pass 1, draft..."
 	DtpliteRun {*}$cmd
@@ -188,9 +216,23 @@ proc ::kettle::DtpliteDo {root dst isfossil} {
 	io puts "\nGenerating HTML... Pass 2, resolving cross-references..."
 	DtpliteRun {*}$cmd
 
+	# Note: Might be better to run them separately.
+	# Note @: Or we shuffle the results a bit more in the post processing stage.
+
+	catch { unset cmd }
+	if {$isfossil} { lappend cmd -nav Home ../../../../home }
+	lappend cmd -merge -o $dst/md -ext md markdown .
+
+	io puts "\nGenerating Markdown... Pass 1, draft..."
+	DtpliteRun {*}$cmd
+
+	io puts "\nGenerating Markdown... Pass 2, resolving cross-references..."
+	DtpliteRun {*}$cmd
+
 	# Remove some of the generated files, consider them transient.
 	cd  $dst/man ; file delete -force .idxdoc .tocdoc
 	cd  ../www   ; file delete -force .idxdoc .tocdoc
+	cd  ../md    ; file delete -force .idxdoc .tocdoc
     }
 }
 
@@ -234,7 +276,7 @@ proc ::kettle::gh-pages {} {
 	io trace {  No gh-pages: Not git based}
 	return
     }
- 
+
     # Now we check if the branch we need is present. Note that if we
     # can't find the tool, i.e. "git", we assume that the branch is
     # present and let the recipe error out on the missing tool.

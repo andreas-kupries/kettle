@@ -1,5 +1,4 @@
-
-<html><head>
+<!DOCTYPE html><html><head>
 <title>kettle - Kettle - The Quick Brew System</title>
 <style type="text/css"><!--
     HTML {
@@ -25,7 +24,7 @@
 	background: 	transparent;
 	text-align:		left;
     }
-    H1.title {
+    H1.doctools_title {
 	text-align: center;
     }
     UL,OL {
@@ -42,11 +41,11 @@
     DT {
 	padding-top: 	1ex;
     }
-    UL.toc,UL.toc UL, UL.toc UL UL {
+    UL.doctools_toc,UL.doctools_toc UL, UL.doctools_toc UL UL {
 	font:		normal 12pt/14pt sans-serif;
 	list-style:	none;
     }
-    LI.section, LI.subsection {
+    LI.doctools_section, LI.doctools_subsection {
 	list-style: 	none;
 	margin-left: 	0em;
 	text-indent:	0em;
@@ -63,18 +62,18 @@
 	padding-right:	1ex;
 	width:		100%;
     }
-    PRE.example {
+    PRE.doctools_example {
 	color: 		black;
 	background: 	#f5dcb3;
 	border:		1px solid black;
     }
-    UL.requirements LI, UL.syntax LI {
+    UL.doctools_requirements LI, UL.doctools_syntax LI {
 	list-style: 	none;
 	margin-left: 	0em;
 	text-indent:	0em;
 	padding:	0em;
     }
-    DIV.synopsis {
+    DIV.doctools_synopsis {
 	color: 		black;
 	background: 	#80ffff;
 	border:		1px solid black;
@@ -82,66 +81,66 @@
 	margin-top: 	1em;
 	margin-bottom: 	1em;
     }
-    UL.syntax {
+    UL.doctools_syntax {
 	margin-top: 	1em;
 	border-top:	1px solid black;
     }
-    UL.requirements {
+    UL.doctools_requirements {
 	margin-bottom: 	1em;
 	border-bottom:	1px solid black;
     }
 --></style>
 </head>
-<! -- Generated from file 'kettle.man' by tcllib/doctools with format 'html'
+<!-- Generated from file 'kettle.man' by tcllib/doctools with format 'html'
    -->
-<! -- CVS: $Id$ kettle.n
+<!-- kettle.n
    -->
-<body><div class="doctools">
-<hr> [
+<body><hr> [
    <a href="../../../../../../home">Home</a>
 | <a href="../../toc.html">Main Table Of Contents</a>
 | <a href="../toc.html">Table Of Contents</a>
 | <a href="../../index.html">Keyword Index</a>
  ] <hr>
-<h1 class="title">kettle(n) 1 doc &quot;Kettle - The Quick Brew System&quot;</h1>
-<div id="name" class="section"><h2><a name="name">Name</a></h2>
+<div class="doctools">
+<h1 class="doctools_title">kettle(n) 1 doc &quot;Kettle - The Quick Brew System&quot;</h1>
+<div id="name" class="doctools_section"><h2><a name="name">Name</a></h2>
 <p>kettle - Kettle - Core</p>
 </div>
-<div id="toc" class="section"><h2><a name="toc">Table Of Contents</a></h2>
-<ul class="toc">
-<li class="section"><a href="#toc">Table Of Contents</a></li>
-<li class="section"><a href="#synopsis">Synopsis</a></li>
-<li class="section"><a href="#section1">Description</a></li>
-<li class="section"><a href="#section2">Overview</a></li>
-<li class="section"><a href="#section3">Build declarations</a></li>
-<li class="section"><a href="#section4">Graphical Interface Support</a></li>
-<li class="section"><a href="#section5">Tool handling</a></li>
-<li class="section"><a href="#section6">Recursive invokations</a></li>
-<li class="section"><a href="#section7">Option database</a></li>
-<li class="section"><a href="#section8">Option Types and Validation</a></li>
-<li class="section"><a href="#section9">Path utilities</a></li>
-<li class="section"><a href="#section10">Recipe database</a></li>
-<li class="section"><a href="#section11">Status management</a></li>
-<li class="section"><a href="#section12">IO virtualization</a></li>
-<li class="section"><a href="#section13">General Utilities</a>
+<div id="toc" class="doctools_section"><h2><a name="toc">Table Of Contents</a></h2>
+<ul class="doctools_toc">
+<li class="doctools_section"><a href="#toc">Table Of Contents</a></li>
+<li class="doctools_section"><a href="#synopsis">Synopsis</a></li>
+<li class="doctools_section"><a href="#section1">Description</a></li>
+<li class="doctools_section"><a href="#section2">Overview</a></li>
+<li class="doctools_section"><a href="#section3">Build declarations</a></li>
+<li class="doctools_section"><a href="#section4">Graphical Interface Support</a></li>
+<li class="doctools_section"><a href="#section5">Tool handling</a></li>
+<li class="doctools_section"><a href="#section6">Recursive invokations</a></li>
+<li class="doctools_section"><a href="#section7">Option database</a></li>
+<li class="doctools_section"><a href="#section8">Option Types and Validation</a></li>
+<li class="doctools_section"><a href="#section9">Path utilities</a></li>
+<li class="doctools_section"><a href="#section10">Recipe database</a></li>
+<li class="doctools_section"><a href="#section11">Status management</a></li>
+<li class="doctools_section"><a href="#section12">IO virtualization</a></li>
+<li class="doctools_section"><a href="#section13">General Utilities</a>
 <ul>
-<li class="subsection"><a href="#subsection1">Anonymous procedures</a></li>
-<li class="subsection"><a href="#subsection2">Error handling</a></li>
-<li class="subsection"><a href="#subsection3">String processing</a></li>
+<li class="doctools_subsection"><a href="#subsection1">Anonymous procedures</a></li>
+<li class="doctools_subsection"><a href="#subsection2">Error handling</a></li>
+<li class="doctools_subsection"><a href="#subsection3">String processing</a></li>
 </ul>
 </li>
-<li class="section"><a href="#section14">License</a></li>
-<li class="section"><a href="#section15">Bugs, Ideas, Feedback</a></li>
-<li class="section"><a href="#keywords">Keywords</a></li>
-<li class="section"><a href="#category">Category</a></li>
+<li class="doctools_section"><a href="#section14">License</a></li>
+<li class="doctools_section"><a href="#section15">Bugs, Ideas, Feedback</a></li>
+<li class="doctools_section"><a href="#keywords">Keywords</a></li>
+<li class="doctools_section"><a href="#category">Category</a></li>
 </ul>
 </div>
-<div id="synopsis" class="section"><h2><a name="synopsis">Synopsis</a></h2>
-<div class="synopsis">
-<ul class="requirements">
+<div id="synopsis" class="doctools_section"><h2><a name="synopsis">Synopsis</a></h2>
+<div class="doctools_synopsis">
+<ul class="doctools_requirements">
 <li>package require <b class="pkgname">Tcl 8.5</b></li>
 </ul>
-<ul class="syntax">
+<ul class="doctools_syntax">
 <li><a href="#1"><b class="cmd">kettle tcl</b></a></li>
 <li><a href="#2"><b class="cmd">kettle tclapp</b> <i class="arg">path</i></a></li>
 <li><a href="#3"><b class="cmd">kettle critcl3</b></a></li>
@@ -258,9 +257,9 @@
 </ul>
 </div>
 </div>
-<div id="section1" class="section"><h2><a name="section1">Description</a></h2>
-<p>Welcome to Kettle, a set of packages providing support for writing
-build code for Tcl packages.</p>
+<div id="section1" class="doctools_section"><h2><a name="section1">Description</a></h2>
+<p>Welcome to Kettle, an application and set of packages providing
+support for the easy building and installation of pure Tcl packages.</p>
 <p>Please read the document <i class="term"><a href="kettle_intro.html">Kettle - Introduction to Kettle</a></i>,
 if you have not done so already, to get an overview of the whole system.</p>
 <p>This document is the reference to all commands provided by the kettle
@@ -272,7 +271,7 @@ developers and maintainers of kettle itself.</p>
 <i class="term"><a href="kettle_app.html">Kettle - Application - Build Interpreter</a></i>
 and <i class="term"><a href="kettle_dsl.html">Kettle - Build Declarations</a></i> instead.</p>
 </div>
-<div id="section2" class="section"><h2><a name="section2">Overview</a></h2>
+<div id="section2" class="doctools_section"><h2><a name="section2">Overview</a></h2>
 <p>The high-level architecture is shown in the image below:</p>
 <p><img alt="architecture" src="../../image/architecture.png"></p>
 <p>This document is concerned with the lowest level shown, the core
@@ -304,7 +303,7 @@ command in that component.</p>
 down to the bottom, starting with the user visible commands described
 in <i class="term"><a href="kettle_dsl.html">Kettle - Build Declarations</a></i>, covering all the green boxes.
 For the remainder:</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt>gui</dt>
 <dd><p><span class="sectref"><a href="#section4">Graphical Interface Support</a></span></p></dd>
 <dt>tool</dt>
@@ -337,8 +336,8 @@ available, in contrast to the recipes dynamically created by the
 declarations commands in response to their scanning of a package
 source directory.</p>
 </div>
-<div id="section3" class="section"><h2><a name="section3">Build declarations</a></h2>
-<dl class="definitions">
+<div id="section3" class="doctools_section"><h2><a name="section3">Build declarations</a></h2>
+<dl class="doctools_definitions">
     
 <dt><a name="1"><b class="cmd">kettle tcl</b></a></dt>
 <dd><p>This command declares the presence of one or more Tcl packages in the
@@ -346,34 +345,34 @@ package source directory.</p>
 <p>The package source directory is scanned to locate
 them. Packages are detected by finding a marker (Tcl command) of the
 form</p>
-<pre class="example">
+<pre class="doctools_example">
     package provide NAME VERSION
 </pre>
 <p>in a file, where both <b class="variable">NAME</b> and <b class="variable">VERSION</b> must be literal
 strings, not commands, nor variable references. It is best recognized
 when found alone on its line.
 Note that files containing an <em>anti-marker</em> of the form</p>
-<pre class="example">
+<pre class="doctools_example">
     package require critcl
 </pre>
 <p>are rejected as Tcl packages. Use the command <b class="cmd">kettle critcl3</b>
 to detect such packages, mixing Tcl and C.
 In each accepted package file the command further looks for and
 recognizes embedded pragmas of the form</p>
-<pre class="example"># @owns: PATH</pre>
+<pre class="doctools_example"># @owns: PATH</pre>
 <p>which provides kettle with information about files belonging to the
 same package without directly providing it. This can be data files, or
 other Tcl files sourced by the main package file.</p>
 <p>For each detected package <b class="variable">P</b> two recipes are defined, to
 install and uninstall this package, namely:</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">install-package-<b class="variable">P</b></b></dt>
 <dd></dd>
 <dt><b class="const">uninstall-package-<b class="variable">P</b></b></dt>
 <dd></dd>
 </dl>
 <p>The command further extends the recipes</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">install-tcl-packages</b></dt>
 <dd></dd>
 <dt><b class="const">install-packages</b></dt>
@@ -388,7 +387,7 @@ install and uninstall this package, namely:</p>
 <dd></dd>
 </dl>
 <p>generating a recipe tree matching</p>
-<pre class="example">
+<pre class="doctools_example">
   install
   -&gt; install-packages
      -&gt; install-tcl-packages
@@ -404,7 +403,7 @@ a user to install parts of the sources at various levels of specifity,
 from just a specific package up to all and sundry.</p>
 <p>Tcl packages are installed into the directory specified by
 option <b class="option">--lib-dir</b> despite technically not being binary files.</p>
-<dl class="options">
+<dl class="doctools_options">
 <dt><b class="option">--lib-dir</b> path</dt>
 <dd><p>This configuration option specifies the path to the directory packages
 (binary and script) will be installed into.</p>
@@ -429,14 +428,14 @@ building the package itself.</p></dd>
 at the <i class="arg">path</i> under the package source directory.</p>
 <p>If the specified application is found the command will define
 two recipes to install and uninstall this application, namely:</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">install-app-<i class="arg">path</i></b></dt>
 <dd></dd>
 <dt><b class="const">uninstall-app-<i class="arg">path</i></b></dt>
 <dd></dd>
 </dl>
 <p>It will further extend the recipes</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">install-tcl-applications</b></dt>
 <dd></dd>
 <dt><b class="const">install-applications</b></dt>
@@ -451,7 +450,7 @@ two recipes to install and uninstall this application, namely:</p>
 <dd></dd>
 </dl>
 <p>generating a recipe tree matching</p>
-<pre class="example">
+<pre class="doctools_example">
   install
   -&gt; install-applications
      -&gt; install-tcl-applications
@@ -468,7 +467,7 @@ from just a specific application up to all and sundry.</p>
 <p>Script applications are installed into the directory specified
 by option <b class="option">--bin-dir</b> despite technically not being binary
 files.</p>
-<dl class="options">
+<dl class="doctools_options">
 <dt><b class="option">--bin-dir</b> path</dt>
 <dd><p>This configuration option specifies the path to the directory
 applications (binary and script) will be installed into.</p>
@@ -483,11 +482,11 @@ packages in the package source directory, mixing C and Tcl.</p>
 <p>The package source directory is scanned to locate
 them. Packages are detected by finding two markers (Tcl commands) in
 the file. These markers are of the form</p>
-<pre class="example">
+<pre class="doctools_example">
     package provide NAME VERSION
 </pre>
 <p>and</p>
-<pre class="example">
+<pre class="doctools_example">
     package require critcl
 </pre>
 <p>Both <b class="variable">NAME</b> and <b class="variable">VERSION</b> must be literal strings, not
@@ -496,7 +495,7 @@ alone on their respective lines.</p>
 <p>For each detected package <b class="variable">P</b> three recipes are defined, to
 install and uninstall this package. Installation comes in two
 variants, regular and debug:</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">install-package-<b class="variable">P</b></b></dt>
 <dd></dd>
 <dt><b class="const">debug-package-<b class="variable">P</b></b></dt>
@@ -505,7 +504,7 @@ variants, regular and debug:</p>
 <dd></dd>
 </dl>
 <p>The command further extends the recipes</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">install-binary-packages</b></dt>
 <dd></dd>
 <dt><b class="const">install-packages</b></dt>
@@ -526,7 +525,7 @@ variants, regular and debug:</p>
 <dd></dd>
 </dl>
 <p>generating a recipe tree matching</p>
-<pre class="example">
+<pre class="doctools_example">
   install
   -&gt; install-packages
      -&gt; install-binary-packages
@@ -552,7 +551,7 @@ Kettle's choice of which critcl application to use cane overriden by
 option <b class="option">--with-critcl3</b>, except if kettle found a
 <b class="package">critcl</b> package and runs everything itself instead of
 invoking critcl child processes.</p>
-<dl class="options">
+<dl class="doctools_options">
 <dt><b class="option">--lib-dir</b> path</dt>
 <dd><p>This configuration option specifies the path to the directory packages
 (binary and script) will be installed into.</p>
@@ -570,7 +569,7 @@ target to <b class="syscmd">critcl</b> itself.</p></dd>
 <b class="syscmd">critcl3</b> for the compilation and installation of critcl-based
 C code.</p>
 <p>The default value is the path to the first of</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p>&quot;<b class="file">critcl3</b>&quot;,</p></li>
 <li><p>&quot;<b class="file">critcl3.kit</b>&quot;,</p></li>
 <li><p>&quot;<b class="file">critcl3.tcl</b>&quot;,</p></li>
@@ -620,7 +619,7 @@ To take effect it has to be run <em>before</em> <b class="cmd">kettle doc</b> is
 run.
 <em>Note</em> that the user is still able to override with by setting
 <b class="option">--with-doc-destination</b> on the command line.</p>
-<dl class="options">
+<dl class="doctools_options">
 <dt><b class="option">--with-doc-destination</b> path</dt>
 <dd><p>This configuration option specifies the path to the directory the
 generated documentation should be placed into for the documentation
@@ -647,14 +646,14 @@ This means that if documentation is stored in a non-standard location
 <p>The package documentation directory is scanned to locate the
 documentation files. They are recognized by containing any of the
 marker strings</p>
-<ul class="itemized">
+<ul class="doctools_itemized">
 <li><p>&quot;<b class="const">[manpage_begin</b>&quot;</p></li>
 <li><p>&quot;<b class="const">--- doctools ---</b>&quot;</p></li>
 <li><p>&quot;<b class="const">tcl.tk//DSL doctools//EN//</b>&quot;</p></li>
 </ul>
 <p>in their first 1024 characters. Possible documentation files are
 rejected should they contain any of the anti-markers</p>
-<ul class="itemized">
+<ul class="doctools_itemized">
 <li><p>&quot;<b class="const">--- !doctools ---</b>&quot;</p></li>
 <li><p>&quot;<b class="const">!tcl.tk//DSL doctools//EN//</b>&quot;</p></li>
 </ul>
@@ -667,7 +666,7 @@ recipes to convert the documentation into manpages and HTML files,
 plus recipes install the conversion results. The conversion results
 themselves are stored as specified by <b class="cmd">kettle doc-destination</b>
 (see above) and associated options.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">doc</b></dt>
 <dd></dd>
 <dt><b class="const">install-doc-html</b></dt>
@@ -680,7 +679,7 @@ themselves are stored as specified by <b class="cmd">kettle doc-destination</b>
 <dd></dd>
 </dl>
 <p>The command further extends the recipes</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">install-doc</b></dt>
 <dd></dd>
 <dt><b class="const">install</b></dt>
@@ -691,7 +690,7 @@ themselves are stored as specified by <b class="cmd">kettle doc-destination</b>
 <dd></dd>
 </dl>
 <p>generating a recipe tree matching</p>
-<pre class="example">
+<pre class="doctools_example">
   install
   -&gt; install-doc
      -&gt; install-doc-html
@@ -711,7 +710,7 @@ Manpages are stored under the directory specified by
 option <b class="option">--man-dir</b>.
 The &quot;doc&quot; recipe uses the <b class="syscmd">dtplite</b> application to perform the
 various conversions.</p>
-<dl class="options">
+<dl class="doctools_options">
 <dt><b class="option">--html-dir</b> path</dt>
 <dd><p>This configuration option specifies the path to the directory package
 documentation in HTML format will be installed into.</p>
@@ -753,14 +752,14 @@ This means that if diagrams are stored in a non-standard location
 proper path.</p>
 <p>The package diagram directory is scanned to locate the diagram
 files. They are recognized by containing the marker string</p>
-<ul class="itemized">
+<ul class="doctools_itemized">
 <li><p>&quot;<b class="const">tcl.tk//DSL diagram//EN//</b>&quot;</p></li>
 </ul>
 <p>in their first 1024 characters.</p>
 <p>When diagram files are found the command will define recipes to
 convert the diagrams into PNG raster images (saved as siblings to
 their source files), and to render the diagrams on a Tk canvas.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">figures</b></dt>
 <dd></dd>
 <dt><b class="const">show-figures</b></dt>
@@ -768,7 +767,7 @@ their source files), and to render the diagrams on a Tk canvas.</p>
 </dl>
 <p>The recipes use the <b class="syscmd">dia</b> application (of <b class="package">tklib</b>)
 to perform the conversions, and GUI rendering.</p>
-<dl class="options">
+<dl class="doctools_options">
 <dt><b class="option">--with-dia</b> path</dt>
 <dd><p>This configuration option specifies the path to the tool
 <b class="syscmd">dia</b> for tklib/diagram-based diagram processing.</p>
@@ -816,7 +815,7 @@ This means that if a testsuite is stored in a non-standard location
 proper path.</p>
 <p>The package testsuite directory is scanned to locate the test
 files. They are recognized by containing the marker string</p>
-<ul class="itemized">
+<ul class="doctools_itemized">
 <li><p>&quot;<b class="const">tcl.tk//DSL tcltest//EN//</b>&quot;</p></li>
 </ul>
 <p>in their first 1024 characters.</p>
@@ -827,7 +826,7 @@ the tests, installing the package under test (and its dependencies) in
 a local directory for use by the testsuites. The supporting commands
 provided by kettle (see <i class="term"><a href="kettle_test.html">Kettle - Testsuite Support</a></i>) know how
 to use this.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">test</b></dt>
 <dd></dd>
 </dl>
@@ -837,7 +836,7 @@ The ability to save testsuite output to a series of files is specified
 by the option <b class="option">--log</b>.
 The tclsh shell used for running the testsuites is specified by option
 <b class="option">--with-shell</b>.</p>
-<dl class="options">
+<dl class="doctools_options">
 <dt><b class="option">--log-mode</b> compact|full</dt>
 <dd><p>An option for recipe 'test', if defined. Its value determines the
 verbosity of test suite information printed to the terminal or log window.</p>
@@ -854,10 +853,10 @@ testsuite information.</p></dd>
 </dl></dd>
 </dl>
 </div>
-<div id="section4" class="section"><h2><a name="section4">Graphical Interface Support</a></h2>
+<div id="section4" class="doctools_section"><h2><a name="section4">Graphical Interface Support</a></h2>
 <p>This layer contains the command for the creation of the standard
 graphical interface to the system.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><a name="10"><b class="cmd">kettle gui</b> <b class="method">make</b></a></dt>
 <dd><p>This high-level command creates a standard graphical interface
 providing access to all options and defined recipes, through two tabs
@@ -871,10 +870,10 @@ which are created by the option type definitions found under
 the same tab which contains the action buttons.</p></dd>
 </dl>
 </div>
-<div id="section5" class="section"><h2><a name="section5">Tool handling</a></h2>
+<div id="section5" class="doctools_section"><h2><a name="section5">Tool handling</a></h2>
 <p>This layer contains commands to manage the declaration of a dependency
 on external comands, and their use.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><a name="11"><b class="cmd">kettle tool</b> <b class="method">declare</b> <i class="arg">names</i> <span class="opt">?<i class="arg">validator</i>?</span></a></dt>
 <dd><p>This command declares the need for an external tool which can have any
 of the listed <i class="arg">names</i>.
@@ -900,19 +899,19 @@ If no such tool is specified the command prints an error message and
 aborts the execution of the current recipe and its callers.</p></dd>
 </dl>
 </div>
-<div id="section6" class="section"><h2><a name="section6">Recursive invokations</a></h2>
+<div id="section6" class="doctools_section"><h2><a name="section6">Recursive invokations</a></h2>
 <p>The commands of this layer enable recipes to recursively invoke other
 recipes, for the current and in other packages.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><a name="13"><b class="cmd">kettle</b> <b class="method">invoke</b></a></dt>
 <dd></dd>
 </dl>
 </div>
-<div id="section7" class="section"><h2><a name="section7">Option database</a></h2>
+<div id="section7" class="doctools_section"><h2><a name="section7">Option database</a></h2>
 <p>This layer manages the option database, which both holds the
 configuration options, their definitions and values, as also named
 shared global state.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><a name="14"><b class="cmd">kettle option</b> <b class="method">define</b></a></dt>
 <dd></dd>
 <dt><a name="15"><b class="cmd">kettle option</b> <b class="method">onchange</b></a></dt>
@@ -945,9 +944,9 @@ shared global state.</p>
 <dd></dd>
 </dl>
 </div>
-<div id="section8" class="section"><h2><a name="section8">Option Types and Validation</a></h2>
+<div id="section8" class="doctools_section"><h2><a name="section8">Option Types and Validation</a></h2>
 <p>This layer defines the validation types usable by the options.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><a name="29"><b class="cmd">kettle ovalidate</b> <b class="method">enum</b></a></dt>
 <dd></dd>
 <dt><a name="30"><b class="cmd">kettle ovalidate</b> <b class="method">any</b></a></dt>
@@ -966,9 +965,9 @@ shared global state.</p>
 <dd></dd>
 </dl>
 </div>
-<div id="section9" class="section"><h2><a name="section9">Path utilities</a></h2>
+<div id="section9" class="doctools_section"><h2><a name="section9">Path utilities</a></h2>
 <p>This layer contains the commands ...</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><a name="37"><b class="cmd">kettle path</b> <b class="method">bench-file</b> <i class="arg">path</i></a></dt>
 <dd></dd>
 <dt><a name="38"><b class="cmd">kettle path</b> <b class="method">bindir</b> <span class="opt">?<i class="arg">path</i>?</span></a></dt>
@@ -1059,10 +1058,10 @@ shared global state.</p>
 <dd></dd>
 </dl>
 </div>
-<div id="section10" class="section"><h2><a name="section10">Recipe database</a></h2>
+<div id="section10" class="doctools_section"><h2><a name="section10">Recipe database</a></h2>
 <p>This layer contains the commands managing the database of all known
 recipes, ready for execution.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><a name="81"><b class="cmd">kettle recipe</b> <b class="method">define</b></a></dt>
 <dd></dd>
 <dt><a name="82"><b class="cmd">kettle recipe</b> <b class="method">parent</b></a></dt>
@@ -1077,13 +1076,13 @@ recipes, ready for execution.</p>
 <dd></dd>
 </dl>
 </div>
-<div id="section11" class="section"><h2><a name="section11">Status management</a></h2>
+<div id="section11" class="doctools_section"><h2><a name="section11">Status management</a></h2>
 <p>The command of this layer manage the status of the currently executing
 recipe and the database holding the knowledge about all executed
 recipes, keyed by their name, location and relevant configuration.
 This database is shared among instances of kettle during recursive
 invokation.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><a name="87"><b class="cmd">kettle status</b> <b class="method">begin</b></a></dt>
 <dd></dd>
 <dt><a name="88"><b class="cmd">kettle status</b> <b class="method">fail</b></a></dt>
@@ -1100,11 +1099,11 @@ invokation.</p>
 <dd></dd>
 </dl>
 </div>
-<div id="section12" class="section"><h2><a name="section12">IO virtualization</a></h2>
+<div id="section12" class="doctools_section"><h2><a name="section12">IO virtualization</a></h2>
 <p>This section describes the IO virtualization layer used to decouple
 the higher layer's output from the actual destination, terminal or gui
 log window.</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><a name="94"><b class="cmd">kettle io</b> <b class="method">setwidget</b> <i class="arg">w</i></a></dt>
 <dd><p>This command sets the text widget to use for output, redirecting all
 output made through <b class="cmd">kettle io puts</b> and <b class="cmd">kettle io trace</b>
@@ -1162,7 +1161,7 @@ shown string of the animation and that which is kept shown.</p></dd>
 have the activated color. Note that the command does <em>not</em>
 support the nesting of color activations.</p>
 <p>The allowed color tags are:</p>
-<dl class="definitions">
+<dl class="doctools_definitions">
 <dt><b class="const">ok</b></dt>
 <dd></dd>
 <dt><b class="const">warn</b></dt>
@@ -1196,11 +1195,11 @@ activating and deactivating the chosen color at beginning and end, and
 then returned as the result of the command.</p></dd>
 </dl>
 </div>
-<div id="section13" class="section"><h2><a name="section13">General Utilities</a></h2>
+<div id="section13" class="doctools_section"><h2><a name="section13">General Utilities</a></h2>
 <p>This, the lowest layer of the system contains general utility commands
 for string processing, anonymous procedures and error handling.</p>
-<div id="subsection1" class="subsection"><h3><a name="subsection1">Anonymous procedures</a></h3>
-<dl class="definitions">
+<div id="subsection1" class="doctools_subsection"><h3><a name="subsection1">Anonymous procedures</a></h3>
+<dl class="doctools_definitions">
 <dt><a name="106"><b class="cmd">lambda</b> <i class="arg">arguments</i> <i class="arg">body</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></dt>
 <dd></dd>
 <dt><a name="107"><b class="cmd">lambda@</b> <i class="arg">namespace</i> <i class="arg">arguments</i> <i class="arg">body</i> <span class="opt">?<i class="arg">arg</i>...?</span></a></dt>
@@ -1210,7 +1209,7 @@ easier. Apply uses nested lists, the API here flattens that, matching
 the API of <b class="cmd">proc</b>.</p>
 <p>The command arguments are like for <b class="cmd">proc</b>, with three
 exceptions.</p>
-<ol class="enumerated">
+<ol class="doctools_enumerated">
 <li><p>There is no procedure name. Obviously.</p></li>
 <li><p>After the procedure body we can pre-specify some or all
 	of the procedure arguments, i.e. perform currying.</p></li>
@@ -1219,8 +1218,8 @@ exceptions.</p>
 </ol></dd>
 </dl>
 </div>
-<div id="subsection2" class="subsection"><h3><a name="subsection2">Error handling</a></h3>
-<dl class="definitions">
+<div id="subsection2" class="doctools_subsection"><h3><a name="subsection2">Error handling</a></h3>
+<dl class="doctools_definitions">
 <dt><a name="108"><b class="cmd">try</b> <i class="arg">arg</i>...</a></dt>
 <dd><p>This command is an implementation of Tcl 8.6's try/trap/finally
 command in pure Tcl, providing forward-compatibility with 8.6 in this
@@ -1231,8 +1230,8 @@ was written by Donal Fellows, it is the initial implementation of the
 builtin, before it got re-implemented in C and byte-coded.</p></dd>
 </dl>
 </div>
-<div id="subsection3" class="subsection"><h3><a name="subsection3">String processing</a></h3>
-<dl class="definitions">
+<div id="subsection3" class="doctools_subsection"><h3><a name="subsection3">String processing</a></h3>
+<dl class="doctools_definitions">
 <dt><a name="109"><b class="cmd">kettle strutil</b> <b class="method">indent</b> <i class="arg">text</i> <i class="arg">prefix</i></a></dt>
 <dd><p>This command splits the input <i class="arg">text</i> into lines, indents each line
 using the <i class="arg">prefix</i> and then returns the re-joined text.</p>
@@ -1273,10 +1272,10 @@ actually completely eliminated.</p></dd>
 </dl>
 </div>
 </div>
-<div id="section14" class="section"><h2><a name="section14">License</a></h2>
+<div id="section14" class="doctools_section"><h2><a name="section14">License</a></h2>
 <p>This package, written by Andreas Kupries, is BSD licensed.</p>
 </div>
-<div id="section15" class="section"><h2><a name="section15">Bugs, Ideas, Feedback</a></h2>
+<div id="section15" class="doctools_section"><h2><a name="section15">Bugs, Ideas, Feedback</a></h2>
 <p>This document, and the package it describes, will undoubtedly contain
 bugs and other problems.
 Please report such at the
@@ -1284,10 +1283,10 @@ Please report such at the
 Please also report any ideas for enhancements you may have for either
 package and/or documentation.</p>
 </div>
-<div id="keywords" class="section"><h2><a name="keywords">Keywords</a></h2>
+<div id="keywords" class="doctools_section"><h2><a name="keywords">Keywords</a></h2>
 <p><a href="../../index.html#key0">build tea</a></p>
 </div>
-<div id="category" class="section"><h2><a name="category">Category</a></h2>
+<div id="category" class="doctools_section"><h2><a name="category">Category</a></h2>
 <p>Build support</p>
 </div>
 </div></body></html>

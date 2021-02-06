@@ -134,7 +134,7 @@ proc ::kettle::stream::aextend {text} {
     io animation indent $text
     io animation write  ""
     return
-    
+
 }
 
 proc ::kettle::stream::awrite {text} {

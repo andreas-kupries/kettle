@@ -13,7 +13,7 @@ namespace eval ::kb {
     variable uniqid 0
 
     # Global configuration settings for 'bench'.
-    variable  config 
+    variable  config
     array set config {
 	ERRORS		1
 	MATCH		{}
