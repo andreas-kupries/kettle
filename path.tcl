@@ -20,6 +20,25 @@ proc ::kettle::path::norm {path} {
 }
 
 proc ::kettle::path::strip {path prefix} {
+    if {[string match {../*} [relativesrc $path]]} {
+	# Ignore a path symlinked to something outside of the project
+	# directory.
+	#
+	# __ATTENTION__: Note that we are accepting symlinks outside
+	# of the current root, as long as they reference something
+	# still in the project.
+	#
+	# Note how the `io trace` does a strip operation on the
+	# unnormalized paths to get the proper relative path of the
+	# borken link for display.
+	io trace {    Ignored: [file join \
+				    {*}[lrange \
+					    [file split $path] \
+					    [llength [file split $prefix]] \
+					    end]] links to outside the project}
+	return -code continue
+    }
+
     return [file join \
 		{*}[lrange \
 			[file split [norm $path]] \
@@ -184,13 +203,27 @@ proc ::kettle::path::add-top-comment {comment contents} {
 }
 
 proc ::kettle::path::tcl-package-file {file} {
-    set contents   [c/z [cat $file]]
+
+    # Test files may contain fake provide statements for mocks and
+    # such. We must not detect them as installable packages.
+    if {[tcltest-file $file]} {
+	return 0
+    }
+
+    set contents [c/z [cat $file]]
+
+    if {[llength [grep "# @kettle: no packages" $contents]]} {
+	return 0
+    }
+
     set provisions [grep {*package provide *} $contents]
     if {![llength $provisions]} {
 	return 0
     }
 
-    io trace {    Testing: [relativesrc $file]}
+    set rfile [relativesrc $file]
+
+    io trace {    Testing: $rfile}
 
     foreach line $provisions {
 	io trace {        Candidate |$line|}
@@ -217,9 +250,9 @@ proc ::kettle::path::tcl-package-file {file} {
 	    continue
 	}
 
-	io trace {    Accepted: $pn $pv @ [relativesrc $file]}
+	io trace {    Accepted: $pn $pv @ $rfile}
 
-	lappend files [relativesrc $file]
+	lappend files $rfile
 	set here [file dirname $file]
 
 	# Look for referenced dependent files.
@@ -247,7 +280,9 @@ proc ::kettle::path::critcl3-package-file {file} {
 	return 0
     }
 
-    io trace {    Testing: [relativesrc $file]}
+    set rfile [relativesrc $file]
+
+    io trace {    Testing: $rfile}
 
     foreach line $provisions {
 	io trace {        Candidate |$line|}
@@ -277,7 +312,7 @@ proc ::kettle::path::critcl3-package-file {file} {
 	    continue
 	}
 
-	io trace {    Accepted: $pn $pv @ [relativesrc $file]}
+	io trace {    Accepted: $pn $pv @ $rfile}
 
 	# For 'scan'.
 	kettle option set @predicate [list $file $pn $pv]
@@ -558,7 +593,7 @@ proc ::kettle::path::copy-file {src dstdir} {
     # Copy single file into destination _directory_
     # Fails goal on an existing file.
 
-    io puts -nonewline "\tInstalling file \"[file tail $src]\": "
+    io puts -nonewline "\tInstalling file \"$src\": "
 
     dry-barrier
 
