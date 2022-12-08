@@ -279,7 +279,8 @@ package require \fBTcl  8\&.5\fR
 .SH DESCRIPTION
 .PP
 Welcome to Kettle, an application and set of packages providing
-support for the easy building and installation of pure Tcl packages\&.
+support for the easy building and installation of pure Tcl packages,
+and \fICritcl\fR [https://github\&.com/andreas-kupries/critcl] based Tcl packages\&.
 Kettle is a system to make building Tcl packages quick and easy\&. More
 importantly, possibly, to make writing the build system for Tcl
 packages easy\&.
@@ -352,8 +353,7 @@ additionally have:
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems\&.
-Please report such at the
-\fIKettle Tracker\fR [https://chiselapp\&.com/user/andreas_kupries/repository/Kettle/index]\&.
+Please report such at the \fIKettle Tracker\fR [https://core\&.tcl-lang\&.org/akupries/kettle]\&.
 Please also report any ideas for enhancements you may have for either
 package and/or documentation\&.
 .SH KEYWORDS

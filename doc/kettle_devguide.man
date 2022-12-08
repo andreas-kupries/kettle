@@ -69,11 +69,9 @@ This directory contains the documentation converted to regular manpages
 It is called embedded because these files, while derived, are part of the
 fossil repository, i.e. embedded into it. This enables fossil to access
 and display these files when serving the repositories' web interface.
-The "Command Reference" link at
 
-[uri http://chiselapp.com/user/andreas_kupries/repository/Kettle/home]
-
-is, for example, accessing the generated HTML.
+The "Command Reference" link at [vset kettle/core] is, for example,
+accessing the generated HTML.
 
 [list_end]
 

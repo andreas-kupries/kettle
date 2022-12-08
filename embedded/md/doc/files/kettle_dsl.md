@@ -3,9 +3,9 @@
 [//000000002]: # (Generated from file 'kettle\_dsl\.man' by tcllib/doctools with format 'markdown')
 [//000000003]: # (kettle\_dsl\(n\) 1 doc "Kettle \- The Quick Brew System")
 
-<hr> [ <a href="../../../../../../home">Home</a> | <a
-href="../../toc.md">Main Table Of Contents</a> | <a
-href="../toc.md">Table Of Contents</a> | <a
+<hr> [ <a href="../../../../../../home">Home</a> &#124; <a
+href="../../toc.md">Main Table Of Contents</a> &#124; <a
+href="../toc.md">Table Of Contents</a> &#124; <a
 href="../../index.md">Keyword Index</a> ] <hr>
 
 # NAME
@@ -32,22 +32,23 @@ kettle\_dsl \- Kettle \- Build Declarations
 
 # <a name='synopsis'></a>SYNOPSIS
 
-package require Tcl 8\.5
+package require Tcl 8\.5  
 
-[__kettle tcl__](#1)
-[__kettle tclapp__ *path*](#2)
-[__kettle critcl3__](#3)
-[__kettle depends\-on__ *path*\.\.\.](#4)
-[__kettle doc\-destination__ *path*](#5)
-[__kettle doc__ ?*docroot*?](#6)
-[__kettle figures__ ?*figroot*?](#7)
-[__kettle gh\-pages__](#8)
-[__kettle testsuite__ ?*testroot*?](#9)
+[__kettle tcl__](#1)  
+[__kettle tclapp__ *path*](#2)  
+[__kettle critcl3__](#3)  
+[__kettle depends\-on__ *path*\.\.\.](#4)  
+[__kettle doc\-destination__ *path*](#5)  
+[__kettle doc__ ?*docroot*?](#6)  
+[__kettle figures__ ?*figroot*?](#7)  
+[__kettle gh\-pages__](#8)  
+[__kettle testsuite__ ?*testroot*?](#9)  
 
 # <a name='description'></a>DESCRIPTION
 
 Welcome to Kettle, an application and set of packages providing support for the
-easy building and installation of pure Tcl packages\.
+easy building and installation of pure Tcl packages, and
+[Critcl](https://github\.com/andreas\-kupries/critcl) based Tcl packages\.
 
 Please read the document *[Kettle \- Introduction to
 Kettle](kettle\_intro\.md)*, if you have not done so already, to get an
@@ -85,7 +86,7 @@ diagram below\.
     detect such packages, mixing Tcl and C\. In each accepted package file the
     command further looks for and recognizes embedded pragmas of the form
 
-        \# @owns: PATH
+        # @owns: PATH
 
     which provides kettle with information about files belonging to the same
     package without directly providing it\. This can be data files, or other Tcl
@@ -115,14 +116,14 @@ diagram below\.
     generating a recipe tree matching
 
         install
-        \-> install\-packages
-           \-> install\-tcl\-packages
-              \-> install\-app\-$path
+        -> install-packages
+           -> install-tcl-packages
+              -> install-app-$path
 
         uninstall
-        \-> uninstall\-packages
-           \-> uninstall\-tcl\-packages
-              \-> uninstall\-app\-$path
+        -> uninstall-packages
+           -> uninstall-tcl-packages
+              -> uninstall-app-$path
 
     The extended recipes may be created by this process\. As other declarations
     create similar trees these get merged together, enabling a user to install
@@ -185,14 +186,14 @@ diagram below\.
     generating a recipe tree matching
 
         install
-        \-> install\-applications
-           \-> install\-tcl\-applications
-              \-> install\-app\-$path
+        -> install-applications
+           -> install-tcl-applications
+              -> install-app-$path
 
         uninstall
-        \-> uninstall\-applications
-           \-> uninstall\-tcl\-applications
-              \-> uninstall\-app\-$path
+        -> uninstall-applications
+           -> uninstall-tcl-applications
+              -> uninstall-app-$path
 
     The extended recipes may be created by this process\. As other declarations
     create similar trees these get merged together, enabling a user to install
@@ -265,19 +266,19 @@ diagram below\.
     generating a recipe tree matching
 
         install
-        \-> install\-packages
-           \-> install\-binary\-packages
-              \-> install\-app\-$path
+        -> install-packages
+           -> install-binary-packages
+              -> install-app-$path
 
         debug
-        \-> debug\-packages
-           \-> debug\-binary\-packages
-              \-> debug\-app\-$path
+        -> debug-packages
+           -> debug-binary-packages
+              -> debug-app-$path
 
         uninstall
-        \-> uninstall\-packages
-           \-> uninstall\-binary\-packages
-              \-> uninstall\-app\-$path
+        -> uninstall-packages
+           -> uninstall-binary-packages
+              -> uninstall-app-$path
 
     The extended recipes may be created by this process\. As other declarations
     create similar trees these get merged together, enabling a user to install
@@ -458,14 +459,14 @@ diagram below\.
     generating a recipe tree matching
 
         install
-        \-> install\-doc
-           \-> install\-doc\-html
-           \-> install\-doc\-manpages
+        -> install-doc
+           -> install-doc-html
+           -> install-doc-manpages
 
         uninstall
-        \-> uninstall\-doc
-           \-> uninstall\-doc\-html
-           \-> uninstall\-doc\-manpages
+        -> uninstall-doc
+           -> uninstall-doc-html
+           -> uninstall-doc-manpages
 
     The extended recipes may be created by this process\. As other declarations
     create similar trees these get merged together, enabling a user to install
@@ -550,8 +551,8 @@ diagram below\.
 
     This command declares the presence of a *gh\-pages* branch in the
     repository, as is used by, for example,
-    [http://github\.com](http://github\.com), to manage the web\-site for a
-    project in the rpeository of the project\.
+    [https://github\.com](https://github\.com), to manage the web\-site for a
+    project in the repository of the project\.
 
     The command confirms the presence of documentation and that the local
     repository is __git__\-based\. If neither is true nothing done\.
@@ -633,13 +634,12 @@ This package, written by Andreas Kupries, is BSD licensed\.
 
 This document, and the package it describes, will undoubtedly contain bugs and
 other problems\. Please report such at the [Kettle
-Tracker](https://chiselapp\.com/user/andreas\_kupries/repository/Kettle/index)\.
-Please also report any ideas for enhancements you may have for either package
-and/or documentation\.
+Tracker](https://core\.tcl\-lang\.org/akupries/kettle)\. Please also report any
+ideas for enhancements you may have for either package and/or documentation\.
 
 # <a name='keywords'></a>KEYWORDS
 
-[build tea](\.\./\.\./index\.md\#key0)
+[build tea](\.\./\.\./index\.md\#build\_tea)
 
 # <a name='category'></a>CATEGORY
 

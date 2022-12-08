@@ -5,8 +5,8 @@
 [call [cmd {kettle gh-pages}]]
 
 This command declares the presence of a [term gh-pages] branch in the
-repository, as is used by, for example, [uri http://github.com], to
-manage the web-site for a project in the rpeository of the project.
+repository, as is used by, for example, [vset github], to manage the
+web-site for a project in the repository of the project.
 
 [para] The command confirms the presence of documentation and that the
 local repository is [syscmd git]-based. If neither is true nothing

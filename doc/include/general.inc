@@ -4,3 +4,25 @@
 [category  {Build support}]
 [keywords  {build tea}]
 [require Tcl 8.5]
+
+[comment {- - -- --- ----- -------- ------------- ---------------------
+	Central table of links used in the documentation
+}]
+[vset activestate   [uri https://www.activestate.com ActiveState]]
+[vset activetcl     [uri https://www.activestate.com/activetcl ActiveTcl]]
+[vset core/tcl      [uri https://core.tcl-lang.org/tcl]]
+[vset core/tcllib   [uri https://core.tcl-lang.org/tcllib]]
+[vset core/tklib    [uri https://core.tcl-lang.org/tklib]]
+[vset core/tk       [uri https://core.tcl-lang.org/tk]]
+[vset critcl        [uri https://github.com/andreas-kupries/critcl Critcl]]
+[vset fossil        [uri https://www.fossil-scm.org               {Fossil SCM}]]
+[vset fossil/get    [uri https://www.fossil-scm.org/download.html {download page}]]
+[vset github        [uri https://github.com]]
+[vset kettle/chisel [uri https://chiselapp.com/user/andreas_kupries/repository/Kettle]]
+[vset kettle/core   [uri https://core.tcl-lang.org/akupries/kettle]]
+[vset kettle/github [uri https://github.com/andreas-kupries/kettle]]
+[vset kettle/track  [uri https://core.tcl-lang.org/akupries/kettle {Kettle Tracker}]]
+[vset tclx          [uri https://sourceforge.net/projects/tclx]]
+[vset teapot        [uri https://teapot.activestate.com]]
+
+[vset PROJECT kettle]

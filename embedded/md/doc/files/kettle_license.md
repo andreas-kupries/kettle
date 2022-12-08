@@ -3,9 +3,9 @@
 [//000000002]: # (Generated from file 'kettle\_license\.man' by tcllib/doctools with format 'markdown')
 [//000000003]: # (kettle\_license\(n\) 1 doc "Kettle \- The Quick Brew System")
 
-<hr> [ <a href="../../../../../../home">Home</a> | <a
-href="../../toc.md">Main Table Of Contents</a> | <a
-href="../toc.md">Table Of Contents</a> | <a
+<hr> [ <a href="../../../../../../home">Home</a> &#124; <a
+href="../../toc.md">Main Table Of Contents</a> &#124; <a
+href="../toc.md">Table Of Contents</a> &#124; <a
 href="../../index.md">Keyword Index</a> ] <hr>
 
 # NAME
@@ -30,12 +30,13 @@ kettle\_license \- Kettle \- License
 
 # <a name='synopsis'></a>SYNOPSIS
 
-package require Tcl 8\.5
+package require Tcl 8\.5  
 
 # <a name='description'></a>DESCRIPTION
 
 Welcome to Kettle, an application and set of packages providing support for the
-easy building and installation of pure Tcl packages\.
+easy building and installation of pure Tcl packages, and
+[Critcl](https://github\.com/andreas\-kupries/critcl) based Tcl packages\.
 
 Please read the document *[Kettle \- Introduction to
 Kettle](kettle\_intro\.md)*, if you have not done so already, to get an
@@ -84,13 +85,12 @@ this license\.
 
 This document, and the package it describes, will undoubtedly contain bugs and
 other problems\. Please report such at the [Kettle
-Tracker](https://chiselapp\.com/user/andreas\_kupries/repository/Kettle/index)\.
-Please also report any ideas for enhancements you may have for either package
-and/or documentation\.
+Tracker](https://core\.tcl\-lang\.org/akupries/kettle)\. Please also report any
+ideas for enhancements you may have for either package and/or documentation\.
 
 # <a name='keywords'></a>KEYWORDS
 
-[build tea](\.\./\.\./index\.md\#key0)
+[build tea](\.\./\.\./index\.md\#build\_tea)
 
 # <a name='category'></a>CATEGORY
 

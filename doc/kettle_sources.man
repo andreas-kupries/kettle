@@ -21,8 +21,9 @@ respectively.
 
 [section {Source Location}]
 
-The official repository for Kettle can be found at
-[uri http://chiselapp.com/user/andreas_kupries/repository/Kettle]
+The official repository for Kettle can be found at [vset kettle/core],
+with mirrors at [vset kettle/chisel] and [vset kettle/github], in case
+of trouble with the main location.
 
 [section Retrieval]
 
@@ -30,7 +31,8 @@ Assuming that you simply wish to look at the sources, or build a
 specific revision, the easiest way of retrieving it is to:
 
 [list_begin enum]
-[enum] Log into this site, as "anonymous", using the semi-random password in the captcha.
+[enum] Log into this site, as "anonymous", using the semi-random
+       password in the captcha.
 [enum] Go to the "Timeline".
 [enum] Choose the revision you wish to have and
 [enum] follow its link to its detailed information page.
@@ -41,28 +43,25 @@ a copy of this revision in the format of your choice.
 [section {Source Code Management}]
 
 For the curious (or a developer-to-be), the sources are managed by the
-[uri http://www.fossil-scm.org {Fossil SCM}].
-
-Binaries for popular platforms can be found directly at its
-[uri http://www.fossil-scm.org/download.html {download page}].
+[vset fossil]. Binaries for popular platforms can be found directly at
+its [vset fossil/get].
 
 [para]
 
-With that tool available the full history can be retrieved via:
+With that tool available the full history of our project can be
+retrieved via:
 
-[example {
-    fossil clone \
-        http://chiselapp.com/user/andreas_kupries/repository/Kettle \
-        kettle.fossil
-}]
+[example_begin]
+fossil clone [vset kettle/core] [vset PROJECT].fossil
+[example_end]
 
 followed by
 
-[example {
-    mkdir kettle
-    cd kettle
-    fossil open ../kettle.fossil
-}]
+[example_begin]
+mkdir [vset PROJECT]
+cd    [vset PROJECT]
+fossil open ../[vset PROJECT].fossil
+[example_end]
 
 to get a checkout of the head of the trunk.
 

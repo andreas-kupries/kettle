@@ -3,9 +3,9 @@
 [//000000002]: # (Generated from file 'kettle\.man' by tcllib/doctools with format 'markdown')
 [//000000003]: # (kettle\(n\) 1 doc "Kettle \- The Quick Brew System")
 
-<hr> [ <a href="../../../../../../home">Home</a> | <a
-href="../../toc.md">Main Table Of Contents</a> | <a
-href="../toc.md">Table Of Contents</a> | <a
+<hr> [ <a href="../../../../../../home">Home</a> &#124; <a
+href="../../toc.md">Main Table Of Contents</a> &#124; <a
+href="../toc.md">Table Of Contents</a> &#124; <a
 href="../../index.md">Keyword Index</a> ] <hr>
 
 # NAME
@@ -60,126 +60,127 @@ kettle \- Kettle \- Core
 
 # <a name='synopsis'></a>SYNOPSIS
 
-package require Tcl 8\.5
+package require Tcl 8\.5  
 
-[__kettle tcl__](#1)
-[__kettle tclapp__ *path*](#2)
-[__kettle critcl3__](#3)
-[__kettle depends\-on__ *path*\.\.\.](#4)
-[__kettle doc\-destination__ *path*](#5)
-[__kettle doc__ ?*docroot*?](#6)
-[__kettle figures__ ?*figroot*?](#7)
-[__kettle gh\-pages__](#8)
-[__kettle testsuite__ ?*testroot*?](#9)
-[__kettle gui__ __make__](#10)
-[__kettle tool__ __declare__ *names* ?*validator*?](#11)
-[__kettle tool__ __get__ *name*](#12)
-[__kettle__ __invoke__](#13)
-[__kettle option__ __define__](#14)
-[__kettle option__ __onchange__](#15)
-[__kettle option__ __no\-work\-key__](#16)
-[__kettle option__ __exists__](#17)
-[__kettle option__ __names__](#18)
-[__kettle option__ __help__](#19)
-[__kettle option__ __set__](#20)
-[__kettle option__ __set\-default__](#21)
-[__kettle option__ __set\!__](#22)
-[__kettle option__ __unset__](#23)
-[__kettle option__ __get__](#24)
-[__kettle option__ __type__](#25)
-[__kettle option__ __save__](#26)
-[__kettle option__ __load__](#27)
-[__kettle option__ __config__](#28)
-[__kettle ovalidate__ __enum__](#29)
-[__kettle ovalidate__ __any__](#30)
-[__kettle ovalidate__ __string__](#31)
-[__kettle ovalidate__ __boolean__](#32)
-[__kettle ovalidate__ __listsimple__](#33)
-[__kettle ovalidate__ __directory__](#34)
-[__kettle ovalidate__ __readable\.file__](#35)
-[__kettle ovalidate__ __path__](#36)
-[__kettle path__ __bench\-file__ *path*](#37)
-[__kettle path__ __bindir__ ?*path*?](#38)
-[__kettle path__ __cat__ *path* *arg*\.\.\.](#39)
-[__kettle path__ __cathead__ *path* *n* *arg*\.\.\.](#40)
-[__kettle path__ __copy\-file__ *src* *dstdir*](#41)
-[__kettle path__ __copy\-files__ *dstdir* *arg*\.\.\.](#42)
-[__kettle path__ __critcl3\-package\-file__ *file*](#43)
-[__kettle path__ __diagram\-file__ *path*](#44)
-[__kettle path__ __doctools\-file__ *path*](#45)
-[__kettle path__ __dry\-barrier__ ?*dryscript*?](#46)
-[__kettle path__ __exec__ *arg*\.\.\.](#47)
-[__kettle path__ __fixhashbang__ *file* *shell*](#48)
-[__kettle path__ __foreach\-file__ *path* *pv* *script*](#49)
-[__kettle path__ __grep__ *pattern* *data*](#50)
-[__kettle path__ __htmldir__ ?*path*?](#51)
-[__kettle path__ __in__ *path* *script*](#52)
-[__kettle path__ __incdir__ ?*path*?](#53)
-[__kettle path__ __install\-application__ *src* *dstdir*](#54)
-[__kettle path__ __install\-file\-group__ *label* *dstdir* *arg*\.\.\.](#55)
-[__kettle path__ __install\-file\-set__ *label* *dstdir* *arg*\.\.\.](#56)
-[__kettle path__ __install\-script__ *src* *dstdir* *shell*](#57)
-[__kettle path__ __kettle\-build\-file__ *path*](#58)
-[__kettle path__ __libdir__ ?*path*?](#59)
-[__kettle path__ __mandir__ ?*path*?](#60)
-[__kettle path__ __norm__ *path*](#61)
-[__kettle path__ __pipe__ *lv* *script* *arg*\.\.\.](#62)
-[__kettle path__ __relative__ *base* *dst*](#63)
-[__kettle path__ __relativecwd__ *dst*](#64)
-[__kettle path__ __relativesrc__ *dst*](#65)
-[__kettle path__ __remove\-path__ *base* *path*](#66)
-[__kettle path__ __remove\-paths__ *base* *arg*\.\.\.](#67)
-[__kettle path__ __rgrep__ *pattern* *data*](#68)
-[__kettle path__ __scan__ *label* *root* *predicate*](#69)
-[__kettle path__ __script__](#70)
-[__kettle path__ __set\-executable__ *path*](#71)
-[__kettle path__ __sourcedir__ ?*path*?](#72)
-[__kettle path__ __strip__ *path* prefix](#73)
-[__kettle path__ __tcl\-package\-file__ *file*](#74)
-[__kettle path__ __tcltest\-file__ *path*](#75)
-[__kettle path__ __tmpfile__ ?*prefix*?](#76)
-[__kettle path__ __uninstall\-application__ *src* *dstdir*](#77)
-[__kettle path__ __uninstall\-file\-group__ *label* *dstdir*](#78)
-[__kettle path__ __uninstall\-file\-set__ *label* *dstdir* *arg*\.\.\.](#79)
-[__kettle path__ __write__ *path* *contents* *arg*\.\.\.](#80)
-[__kettle recipe__ __define__](#81)
-[__kettle recipe__ __parent__](#82)
-[__kettle recipe__ __exists__](#83)
-[__kettle recipe__ __names__](#84)
-[__kettle recipe__ __help__](#85)
-[__kettle recipe__ __run__](#86)
-[__kettle status__ __begin__](#87)
-[__kettle status__ __fail__](#88)
-[__kettle status__ __ok__](#89)
-[__kettle status__ __is__](#90)
-[__kettle status__ __save__](#91)
-[__kettle status__ __load__](#92)
-[__kettle status__ __clear__](#93)
-[__kettle io__ __setwidget__ *w*](#94)
-[__kettle io__ __for\-gui__ *script*](#95)
-[__kettle io__ __for\-terminal__ *script*](#96)
-[__kettle io__ __puts__ *arg*\.\.\.](#97)
-[__kettle io__ __trace__ *text*](#98)
-[__kettle io__ __trace\-on__](#99)
-[__kettle io__ __animation begin__](#100)
-[__kettle io__ __animation write__ *text*](#101)
-[__kettle io__ __animation indent__ *text*](#102)
-[__kettle io__ __animation last__ *text*](#103)
-[__kettle io__ *tag* *script*](#104)
-[__kettle io__ m*tag* *text*](#105)
-[__lambda__ *arguments* *body* ?*arg*\.\.\.?](#106)
-[__lambda@__ *namespace* *arguments* *body* ?*arg*\.\.\.?](#107)
-[__try__ *arg*\.\.\.](#108)
-[__kettle strutil__ __indent__ *text* *prefix*](#109)
-[__kettle strutil__ __padl__ *list*](#110)
-[__kettle strutil__ __padr__ *list*](#111)
-[__kettle strutil__ __reflow__ *text* ?*prefix*?](#112)
-[__kettle strutil__ __undent__ *text*](#113)
+[__kettle tcl__](#1)  
+[__kettle tclapp__ *path*](#2)  
+[__kettle critcl3__](#3)  
+[__kettle depends\-on__ *path*\.\.\.](#4)  
+[__kettle doc\-destination__ *path*](#5)  
+[__kettle doc__ ?*docroot*?](#6)  
+[__kettle figures__ ?*figroot*?](#7)  
+[__kettle gh\-pages__](#8)  
+[__kettle testsuite__ ?*testroot*?](#9)  
+[__kettle gui__ __make__](#10)  
+[__kettle tool__ __declare__ *names* ?*validator*?](#11)  
+[__kettle tool__ __get__ *name*](#12)  
+[__kettle__ __invoke__](#13)  
+[__kettle option__ __define__](#14)  
+[__kettle option__ __onchange__](#15)  
+[__kettle option__ __no\-work\-key__](#16)  
+[__kettle option__ __exists__](#17)  
+[__kettle option__ __names__](#18)  
+[__kettle option__ __help__](#19)  
+[__kettle option__ __set__](#20)  
+[__kettle option__ __set\-default__](#21)  
+[__kettle option__ __set\!__](#22)  
+[__kettle option__ __unset__](#23)  
+[__kettle option__ __get__](#24)  
+[__kettle option__ __type__](#25)  
+[__kettle option__ __save__](#26)  
+[__kettle option__ __load__](#27)  
+[__kettle option__ __config__](#28)  
+[__kettle ovalidate__ __enum__](#29)  
+[__kettle ovalidate__ __any__](#30)  
+[__kettle ovalidate__ __string__](#31)  
+[__kettle ovalidate__ __boolean__](#32)  
+[__kettle ovalidate__ __listsimple__](#33)  
+[__kettle ovalidate__ __directory__](#34)  
+[__kettle ovalidate__ __readable\.file__](#35)  
+[__kettle ovalidate__ __path__](#36)  
+[__kettle path__ __bench\-file__ *path*](#37)  
+[__kettle path__ __bindir__ ?*path*?](#38)  
+[__kettle path__ __cat__ *path* *arg*\.\.\.](#39)  
+[__kettle path__ __cathead__ *path* *n* *arg*\.\.\.](#40)  
+[__kettle path__ __copy\-file__ *src* *dstdir*](#41)  
+[__kettle path__ __copy\-files__ *dstdir* *arg*\.\.\.](#42)  
+[__kettle path__ __critcl3\-package\-file__ *file*](#43)  
+[__kettle path__ __diagram\-file__ *path*](#44)  
+[__kettle path__ __doctools\-file__ *path*](#45)  
+[__kettle path__ __dry\-barrier__ ?*dryscript*?](#46)  
+[__kettle path__ __exec__ *arg*\.\.\.](#47)  
+[__kettle path__ __fixhashbang__ *file* *shell*](#48)  
+[__kettle path__ __foreach\-file__ *path* *pv* *script*](#49)  
+[__kettle path__ __grep__ *pattern* *data*](#50)  
+[__kettle path__ __htmldir__ ?*path*?](#51)  
+[__kettle path__ __in__ *path* *script*](#52)  
+[__kettle path__ __incdir__ ?*path*?](#53)  
+[__kettle path__ __install\-application__ *src* *dstdir*](#54)  
+[__kettle path__ __install\-file\-group__ *label* *dstdir* *arg*\.\.\.](#55)  
+[__kettle path__ __install\-file\-set__ *label* *dstdir* *arg*\.\.\.](#56)  
+[__kettle path__ __install\-script__ *src* *dstdir* *shell*](#57)  
+[__kettle path__ __kettle\-build\-file__ *path*](#58)  
+[__kettle path__ __libdir__ ?*path*?](#59)  
+[__kettle path__ __mandir__ ?*path*?](#60)  
+[__kettle path__ __norm__ *path*](#61)  
+[__kettle path__ __pipe__ *lv* *script* *arg*\.\.\.](#62)  
+[__kettle path__ __relative__ *base* *dst*](#63)  
+[__kettle path__ __relativecwd__ *dst*](#64)  
+[__kettle path__ __relativesrc__ *dst*](#65)  
+[__kettle path__ __remove\-path__ *base* *path*](#66)  
+[__kettle path__ __remove\-paths__ *base* *arg*\.\.\.](#67)  
+[__kettle path__ __rgrep__ *pattern* *data*](#68)  
+[__kettle path__ __scan__ *label* *root* *predicate*](#69)  
+[__kettle path__ __script__](#70)  
+[__kettle path__ __set\-executable__ *path*](#71)  
+[__kettle path__ __sourcedir__ ?*path*?](#72)  
+[__kettle path__ __strip__ *path* prefix](#73)  
+[__kettle path__ __tcl\-package\-file__ *file*](#74)  
+[__kettle path__ __tcltest\-file__ *path*](#75)  
+[__kettle path__ __tmpfile__ ?*prefix*?](#76)  
+[__kettle path__ __uninstall\-application__ *src* *dstdir*](#77)  
+[__kettle path__ __uninstall\-file\-group__ *label* *dstdir*](#78)  
+[__kettle path__ __uninstall\-file\-set__ *label* *dstdir* *arg*\.\.\.](#79)  
+[__kettle path__ __write__ *path* *contents* *arg*\.\.\.](#80)  
+[__kettle recipe__ __define__](#81)  
+[__kettle recipe__ __parent__](#82)  
+[__kettle recipe__ __exists__](#83)  
+[__kettle recipe__ __names__](#84)  
+[__kettle recipe__ __help__](#85)  
+[__kettle recipe__ __run__](#86)  
+[__kettle status__ __begin__](#87)  
+[__kettle status__ __fail__](#88)  
+[__kettle status__ __ok__](#89)  
+[__kettle status__ __is__](#90)  
+[__kettle status__ __save__](#91)  
+[__kettle status__ __load__](#92)  
+[__kettle status__ __clear__](#93)  
+[__kettle io__ __setwidget__ *w*](#94)  
+[__kettle io__ __for\-gui__ *script*](#95)  
+[__kettle io__ __for\-terminal__ *script*](#96)  
+[__kettle io__ __puts__ *arg*\.\.\.](#97)  
+[__kettle io__ __trace__ *text*](#98)  
+[__kettle io__ __trace\-on__](#99)  
+[__kettle io__ __animation begin__](#100)  
+[__kettle io__ __animation write__ *text*](#101)  
+[__kettle io__ __animation indent__ *text*](#102)  
+[__kettle io__ __animation last__ *text*](#103)  
+[__kettle io__ *tag* *script*](#104)  
+[__kettle io__ m*tag* *text*](#105)  
+[__lambda__ *arguments* *body* ?*arg*\.\.\.?](#106)  
+[__lambda@__ *namespace* *arguments* *body* ?*arg*\.\.\.?](#107)  
+[__try__ *arg*\.\.\.](#108)  
+[__kettle strutil__ __indent__ *text* *prefix*](#109)  
+[__kettle strutil__ __padl__ *list*](#110)  
+[__kettle strutil__ __padr__ *list*](#111)  
+[__kettle strutil__ __reflow__ *text* ?*prefix*?](#112)  
+[__kettle strutil__ __undent__ *text*](#113)  
 
 # <a name='description'></a>DESCRIPTION
 
 Welcome to Kettle, an application and set of packages providing support for the
-easy building and installation of pure Tcl packages\.
+easy building and installation of pure Tcl packages, and
+[Critcl](https://github\.com/andreas\-kupries/critcl) based Tcl packages\.
 
 Please read the document *[Kettle \- Introduction to
 Kettle](kettle\_intro\.md)*, if you have not done so already, to get an
@@ -308,7 +309,7 @@ of a package source directory\.
     detect such packages, mixing Tcl and C\. In each accepted package file the
     command further looks for and recognizes embedded pragmas of the form
 
-        \# @owns: PATH
+        # @owns: PATH
 
     which provides kettle with information about files belonging to the same
     package without directly providing it\. This can be data files, or other Tcl
@@ -338,14 +339,14 @@ of a package source directory\.
     generating a recipe tree matching
 
         install
-        \-> install\-packages
-           \-> install\-tcl\-packages
-              \-> install\-app\-$path
+        -> install-packages
+           -> install-tcl-packages
+              -> install-app-$path
 
         uninstall
-        \-> uninstall\-packages
-           \-> uninstall\-tcl\-packages
-              \-> uninstall\-app\-$path
+        -> uninstall-packages
+           -> uninstall-tcl-packages
+              -> uninstall-app-$path
 
     The extended recipes may be created by this process\. As other declarations
     create similar trees these get merged together, enabling a user to install
@@ -407,14 +408,14 @@ of a package source directory\.
     generating a recipe tree matching
 
         install
-        \-> install\-applications
-           \-> install\-tcl\-applications
-              \-> install\-app\-$path
+        -> install-applications
+           -> install-tcl-applications
+              -> install-app-$path
 
         uninstall
-        \-> uninstall\-applications
-           \-> uninstall\-tcl\-applications
-              \-> uninstall\-app\-$path
+        -> uninstall-applications
+           -> uninstall-tcl-applications
+              -> uninstall-app-$path
 
     The extended recipes may be created by this process\. As other declarations
     create similar trees these get merged together, enabling a user to install
@@ -487,19 +488,19 @@ of a package source directory\.
     generating a recipe tree matching
 
         install
-        \-> install\-packages
-           \-> install\-binary\-packages
-              \-> install\-app\-$path
+        -> install-packages
+           -> install-binary-packages
+              -> install-app-$path
 
         debug
-        \-> debug\-packages
-           \-> debug\-binary\-packages
-              \-> debug\-app\-$path
+        -> debug-packages
+           -> debug-binary-packages
+              -> debug-app-$path
 
         uninstall
-        \-> uninstall\-packages
-           \-> uninstall\-binary\-packages
-              \-> uninstall\-app\-$path
+        -> uninstall-packages
+           -> uninstall-binary-packages
+              -> uninstall-app-$path
 
     The extended recipes may be created by this process\. As other declarations
     create similar trees these get merged together, enabling a user to install
@@ -679,14 +680,14 @@ of a package source directory\.
     generating a recipe tree matching
 
         install
-        \-> install\-doc
-           \-> install\-doc\-html
-           \-> install\-doc\-manpages
+        -> install-doc
+           -> install-doc-html
+           -> install-doc-manpages
 
         uninstall
-        \-> uninstall\-doc
-           \-> uninstall\-doc\-html
-           \-> uninstall\-doc\-manpages
+        -> uninstall-doc
+           -> uninstall-doc-html
+           -> uninstall-doc-manpages
 
     The extended recipes may be created by this process\. As other declarations
     create similar trees these get merged together, enabling a user to install
@@ -771,8 +772,8 @@ of a package source directory\.
 
     This command declares the presence of a *gh\-pages* branch in the
     repository, as is used by, for example,
-    [http://github\.com](http://github\.com), to manage the web\-site for a
-    project in the rpeository of the project\.
+    [https://github\.com](https://github\.com), to manage the web\-site for a
+    project in the repository of the project\.
 
     The command confirms the presence of documentation and that the local
     repository is __git__\-based\. If neither is true nothing done\.
@@ -1299,13 +1300,12 @@ This package, written by Andreas Kupries, is BSD licensed\.
 
 This document, and the package it describes, will undoubtedly contain bugs and
 other problems\. Please report such at the [Kettle
-Tracker](https://chiselapp\.com/user/andreas\_kupries/repository/Kettle/index)\.
-Please also report any ideas for enhancements you may have for either package
-and/or documentation\.
+Tracker](https://core\.tcl\-lang\.org/akupries/kettle)\. Please also report any
+ideas for enhancements you may have for either package and/or documentation\.
 
 # <a name='keywords'></a>KEYWORDS
 
-[build tea](\.\./\.\./index\.md\#key0)
+[build tea](\.\./\.\./index\.md\#build\_tea)
 
 # <a name='category'></a>CATEGORY
 

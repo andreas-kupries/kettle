@@ -279,7 +279,8 @@ package require \fBTcl  8\&.5\fR
 .SH DESCRIPTION
 .PP
 Welcome to Kettle, an application and set of packages providing
-support for the easy building and installation of pure Tcl packages\&.
+support for the easy building and installation of pure Tcl packages,
+and \fICritcl\fR [https://github\&.com/andreas-kupries/critcl] based Tcl packages\&.
 .PP
 Please read the document \fIKettle - Introduction to Kettle\fR,
 if you have not done so already, to get an overview of the whole system\&.
@@ -298,13 +299,15 @@ For builders and developers we additionally provide
 .PP
 respectively\&.
 .SH "SOURCE LOCATION"
-The official repository for Kettle can be found at
-\fIhttp://chiselapp\&.com/user/andreas_kupries/repository/Kettle\fR
+The official repository for Kettle can be found at \fIhttps://core\&.tcl-lang\&.org/akupries/kettle\fR,
+with mirrors at \fIhttps://chiselapp\&.com/user/andreas_kupries/repository/Kettle\fR and \fIhttps://github\&.com/andreas-kupries/kettle\fR, in case
+of trouble with the main location\&.
 .SH RETRIEVAL
 Assuming that you simply wish to look at the sources, or build a
 specific revision, the easiest way of retrieving it is to:
 .IP [1]
-Log into this site, as "anonymous", using the semi-random password in the captcha\&.
+Log into this site, as "anonymous", using the semi-random
+password in the captcha\&.
 .IP [2]
 Go to the "Timeline"\&.
 .IP [3]
@@ -317,32 +320,31 @@ a copy of this revision in the format of your choice\&.
 .PP
 .SH "SOURCE CODE MANAGEMENT"
 For the curious (or a developer-to-be), the sources are managed by the
-\fIFossil SCM\fR [http://www\&.fossil-scm\&.org]\&.
-Binaries for popular platforms can be found directly at its
-\fIdownload page\fR [http://www\&.fossil-scm\&.org/download\&.html]\&.
+\fIFossil SCM\fR [https://www\&.fossil-scm\&.org]\&. Binaries for popular platforms can be found directly at
+its \fIdownload page\fR [https://www\&.fossil-scm\&.org/download\&.html]\&.
 .PP
-With that tool available the full history can be retrieved via:
+With that tool available the full history of our project can be
+retrieved via:
 .CS
 
 
-    fossil clone  http://chiselapp\&.com/user/andreas_kupries/repository/Kettle  kettle\&.fossil
+fossil clone \fIhttps://core\&.tcl-lang\&.org/akupries/kettle\fR kettle\&.fossil
 
 .CE
 followed by
 .CS
 
 
-    mkdir kettle
-    cd kettle
-    fossil open \&.\&./kettle\&.fossil
+mkdir kettle
+cd    kettle
+fossil open \&.\&./kettle\&.fossil
 
 .CE
 to get a checkout of the head of the trunk\&.
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems\&.
-Please report such at the
-\fIKettle Tracker\fR [https://chiselapp\&.com/user/andreas_kupries/repository/Kettle/index]\&.
+Please report such at the \fIKettle Tracker\fR [https://core\&.tcl-lang\&.org/akupries/kettle]\&.
 Please also report any ideas for enhancements you may have for either
 package and/or documentation\&.
 .SH KEYWORDS

@@ -23,8 +23,7 @@ exists only in the CVS repository of Tklib (location at the end of the
 section), and in ActiveState's TEApot.
 
 [para] For myself, I am most comfortable with using
-[uri http://www.activestate.com ActiveState's]
-ActiveTcl distribution and TEApot.
+[vset activestate]'s [vset activetcl] distribution and TEApot.
 
 [para] See the previous section ([sectref Tcl]) for disclosure and
 information on how to get it.
@@ -50,7 +49,8 @@ to get everything and the kitchensink.
 relevant sources can be found at
 
 [list_begin definitions]
-[def Tcllib/Tklib] [uri http://sourceforge.net/projects/tcllib]
+[def Tcllib] [vset core/tcllib]
+[def Tklib]  [vset core/tklib]
 [list_end]
 
 together with the necessary instructions on how to build it.

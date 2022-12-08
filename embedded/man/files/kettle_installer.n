@@ -279,7 +279,8 @@ package require \fBTcl  8\&.5\fR
 .SH DESCRIPTION
 .PP
 Welcome to Kettle, an application and set of packages providing
-support for the easy building and installation of pure Tcl packages\&.
+support for the easy building and installation of pure Tcl packages,
+and \fICritcl\fR [https://github\&.com/andreas-kupries/critcl] based Tcl packages\&.
 .PP
 Please read the document \fIKettle - Introduction to Kettle\fR,
 if you have not done so already, to get an overview of the whole system\&.
@@ -336,17 +337,16 @@ This may be a Tcl installation provided by your operating system
 distribution, from a distribution-independent vendor, or built by
 yourself\&.
 .PP
-Myself, I used (and still use)
-\fIActiveState's\fR [http://www\&.activestate\&.com]
-ActiveTcl 8\&.5 distribution during development, as I am most familiar
-with it\&.
+Myself, I used (and still use) \fIActiveState\fR [https://www\&.activestate\&.com]'s
+\fIActiveTcl\fR [https://www\&.activestate\&.com/activetcl] 8\&.5 distribution during development, as I am most
+familiar with it\&.
 .PP
-\fI(Disclosure: I, Andreas Kupries, work for ActiveState, maintaining ActiveTcl and TclDevKit for them)\&.\fR
+\fI(Disclosure: I, Andreas Kupries, worked for ActiveState
+until 2015, maintaining ActiveTcl and TclDevKit for them)\&.\fR
 .PP
-This distribution can be found at
-\fIhttp://www\&.activestate\&.com/activetcl\fR\&. Retrieve the archive of
-ActiveTcl 8\&.5 for your platform and install it as directed by
-ActiveState\&.
+This distribution can be found at \fIActiveTcl\fR [https://www\&.activestate\&.com/activetcl]\&. Retrieve
+the archive of ActiveTcl 8\&.5 for your platform and install it as
+directed by ActiveState\&.
 .PP
 Assuming that ActiveTcl got installed I usually run the command
 .CS
@@ -371,9 +371,9 @@ required, and install only these using
 .CE
 .PP
 Both \fBteacup\fR commands above assume that ActiveState's
-TEApot repository at \fIhttp://teapot\&.activestate\&.com\fR is in the
-list of repositories accessible to \fBteacup\fR\&. This is automatically
-ensured for the ActiveTcl distribution\&. Others may have to run
+TEApot repository at \fIhttps://teapot\&.activestate\&.com\fR is in the list of repositories
+accessible to \fBteacup\fR\&. This is automatically ensured for the
+ActiveTcl distribution\&. Others may have to run
 .CS
 
 
@@ -386,7 +386,7 @@ For those wishing to build and install Tcl on their own, the
 relevant sources can be found at
 .TP
 Tcl
-\fIhttp://core\&.tcl\&.tk/tcl/\fR
+\fIhttps://core\&.tcl-lang\&.org/tcl\fR
 .PP
 together with the necessary instructions on how to build it\&.
 .PP
@@ -416,8 +416,7 @@ os-independent vendor, building from sources) use whatever you are
 comfortable with\&.
 .PP
 For myself, I am most comfortable with using
-\fIActiveState's\fR [http://www\&.activestate\&.com]
-ActiveTcl distribution and TEApot\&.
+\fIActiveState\fR [https://www\&.activestate\&.com]'s \fIActiveTcl\fR [https://www\&.activestate\&.com/activetcl] distribution and TEApot\&.
 .PP
 See the previous section (\fBTcl\fR) for disclosure and
 information on how to get it\&.
@@ -442,7 +441,7 @@ For those wishing to build and install Tclx on their own, the
 relevant sources can be found at
 .TP
 Tclx
-\fIhttp://sourceforge\&.net/projects/tclx\fR
+\fIhttps://sourceforge\&.net/projects/tclx\fR
 .PP
 together with the necessary instructions on how to build it\&.
 .PP
@@ -465,10 +464,9 @@ This may be a Tk package provided by your operating system
 distribution, from a distribution-independent vendor, or built by
 yourself\&.
 .PP
-Myself, I used (and still use)
-\fIActiveState's\fR [http://www\&.activestate\&.com]
-ActiveTcl 8\&.5 distribution during development, as I am most familiar
-with it\&.
+Myself, I used (and still use) \fIActiveState\fR [https://www\&.activestate\&.com]'s
+\fIActiveTcl\fR [https://www\&.activestate\&.com/activetcl] 8\&.5 distribution during development, as I am most
+familiar with it\&.
 .PP
 See the previous section (\fBTcl\fR) for disclosure and
 information on how to get it\&.
@@ -480,7 +478,7 @@ For or those wishing to build and install Tk on their own, the
 relevant sources can be found at
 .TP
 Tk
-\fIhttp://core\&.tcl\&.tk/tk/\fR
+\fIhttps://core\&.tcl-lang\&.org/tk\fR
 .PP
 together with the necessary instructions on how to build it\&.
 .PP
@@ -510,8 +508,7 @@ exists only in the CVS repository of Tklib (location at the end of the
 section), and in ActiveState's TEApot\&.
 .PP
 For myself, I am most comfortable with using
-\fIActiveState's\fR [http://www\&.activestate\&.com]
-ActiveTcl distribution and TEApot\&.
+\fIActiveState\fR [https://www\&.activestate\&.com]'s \fIActiveTcl\fR [https://www\&.activestate\&.com/activetcl] distribution and TEApot\&.
 .PP
 See the previous section (\fBTcl\fR) for disclosure and
 information on how to get it\&.
@@ -538,8 +535,11 @@ to get everything and the kitchensink\&.
 For those wishing to build and install Tklib on their own, the
 relevant sources can be found at
 .TP
-Tcllib/Tklib
-\fIhttp://sourceforge\&.net/projects/tcllib\fR
+Tcllib
+\fIhttps://core\&.tcl-lang\&.org/tcllib\fR
+.TP
+Tklib
+\fIhttps://core\&.tcl-lang\&.org/tklib\fR
 .PP
 together with the necessary instructions on how to build it\&.
 .PP
@@ -660,8 +660,7 @@ show-configuration
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems\&.
-Please report such at the
-\fIKettle Tracker\fR [https://chiselapp\&.com/user/andreas_kupries/repository/Kettle/index]\&.
+Please report such at the \fIKettle Tracker\fR [https://core\&.tcl-lang\&.org/akupries/kettle]\&.
 Please also report any ideas for enhancements you may have for either
 package and/or documentation\&.
 .SH KEYWORDS

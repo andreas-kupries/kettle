@@ -24,8 +24,7 @@ os-independent vendor, building from sources) use whatever you are
 comfortable with.
 
 [para] For myself, I am most comfortable with using
-[uri http://www.activestate.com ActiveState's]
-ActiveTcl distribution and TEApot.
+[vset activestate]'s [vset activetcl] distribution and TEApot.
 
 [para] See the previous section ([sectref Tcl]) for disclosure and
 information on how to get it.
@@ -48,7 +47,7 @@ to get everything and the kitchensink.
 relevant sources can be found at
 
 [list_begin definitions]
-[def Tclx] [uri http://sourceforge.net/projects/tclx]
+[def Tclx] [vset tclx]
 [list_end]
 
 together with the necessary instructions on how to build it.

@@ -3,9 +3,9 @@
 [//000000002]: # (Generated from file 'kettle\_installer\.man' by tcllib/doctools with format 'markdown')
 [//000000003]: # (kettle\_install\_guide\(n\) 1 doc "Kettle \- The Quick Brew System")
 
-<hr> [ <a href="../../../../../../home">Home</a> | <a
-href="../../toc.md">Main Table Of Contents</a> | <a
-href="../toc.md">Table Of Contents</a> | <a
+<hr> [ <a href="../../../../../../home">Home</a> &#124; <a
+href="../../toc.md">Main Table Of Contents</a> &#124; <a
+href="../toc.md">Table Of Contents</a> &#124; <a
 href="../../index.md">Keyword Index</a> ] <hr>
 
 # NAME
@@ -48,12 +48,13 @@ kettle\_install\_guide \- Kettle \- The Installer's Guide
 
 # <a name='synopsis'></a>SYNOPSIS
 
-package require Tcl 8\.5
+package require Tcl 8\.5  
 
 # <a name='description'></a>DESCRIPTION
 
 Welcome to Kettle, an application and set of packages providing support for the
-easy building and installation of pure Tcl packages\.
+easy building and installation of pure Tcl packages, and
+[Critcl](https://github\.com/andreas\-kupries/critcl) based Tcl packages\.
 
 Please read the document *[Kettle \- Introduction to
 Kettle](kettle\_intro\.md)*, if you have not done so already, to get an
@@ -109,16 +110,16 @@ it provides Tcl 8\.5, or higher\. This may be a Tcl installation provided by you
 operating system distribution, from a distribution\-independent vendor, or built
 by yourself\.
 
-Myself, I used \(and still use\) [ActiveState's](http://www\.activestate\.com)
-ActiveTcl 8\.5 distribution during development, as I am most familiar with it\.
+Myself, I used \(and still use\) [ActiveState](https://www\.activestate\.com)'s
+[ActiveTcl](https://www\.activestate\.com/activetcl) 8\.5 distribution during
+development, as I am most familiar with it\.
 
-*\(Disclosure: I, Andreas Kupries, work for ActiveState, maintaining ActiveTcl
-and TclDevKit for them\)\.*
+*\(Disclosure: I, Andreas Kupries, worked for ActiveState* *until 2015,
+maintaining ActiveTcl and TclDevKit for them\)\.*
 
 This distribution can be found at
-[http://www\.activestate\.com/activetcl](http://www\.activestate\.com/activetcl)\.
-Retrieve the archive of ActiveTcl 8\.5 for your platform and install it as
-directed by ActiveState\.
+[ActiveTcl](https://www\.activestate\.com/activetcl)\. Retrieve the archive of
+ActiveTcl 8\.5 for your platform and install it as directed by ActiveState\.
 
 Assuming that ActiveTcl got installed I usually run the command
 
@@ -135,11 +136,11 @@ these using
     teacup install $packagename
 
 Both __teacup__ commands above assume that ActiveState's TEApot repository
-at [http://teapot\.activestate\.com](http://teapot\.activestate\.com) is in the
-list of repositories accessible to __teacup__\. This is automatically ensured
-for the ActiveTcl distribution\. Others may have to run
+at [https://teapot\.activestate\.com](https://teapot\.activestate\.com) is in
+the list of repositories accessible to __teacup__\. This is automatically
+ensured for the ActiveTcl distribution\. Others may have to run
 
-    teacup archive add http://teapot\.activestate\.com
+    teacup archive add http://teapot.activestate.com
 
 to make this happen\.
 
@@ -148,7 +149,7 @@ can be found at
 
   - Tcl
 
-    [http://core\.tcl\.tk/tcl/](http://core\.tcl\.tk/tcl/)
+    [https://core\.tcl\-lang\.org/tcl](https://core\.tcl\-lang\.org/tcl)
 
 together with the necessary instructions on how to build it\.
 
@@ -177,8 +178,8 @@ Out of the many possibilites for getting Tclx \(OS vendor, os\-independent vendo
 building from sources\) use whatever you are comfortable with\.
 
 For myself, I am most comfortable with using
-[ActiveState's](http://www\.activestate\.com) ActiveTcl distribution and
-TEApot\.
+[ActiveState](https://www\.activestate\.com)'s
+[ActiveTcl](https://www\.activestate\.com/activetcl) distribution and TEApot\.
 
 See the previous section \([Tcl](#subsection1)\) for disclosure and
 information on how to get it\.
@@ -198,7 +199,7 @@ can be found at
 
   - Tclx
 
-    [http://sourceforge\.net/projects/tclx](http://sourceforge\.net/projects/tclx)
+    [https://sourceforge\.net/projects/tclx](https://sourceforge\.net/projects/tclx)
 
 together with the necessary instructions on how to build it\.
 
@@ -218,8 +219,9 @@ with, as long as it provides Tk 8\.5, or higher \(we use the themed widgets, and
 Tcl 8\.5 is our base\)\. This may be a Tk package provided by your operating system
 distribution, from a distribution\-independent vendor, or built by yourself\.
 
-Myself, I used \(and still use\) [ActiveState's](http://www\.activestate\.com)
-ActiveTcl 8\.5 distribution during development, as I am most familiar with it\.
+Myself, I used \(and still use\) [ActiveState](https://www\.activestate\.com)'s
+[ActiveTcl](https://www\.activestate\.com/activetcl) 8\.5 distribution during
+development, as I am most familiar with it\.
 
 See the previous section \([Tcl](#subsection1)\) for disclosure and
 information on how to get it\.
@@ -231,7 +233,7 @@ can be found at
 
   - Tk
 
-    [http://core\.tcl\.tk/tk/](http://core\.tcl\.tk/tk/)
+    [https://core\.tcl\-lang\.org/tk](https://core\.tcl\-lang\.org/tk)
 
 together with the necessary instructions on how to build it\.
 
@@ -258,8 +260,8 @@ package __widget::listsimple__ currently exists only in the CVS repository
 of Tklib \(location at the end of the section\), and in ActiveState's TEApot\.
 
 For myself, I am most comfortable with using
-[ActiveState's](http://www\.activestate\.com) ActiveTcl distribution and
-TEApot\.
+[ActiveState](https://www\.activestate\.com)'s
+[ActiveTcl](https://www\.activestate\.com/activetcl) distribution and TEApot\.
 
 See the previous section \([Tcl](#subsection1)\) for disclosure and
 information on how to get it\.
@@ -279,9 +281,13 @@ to get everything and the kitchensink\.
 For those wishing to build and install Tklib on their own, the relevant sources
 can be found at
 
-  - Tcllib/Tklib
+  - Tcllib
 
-    [http://sourceforge\.net/projects/tcllib](http://sourceforge\.net/projects/tcllib)
+    [https://core\.tcl\-lang\.org/tcllib](https://core\.tcl\-lang\.org/tcllib)
+
+  - Tklib
+
+    [https://core\.tcl\-lang\.org/tklib](https://core\.tcl\-lang\.org/tklib)
 
 together with the necessary instructions on how to build it\.
 
@@ -312,7 +318,7 @@ instead\.
 
 To install Kettle simply run
 
-    /path/to/tclsh8\.5 /path/to/kettle/build\.tcl install
+    /path/to/tclsh8.5 /path/to/kettle/build.tcl install
 
 where "/path/to/tclsh8\.5" is the tclsh of your Tcl installation, and
 "/path/to/kettle" the location of the Kettle sources on your system\.
@@ -328,7 +334,7 @@ line\. This GUI is accessible by invoking "build\.tcl" without any arguments\.
 To get help about the methods of "build\.tcl", and their complete syntax, invoke
 "build\.tcl" with argument __help__, i\.e\., like
 
-    /path/to/tclsh8\.5 /path/to/kettle/build\.tcl help
+    /path/to/tclsh8.5 /path/to/kettle/build.tcl help
 
 ## <a name='subsection7'></a>Build & Installation \(Windows\)
 
@@ -339,7 +345,7 @@ related, including OS X\) see section [Build & Installation
 
 To install Kettle simply run
 
-    /path/to/tclsh8\.5 /path/to/kettle/kettle \-f /path/to/kettle/build\.tcl install
+    /path/to/tclsh8.5 /path/to/kettle/kettle -f /path/to/kettle/build.tcl install
 
 where "/path/to/tclsh8\.5" is the tclsh of your Tcl installation, and
 "/path/to/kettle" the location of the Kettle sources on your system\. Please note
@@ -364,7 +370,7 @@ the command line\.
 To get help about the methods of "build\.tcl", and their complete syntax, invoke
 "build\.tcl" with argument __help__, i\.e\., like
 
-    /path/to/tclsh8\.5 /path/to/kettle/kettle \-f /path/to/kettle/build\.tcl help
+    /path/to/tclsh8.5 /path/to/kettle/kettle -f /path/to/kettle/build.tcl help
 
 ## <a name='subsection8'></a>Build & Installation \(Help\)
 
@@ -388,13 +394,12 @@ Kettle commands for getting various types of help are:
 
 This document, and the package it describes, will undoubtedly contain bugs and
 other problems\. Please report such at the [Kettle
-Tracker](https://chiselapp\.com/user/andreas\_kupries/repository/Kettle/index)\.
-Please also report any ideas for enhancements you may have for either package
-and/or documentation\.
+Tracker](https://core\.tcl\-lang\.org/akupries/kettle)\. Please also report any
+ideas for enhancements you may have for either package and/or documentation\.
 
 # <a name='keywords'></a>KEYWORDS
 
-[build tea](\.\./\.\./index\.md\#key0)
+[build tea](\.\./\.\./index\.md\#build\_tea)
 
 # <a name='category'></a>CATEGORY
 

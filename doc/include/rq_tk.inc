@@ -17,10 +17,9 @@ This may be a Tk package provided by your operating system
 distribution, from a distribution-independent vendor, or built by
 yourself.
 
-[para] Myself, I used (and still use)
-[uri http://www.activestate.com ActiveState's]
-ActiveTcl 8.5 distribution during development, as I am most familiar
-with it.
+[para] Myself, I used (and still use) [vset activestate]'s
+[vset activetcl] 8.5 distribution during development, as I am most
+familiar with it.
 
 [para] See the previous section ([sectref Tcl]) for disclosure and
 information on how to get it.
@@ -32,7 +31,7 @@ well.
 relevant sources can be found at
 
 [list_begin definitions]
-[def Tk] [uri http://core.tcl.tk/tk/]
+[def Tk] [vset core/tk]
 [list_end]
 
 together with the necessary instructions on how to build it.

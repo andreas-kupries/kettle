@@ -3,9 +3,9 @@
 [//000000002]: # (Generated from file 'kettle\_sources\.man' by tcllib/doctools with format 'markdown')
 [//000000003]: # (kettle\_sources\(n\) 1 doc "Kettle \- The Quick Brew System")
 
-<hr> [ <a href="../../../../../../home">Home</a> | <a
-href="../../toc.md">Main Table Of Contents</a> | <a
-href="../toc.md">Table Of Contents</a> | <a
+<hr> [ <a href="../../../../../../home">Home</a> &#124; <a
+href="../../toc.md">Main Table Of Contents</a> &#124; <a
+href="../toc.md">Table Of Contents</a> &#124; <a
 href="../../index.md">Keyword Index</a> ] <hr>
 
 # NAME
@@ -34,12 +34,13 @@ kettle\_sources \- Kettle \- How To Get The Sources
 
 # <a name='synopsis'></a>SYNOPSIS
 
-package require Tcl 8\.5
+package require Tcl 8\.5  
 
 # <a name='description'></a>DESCRIPTION
 
 Welcome to Kettle, an application and set of packages providing support for the
-easy building and installation of pure Tcl packages\.
+easy building and installation of pure Tcl packages, and
+[Critcl](https://github\.com/andreas\-kupries/critcl) based Tcl packages\.
 
 Please read the document *[Kettle \- Introduction to
 Kettle](kettle\_intro\.md)*, if you have not done so already, to get an
@@ -61,7 +62,12 @@ respectively\.
 # <a name='section2'></a>Source Location
 
 The official repository for Kettle can be found at
-[http://chiselapp\.com/user/andreas\_kupries/repository/Kettle](http://chiselapp\.com/user/andreas\_kupries/repository/Kettle)
+[https://core\.tcl\-lang\.org/akupries/kettle](https://core\.tcl\-lang\.org/akupries/kettle),
+with mirrors at
+[https://chiselapp\.com/user/andreas\_kupries/repository/Kettle](https://chiselapp\.com/user/andreas\_kupries/repository/Kettle)
+and
+[https://github\.com/andreas\-kupries/kettle](https://github\.com/andreas\-kupries/kettle),
+in case of trouble with the main location\.
 
 # <a name='section3'></a>Retrieval
 
@@ -83,18 +89,18 @@ revision, the easiest way of retrieving it is to:
 # <a name='section4'></a>Source Code Management
 
 For the curious \(or a developer\-to\-be\), the sources are managed by the [Fossil
-SCM](http://www\.fossil\-scm\.org)\. Binaries for popular platforms can be found
-directly at its [download page](http://www\.fossil\-scm\.org/download\.html)\.
+SCM](https://www\.fossil\-scm\.org)\. Binaries for popular platforms can be found
+directly at its [download page](https://www\.fossil\-scm\.org/download\.html)\.
 
-With that tool available the full history can be retrieved via:
+With that tool available the full history of our project can be retrieved via:
 
-    fossil clone  http://chiselapp\.com/user/andreas\_kupries/repository/Kettle  kettle\.fossil
+> fossil clone [https://core\.tcl\-lang\.org/akupries/kettle](https://core\.tcl\-lang\.org/akupries/kettle) kettle\.fossil
 
 followed by
 
     mkdir kettle
-    cd kettle
-    fossil open \.\./kettle\.fossil
+    cd    kettle
+    fossil open ../kettle.fossil
 
 to get a checkout of the head of the trunk\.
 
@@ -102,13 +108,12 @@ to get a checkout of the head of the trunk\.
 
 This document, and the package it describes, will undoubtedly contain bugs and
 other problems\. Please report such at the [Kettle
-Tracker](https://chiselapp\.com/user/andreas\_kupries/repository/Kettle/index)\.
-Please also report any ideas for enhancements you may have for either package
-and/or documentation\.
+Tracker](https://core\.tcl\-lang\.org/akupries/kettle)\. Please also report any
+ideas for enhancements you may have for either package and/or documentation\.
 
 # <a name='keywords'></a>KEYWORDS
 
-[build tea](\.\./\.\./index\.md\#key0)
+[build tea](\.\./\.\./index\.md\#build\_tea)
 
 # <a name='category'></a>CATEGORY
 
