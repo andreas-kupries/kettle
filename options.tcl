@@ -123,16 +123,20 @@ proc ::kettle::option::set {o value} {
 
     io trace {OPTION SET ($o) = "$value"}
 
-    if {[dict exists $def $o type]} {
-	ovalidate {*}[dict get $def $o type] check $value
-    }
-
     if {[dict exists $config $o]} {
 	::set has 1
 	::set old [dict get $config $o]
     } else {
 	::set has 0
 	::set old {}
+    }
+
+    if {[dict exists $def $o type]} {
+	::set type [dict get $def $o type]
+	if {$type eq "listsimple"} {
+	    ::set value [linsert $old end {*}$value]
+	}
+	ovalidate {*}$type check $value
     }
 
     dict set config $o $value
