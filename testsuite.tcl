@@ -10,7 +10,7 @@ kettle option define --constraints {
 
 kettle option define --file {
     Tcl list of glob patterns for test files to be run exclusively.
-} * listsimple
+} {} listsimple
 
 kettle option define --limitconstraints {
     Contraint handling. When set run only tests with the active
@@ -21,11 +21,11 @@ kettle option define --tmatch {
     Tcl list of glob patterns.
     Run only the tests matching at least one of the patterns.
     Default is the * (match all), disabling the filter.
-} * listsimple
+} {} listsimple
 
 kettle option define --notfile {
     Tcl list of glob patterns for test files to be skipped.
-} {l.*.test} listsimple
+} {} listsimple
 
 kettle option define --single {
     Run each test case completely independent.
@@ -183,19 +183,26 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     # assumption allows us to run it directly, using our own
     # tcl executable as interpreter.
 
-    # Translate kettle test options into tcltest options.
-    # The file matching options are handled by ourselves.
+    # Translate kettle test options into tcltest options.  Note that
+    # the file matching options are handled here, and not by tcltest.
+    # Further note that the --tmatch default is added here also, if
+    # necessary.
     set options {}
     foreach {o v} {
 	constraints      constraints
 	limitconstraints limitconstraints
-	tmatch		 match
 	tskip		 skip
     } {
 	lappend options -$v [option get --$o]
     }
 
-    set testfiles [Skip [option get --notfile] [Match [option get --file] $testfiles]]
+    set t [option get --match]   ; if {$t eq {}} { lappend t *        }
+    set s [option get --notfile] ; if {$s eq {}} { lappend s l.*.test }
+    set m [option get --file]    ; if {$m eq {}} { lappend m *        }
+
+    lappend option -match $t
+
+    set testfiles [Skip $s [Match $m $testfiles]]
 
     stream to log ============================================================
 
@@ -205,6 +212,7 @@ proc ::kettle::Test::Run {srcdir testfiles localprefix} {
     # Generate map of padded test file names to ensure vertical
     # alignment of output across them.
 
+    set short {}
     foreach t $testfiles {
 	lappend short [file tail $t]
     }
@@ -324,6 +332,7 @@ proc ::kettle::Test::Scan {srcdir testfiles localprefix} {
     # Generate map of padded test file names to ensure vertical
     # alignment of output across them.
 
+    set short {}
     foreach t $testfiles {
 	lappend short [file tail $t]
     }
@@ -378,6 +387,7 @@ proc ::kettle::Test::Check {srcdir testfiles localprefix} {
     # Generate map of padded test file names to ensure vertical
     # alignment of output across them.
 
+    set short {}
     foreach t $testfiles {
 	lappend short [file tail $t]
     }

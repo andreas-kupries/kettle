@@ -143,6 +143,7 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
     # Generate map of padded bench file names to ensure vertical
     # alignment of output across them.
 
+    set short {}
     foreach b $benchfiles {
 	lappend short [file tail $b]
     }
