@@ -38,15 +38,21 @@ proc ::kettle::tool::declare {names {validator {}}} {
     }
 
     foreach name $names {
-
-	# TODO : Use our own search command here, switch to the next
-	# name only if the list of paths is exhausted. Right now a
-	# validation failure immediately switches to the next name,
-	# cutton of possible instances of the failing name in
-	# not-yet-searched paths of the list.
+	# TODO : Use our own search command here, switch to the next name only
+	# if the list of paths is exhausted. Right now a validation failure
+	# immediately switches to the next name, cutton of possible instances of
+	# the failing name in not-yet-searched paths of the list.
 
 	set cmd [auto_execok $name]
-	option set-default --with-$primary $cmd
+
+	# NOTE: We unbox the list to get at the actual command path to store as
+	# option default.
+	##
+	# ATTENTION: A multi-element list is only possible for the small list of
+	# Windows shell builtins hardwired into auto_execok. None of them are
+	# used as tools here in kettle.
+
+	option set-default --with-$primary [lindex $cmd 0]
 
 	# Do not try to validate applications which were not found.
 	# Continue search.
