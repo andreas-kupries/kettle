@@ -175,6 +175,8 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
 	}
     }
 
+    stream to raw {$state}
+    
     # Summary results...
     stream to summary  {[FormatTimings $state]}
 
@@ -244,17 +246,29 @@ proc ::kettle::Bench::FormatResults {state} {
 
     # results = dict (key -> list(time))
     # key = list (shell ver benchfile description)
+    #             0     1   2         3
     # [no round information, implied in the list of results]
 
+    set shell n/a
+    set ver   n/a
     # Sort by description, re-package into tuples.
     set tmp {}
     foreach k [lsort -dict -index 3 [dict keys $results]] {
-	set d [lindex $k 3]
-	set t [dict get $results $k]
-	set t [Collate_[option get --collate] $t]
-	lappend tmp [list $d $t]
+	lassign $k shell ver benchfile description
+	set times [dict get $results $k]
+	set times [Collate_[option get --collate] $times]
+	lappend tmp [list $description $times]
     }
 
+    # generate a format suitable for Tcllib sak bench/* commands.
+    stream to sak {# -*- tcl -*- bench/csv}
+    stream to sak {1}
+    stream to sak {1,$ver,$shell}
+    foreach item $tmp {
+	lassign $item d t
+	stream to sak {[incr count],$d,$t}
+    }
+    
     # Transpose into columns. Add the header and footer lines.
     lappend ds Description ===========
     lappend ts Time        ====
