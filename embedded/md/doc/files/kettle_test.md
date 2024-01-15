@@ -30,7 +30,7 @@ kettle\_test \- Kettle \- Testsuite Support
 
 # <a name='synopsis'></a>SYNOPSIS
 
-package require Tcl 8\.5  
+package require Tcl 8\.5 9  
 
 [__::kt__ __source__ *path*](#1)  
 [__::kt__ __source\*__ *pattern*](#2)  

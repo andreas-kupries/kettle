@@ -3,7 +3,7 @@
 [moddesc   {Kettle - The Quick Brew System}]
 [category  {Build support}]
 [keywords  {build tea}]
-[require Tcl 8.5]
+[require Tcl {8.5 9}]
 
 [comment {- - -- --- ----- -------- ------------- ---------------------
 	Central table of links used in the documentation

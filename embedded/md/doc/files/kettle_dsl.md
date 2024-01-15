@@ -32,7 +32,7 @@ kettle\_dsl \- Kettle \- Build Declarations
 
 # <a name='synopsis'></a>SYNOPSIS
 
-package require Tcl 8\.5  
+package require Tcl 8\.5 9  
 
 [__kettle tcl__](#1)  
 [__kettle tclapp__ *path*](#2)  

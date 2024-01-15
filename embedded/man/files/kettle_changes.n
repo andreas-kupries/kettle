@@ -273,7 +273,7 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 kettle_changes \- Kettle Changes
 .SH SYNOPSIS
-package require \fBTcl  8\&.5\fR
+package require \fBTcl 8\&.5 9\fR
 .sp
 .BE
 .SH DESCRIPTION
@@ -335,6 +335,17 @@ Execution of \fBtcltest\fR-based testsuites\&.
 Execution of \fBtclbench\fR-based benchmarks\&.
 .RE
 .PP
+.SS "CHANGES FOR VERSION 1\&.1"
+The first official release of Kettle in just shy of 11 years\&.
+\fINote:\fR Version 1 was tagged 2013-02-07\&.
+.PP
+I am unable to list all the changes in detail\&.
+Lots of (small(ish)) bug fixes, and some features\&.
+.PP
+Notable: export documentation to markdown, valgrind support\&.
+.PP
+I decided to tag and release version 1\&.1 because of the
+changes to make \fIkettle\fR work with Tcl 9\&.
 .SH "BUGS, IDEAS, FEEDBACK"
 This document, and the package it describes, will undoubtedly contain
 bugs and other problems\&.

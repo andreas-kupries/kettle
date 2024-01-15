@@ -24,6 +24,8 @@ kettle\_changes \- Kettle Changes
 
       - [Changes for version 1](#subsection1)
 
+      - [Changes for version 1\.1](#subsection2)
+
   - [Bugs, Ideas, Feedback](#section3)
 
   - [Keywords](#keywords)
@@ -32,7 +34,7 @@ kettle\_changes \- Kettle Changes
 
 # <a name='synopsis'></a>SYNOPSIS
 
-package require Tcl 8\.5  
+package require Tcl 8\.5 9  
 
 # <a name='description'></a>DESCRIPTION
 
@@ -93,6 +95,19 @@ In detail:
        1) Execution of __tcltest__\-based testsuites\.
 
        1) Execution of __tclbench__\-based benchmarks\.
+
+## <a name='subsection2'></a>Changes for version 1\.1
+
+The first official release of Kettle in just shy of 11 years\. *Note:* Version
+1 was tagged 2013\-02\-07\.
+
+I am unable to list all the changes in detail\. Lots of \(small\(ish\)\) bug fixes,
+and some features\.
+
+Notable: export documentation to markdown, valgrind support\.
+
+I decided to tag and release version 1\.1 because of the changes to make
+*[kettle](kettle\.md)* work with Tcl 9\.
 
 # <a name='section3'></a>Bugs, Ideas, Feedback
 

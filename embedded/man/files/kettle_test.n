@@ -273,7 +273,7 @@ Database Class:	\\fB\\$3\\fR
 .SH NAME
 kettle_test \- Kettle - Testsuite Support
 .SH SYNOPSIS
-package require \fBTcl  8\&.5\fR
+package require \fBTcl 8\&.5 9\fR
 .sp
 \fB::kt\fR \fBsource\fR \fIpath\fR
 .sp

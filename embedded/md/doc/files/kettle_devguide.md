@@ -34,7 +34,7 @@ kettle\_devguide \- Kettle \- The Developer's Guide
 
 # <a name='synopsis'></a>SYNOPSIS
 
-package require Tcl 8\.5  
+package require Tcl 8\.5 9  
 
 # <a name='description'></a>DESCRIPTION
 

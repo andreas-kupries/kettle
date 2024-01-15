@@ -38,7 +38,7 @@ kettle\_app \- Kettle \- Application \- Build Interpreter
 
 # <a name='synopsis'></a>SYNOPSIS
 
-package require Tcl 8\.5  
+package require Tcl 8\.5 9  
 
 [__[kettle](kettle\.md)__ ?__\-f__ *buildfile*? ?__\-trace__? \(*goal*&#124;__\-\-option__ *value*\)\.\.\.](#1)  
 
