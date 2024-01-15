@@ -20,6 +20,8 @@ proc ::kettle::path::norm {path} {
 }
 
 proc ::kettle::path::strip {path prefix} {
+    #io trace {STRIP ($path) PREFIX ($prefix) -- [relativesrc $path] -- [string match {../*} [relativesrc $path]]}
+    
     if {[string match {../*} [relativesrc $path]]} {
 	# Ignore a path symlinked to something outside of the project
 	# directory.
@@ -31,11 +33,16 @@ proc ::kettle::path::strip {path prefix} {
 	# Note how the `io trace` does a strip operation on the
 	# unnormalized paths to get the proper relative path of the
 	# borken link for display.
-	io trace {    Ignored: [file join \
-				    {*}[lrange \
-					    [file split $path] \
-					    [llength [file split $prefix]] \
-					    end]] links to outside the project}
+
+	set link [lrange \
+		      [file split $path] \
+		      [llength [file split $prefix]] \
+		      end]
+	if {[llength $link]} {
+	    io trace {    Ignored: [file join {*}$link] links to outside the project}
+	} else {
+	    io trace {    Ignored: $path is outside the project}
+	}
 	return -code continue
     }
 
@@ -445,7 +452,8 @@ proc ::kettle::path::scan {label root predicate} {
     set result {}
     foreach-file $nroot path {
 	set spath [strip $path $nroot]
-
+	#io trace {CHECK $spath}
+	
 	# General checking, outside of the custom predicates.
 	# Skip core files: core, and core.\d+
 
