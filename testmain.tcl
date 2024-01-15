@@ -7,7 +7,7 @@
 ## mode in {scan, run}
 
 # Kettle is designed to accomodate 8.5+
-package require Tcl 8.5
+package require Tcl 8.5 9
 
 # Accomodate use of wish as test shell.
 catch {wm withdraw .}

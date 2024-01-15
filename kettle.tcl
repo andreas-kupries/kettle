@@ -19,7 +19,7 @@
 # Meta description commands in the above DSL.
 # Meta subject {build support} critcl teapot {meta data}
 # Meta subject doctools diagram
-# Meta require {Tcl 8.5-}
+# Meta require {Tcl 8.5 9}
 # Meta category Builder/Developer support
 # Meta location https://core.tcl.tk/akupries/kettle
 # @@ Meta End
@@ -27,7 +27,7 @@
 # # ## ### ##### ######## ############# #####################
 ## Requisites
 
-package require Tcl 8.5
+package require Tcl 8.5 9
 namespace eval ::kettle {}
 
 # # ## ### ##### ######## ############# #####################
@@ -142,7 +142,7 @@ namespace eval ::kettle {
 # # ## ### ##### ######## ############# #####################
 ## Ready
 
-package provide kettle 1
+package provide kettle 1.1
 return
 
 # # ## ### ##### ######## ############# #####################

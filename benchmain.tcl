@@ -5,7 +5,7 @@
 ## argv = benchfile (bench arguments ...)
 
 # Kettle is designed to accomodate 8.5+
-package require Tcl 8.5
+package require Tcl 8.5 9
 
 # Accomodate use of wish as benchmark shell.
 catch {wm withdraw .}
