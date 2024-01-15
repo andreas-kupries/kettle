@@ -140,7 +140,17 @@ diagram below\.
 
         The default value is the \[__info library__\] directory of the
         __tclsh__ used to run the __[kettle](kettle\.md)__
-        application\.
+        application\. In code:
+
+            set libdir [info library]
+
+        An exception is made if the __info library__ result refers to a zip
+        archive instead of disk\. In that case the default value is the "lib"
+        directory which is sibling to the "bin" directory containing the
+        __tclsh__ used to run the __[kettle](kettle\.md)__
+        application\. In code:
+
+            set libdir [file join [file dirname [file dirname [info nameofexecutable]]] lib]
 
         If the option __\-\-exec\-prefix__ is modified the default value
         changes to "__\-\-exec\-prefix__/lib"\.
@@ -299,7 +309,17 @@ diagram below\.
 
         The default value is the \[__info library__\] directory of the
         __tclsh__ used to run the __[kettle](kettle\.md)__
-        application\.
+        application\. In code:
+
+            set libdir [info library]
+
+        An exception is made if the __info library__ result refers to a zip
+        archive instead of disk\. In that case the default value is the "lib"
+        directory which is sibling to the "bin" directory containing the
+        __tclsh__ used to run the __[kettle](kettle\.md)__
+        application\. In code:
+
+            set libdir [file join [file dirname [file dirname [info nameofexecutable]]] lib]
 
         If the option __\-\-exec\-prefix__ is modified the default value
         changes to "__\-\-exec\-prefix__/lib"\.

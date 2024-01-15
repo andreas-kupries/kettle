@@ -411,7 +411,13 @@ option <b class="option">--lib-dir</b> despite technically not being binary file
 <dd><p>This configuration option specifies the path to the directory packages
 (binary and script) will be installed into.</p>
 <p>The default value is the [<b class="cmd">info library</b>] directory
-of the <b class="syscmd">tclsh</b> used to run the <b class="syscmd">kettle</b> application.</p>
+of the <b class="syscmd">tclsh</b> used to run the <b class="syscmd">kettle</b> application. In code:</p>
+<pre class="doctools_example">set libdir [info library]</pre>
+<p>An exception is made if the <b class="cmd">info library</b> result refers to
+a zip archive instead of disk. In that case the default value is the
+&quot;<b class="file">lib</b>&quot; directory which is sibling to the &quot;<b class="file">bin</b>&quot; directory containing
+the <b class="syscmd">tclsh</b> used to run the <b class="syscmd">kettle</b> application. In code:</p>
+<pre class="doctools_example">set libdir [file join [file dirname [file dirname [info nameofexecutable]]] lib]</pre>
 <p>If the option <b class="option">--exec-prefix</b> is modified the default
 value changes to &quot;<b class="file"><b class="variable">--exec-prefix</b>/lib</b>&quot;.</p></dd>
 </dl>
@@ -559,7 +565,13 @@ invoking critcl child processes.</p>
 <dd><p>This configuration option specifies the path to the directory packages
 (binary and script) will be installed into.</p>
 <p>The default value is the [<b class="cmd">info library</b>] directory
-of the <b class="syscmd">tclsh</b> used to run the <b class="syscmd">kettle</b> application.</p>
+of the <b class="syscmd">tclsh</b> used to run the <b class="syscmd">kettle</b> application. In code:</p>
+<pre class="doctools_example">set libdir [info library]</pre>
+<p>An exception is made if the <b class="cmd">info library</b> result refers to
+a zip archive instead of disk. In that case the default value is the
+&quot;<b class="file">lib</b>&quot; directory which is sibling to the &quot;<b class="file">bin</b>&quot; directory containing
+the <b class="syscmd">tclsh</b> used to run the <b class="syscmd">kettle</b> application. In code:</p>
+<pre class="doctools_example">set libdir [file join [file dirname [file dirname [info nameofexecutable]]] lib]</pre>
 <p>If the option <b class="option">--exec-prefix</b> is modified the default
 value changes to &quot;<b class="file"><b class="variable">--exec-prefix</b>/lib</b>&quot;.</p></dd>
 <dt><b class="option">--target</b> string</dt>

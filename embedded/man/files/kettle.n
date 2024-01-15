@@ -747,7 +747,22 @@ This configuration option specifies the path to the directory packages
 (binary and script) will be installed into\&.
 .sp
 The default value is the [\fBinfo library\fR] directory
-of the \fBtclsh\fR used to run the \fBkettle\fR application\&.
+of the \fBtclsh\fR used to run the \fBkettle\fR application\&. In code:
+.sp
+.CS
+
+set libdir [info library]
+.CE
+.sp
+An exception is made if the \fBinfo library\fR result refers to
+a zip archive instead of disk\&. In that case the default value is the
+"\fIlib\fR" directory which is sibling to the "\fIbin\fR" directory containing
+the \fBtclsh\fR used to run the \fBkettle\fR application\&. In code:
+.sp
+.CS
+
+set libdir [file join [file dirname [file dirname [info nameofexecutable]]] lib]
+.CE
 .sp
 If the option \fB--exec-prefix\fR is modified the default
 value changes to "\fI\fB--exec-prefix\fR/lib\fR"\&.
@@ -934,7 +949,22 @@ This configuration option specifies the path to the directory packages
 (binary and script) will be installed into\&.
 .sp
 The default value is the [\fBinfo library\fR] directory
-of the \fBtclsh\fR used to run the \fBkettle\fR application\&.
+of the \fBtclsh\fR used to run the \fBkettle\fR application\&. In code:
+.sp
+.CS
+
+set libdir [info library]
+.CE
+.sp
+An exception is made if the \fBinfo library\fR result refers to
+a zip archive instead of disk\&. In that case the default value is the
+"\fIlib\fR" directory which is sibling to the "\fIbin\fR" directory containing
+the \fBtclsh\fR used to run the \fBkettle\fR application\&. In code:
+.sp
+.CS
+
+set libdir [file join [file dirname [file dirname [info nameofexecutable]]] lib]
+.CE
 .sp
 If the option \fB--exec-prefix\fR is modified the default
 value changes to "\fI\fB--exec-prefix\fR/lib\fR"\&.

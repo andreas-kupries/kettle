@@ -398,10 +398,10 @@ apply {{} {
 	# This is not usable for finding the disk location. Start at the
 	# executable's location instead.
 
-	set-default --prefix [file join [file dirname [file dirname [info nameofexecutable]]] lib]	
+	set-default --prefix [file join [file dirname [file dirname [info nameofexecutable]]] lib]
 	# -> man, html, exec-prefix -> bin, lib
 	set-default --bin-dir [file dirname [path norm [info nameofexecutable]]]
-	set-default --lib-dir [file join [file dirname [file dirname [info nameofexecutable]]] lib]	
+	set-default --lib-dir [file join [file dirname [file dirname [info nameofexecutable]]] lib]
     } else {
 	set-default --prefix [file dirname [file dirname [info library]]]
 	# -> man, html, exec-prefix -> bin, lib
