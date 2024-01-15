@@ -1,4 +1,4 @@
-# -*- tcl -*- Copyright (c) 2013 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2013-2024 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
 ## TEApot meta data parsing/processing.
 

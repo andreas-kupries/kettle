@@ -1,4 +1,4 @@
-# -*- tcl -*- Copyright (c) 2006-2012 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2006-2024 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
 ## Testsuite Utilities. Started in tcllib, snarfed for kettle.
 

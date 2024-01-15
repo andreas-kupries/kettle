@@ -1,4 +1,4 @@
-# -*- tcl -*- Copyright (c) 2012 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2012-2024 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
 ## Handle tklib/diagram figures (documentation)
 
