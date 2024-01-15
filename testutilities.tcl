@@ -41,14 +41,14 @@ proc ::kt::source* {pattern} {
 # # ## ### ##### ######## ############# #####################
 ## Use of packages. Support, and under test.
 
-proc ::kt::check {name version} {
-    if {[package vsatisfies [package provide $name] $version]} {
+proc ::kt::check {name args} {
+    if {[package vsatisfies [package provide $name] {*}$args]} {
 	puts "SYSTEM - $name [package present $name]"
 	return
     }
 
     puts "    Aborting the tests found in \"[file tail [info script]]\""
-    puts "    Requiring at least $name $version, have [package present $name]."
+    puts "    Requiring at least $name ($args), have [package present $name]."
 
     # This causes a 'return' in the calling scope.
     return -code return
