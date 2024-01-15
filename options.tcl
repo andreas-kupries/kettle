@@ -392,10 +392,22 @@ apply {{} {
     onchange --include-dir {} { set! --include-dir [path norm $new] }
 
     # - -- --- ----- -------- -------------
-    set-default --prefix [file dirname [file dirname [info library]]]
-    # -> man, html, exec-prefix -> bin, lib
-    set-default --bin-dir [file dirname [path norm [info nameofexecutable]]]
-    set-default --lib-dir [info library]
+
+    if {[string match *zip* [file system [info library]]]} {
+	# Tcl 9's library is stored in a read-only attached zip file.
+	# This is not usable for finding the disk location. Start at the
+	# executable's location instead.
+
+	set-default --prefix [file join [file dirname [file dirname [info nameofexecutable]]] lib]	
+	# -> man, html, exec-prefix -> bin, lib
+	set-default --bin-dir [file dirname [path norm [info nameofexecutable]]]
+	set-default --lib-dir [file join [file dirname [file dirname [info nameofexecutable]]] lib]	
+    } else {
+	set-default --prefix [file dirname [file dirname [info library]]]
+	# -> man, html, exec-prefix -> bin, lib
+	set-default --bin-dir [file dirname [path norm [info nameofexecutable]]]
+	set-default --lib-dir [info library]
+    }
 
     # - -- --- ----- -------- -------------
     define --ignore-glob {
