@@ -259,8 +259,7 @@ if {[package vsatisfies [package provide Tcl] 8.6]} {
 
 proc ::tcltest::makeBinaryFile {data f} {
     set path [makeFile {} $f]
-    set ch   [open $path w]
-    fconfigure $ch -translation binary
+    set ch   [open $path wb]
     puts -nonewline $ch $data
     close $ch
     return $path

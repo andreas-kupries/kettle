@@ -173,7 +173,7 @@ proc ::kettle::path::rgrep {pattern data} {
 proc ::kettle::path::fixhashbang {file shell} {
     dry-barrier
 
-    set in [open $file r]
+    set in [open $file rb]
     gets $in line
     if {![string match "#!*tclsh*" $line]} {
 	return -code error "No tclsh #! in $file"
@@ -181,11 +181,9 @@ proc ::kettle::path::fixhashbang {file shell} {
 
     io trace {	!fix hash-bang $shell}
 
-    set   out [open ${file}.[pid] w]
+    set   out [open ${file}.[pid] wb]
     io puts $out "#!/usr/bin/env [norm $shell]"
 
-    fconfigure $in  -translation binary -encoding binary
-    fconfigure $out -translation binary -encoding binary
     fcopy $in $out
     close $in
     close $out
