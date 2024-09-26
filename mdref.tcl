@@ -470,6 +470,7 @@ proc ::kettle::mdref::Vnext {v} {
     # mis-interpretation as an octal number.
 
     set vn [split $v .]
+    ##nagelfar ignore
     scan [lindex $vn end] %d last
     return [join [lreplace $vn end end [incr last]] .]
 }

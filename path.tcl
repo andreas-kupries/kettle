@@ -21,7 +21,7 @@ proc ::kettle::path::norm {path} {
 
 proc ::kettle::path::strip {path prefix} {
     #io trace {STRIP ($path) PREFIX ($prefix) -- [relativesrc $path] -- [string match {../*} [relativesrc $path]]}
-    
+
     if {[string match {../*} [relativesrc $path]]} {
 	# Ignore a path symlinked to something outside of the project
 	# directory.
@@ -408,7 +408,7 @@ proc ::kettle::path::foreach-file {path pv script} {
 
 	    # Expand directories.
 	    if {[file isdirectory $c]} {
-		lappend waiting {*}[lsort -unique [glob -directory $c * .*]]
+		lappend waiting {*}[lsort -unique [glob -nocomplain -directory $c * .*]]
 		continue
 	    }
 
@@ -451,7 +451,7 @@ proc ::kettle::path::scan {label root predicate} {
     foreach-file $nroot path {
 	set spath [strip $path $nroot]
 	#io trace {CHECK $spath}
-	
+
 	# General checking, outside of the custom predicates.
 	# Skip core files: core, and core.\d+
 

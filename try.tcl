@@ -42,13 +42,15 @@ namespace eval ::tcl::control {
 		    set code [lindex $args $i]
 		    if {[dict exists $magicCodes $code]} {
 			set code [dict get $magicCodes $code]
+			##nagelfar ignore
 		    } elseif {![string is integer -strict $code]} {
 			set msgPart [join [dict keys $magicCodes] {", "}]
 			error "bad code '[lindex $args $i]': must be\
 			    integer or \"$msgPart\""
 		    }
-		    lappend handlers [lrange $args $i $i] \
-			[format %d $code] {} {*}[lrange $args $i+1 $i+2]
+		    ##nagelfar ignore
+		    set code [format %d $code]
+		    lappend handlers [lrange $args $i $i] $code {} {*}[lrange $args $i+1 $i+2]
 		    incr i 3
 		}
 		"trap" {

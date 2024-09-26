@@ -128,13 +128,13 @@ proc kt::sub {name script args} {
     # Run the file like we are run (same context and arguments, except
     # for mode.
     set mode sub
-    if {$kt::mode eq "scan"} { set mode scan }
+    if {$::kt::mode eq "scan"} { set mode scan }
 
     if {$::valgrind} {
 	lappend cmd [auto_execok valgrind]
     }
-    lappend cmd [info nameofexecutable] $kt::main $kt::localprefix \
-	$path $mode {*}$kt::argv
+    lappend cmd [info nameofexecutable] $::kt::main $::kt::localprefix \
+	$path $mode {*}$::kt::argv
     if {$::valgrind} {
 	lappend cmd --valgrind
     }
