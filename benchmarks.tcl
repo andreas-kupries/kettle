@@ -176,7 +176,7 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
     }
 
     stream to raw {$state}
-    
+
     # Summary results...
     stream to summary  {[FormatTimings $state]}
 
@@ -268,7 +268,7 @@ proc ::kettle::Bench::FormatResults {state} {
 	lassign $item d t
 	stream to sak {[incr count],$d,$t}
     }
-    
+
     # Transpose into columns. Add the header and footer lines.
     lappend ds Description ===========
     lappend ts Time        ====

@@ -22,9 +22,9 @@ kettle\_changes \- Kettle Changes
 
   - [Changes](#section2)
 
-      - [Changes for version 1](#subsection1)
+      - [Changes for version 1\.1](#subsection1)
 
-      - [Changes for version 1\.1](#subsection2)
+      - [Changes for version 1](#subsection2)
 
   - [Bugs, Ideas, Feedback](#section3)
 
@@ -47,11 +47,31 @@ Kettle](kettle\_intro\.md)*, if you have not done so already, to get an
 overview of the whole system\.
 
 This document provides an overview of the changes
-__[kettle](kettle\.md)__ underwent from version to version\.
+__[kettle](kettle\.md)__ underwent from version to version, with the
+latest at the top, the oldest at the bottom\.
 
 # <a name='section2'></a>Changes
 
-## <a name='subsection1'></a>Changes for version 1
+## <a name='subsection1'></a>Changes for version 1\.1
+
+The first official release of Kettle in just shy of 11 years\. *Note:* Version
+1 was tagged 2013\-02\-07\.
+
+Tagged and releases as version 1\.1 because of the changes to make
+*[kettle](kettle\.md)* work with Tcl 9\.
+
+I am unable to list all the changes in detail\. Lots of \(small\(ish\)\) bug fixes,
+and some features\.
+
+Small list of notables:
+
+  1. Support for and work with Tcl 9\.
+
+  1. Export documentation to markdown
+
+  1. Valgrind support\.
+
+## <a name='subsection2'></a>Changes for version 1
 
 This is the first release of kettle, package and application\. The changes
 therefore describe the initial features of the system\.
@@ -95,19 +115,6 @@ In detail:
        1) Execution of __tcltest__\-based testsuites\.
 
        1) Execution of __tclbench__\-based benchmarks\.
-
-## <a name='subsection2'></a>Changes for version 1\.1
-
-The first official release of Kettle in just shy of 11 years\. *Note:* Version
-1 was tagged 2013\-02\-07\.
-
-I am unable to list all the changes in detail\. Lots of \(small\(ish\)\) bug fixes,
-and some features\.
-
-Notable: export documentation to markdown, valgrind support\.
-
-I decided to tag and release version 1\.1 because of the changes to make
-*[kettle](kettle\.md)* work with Tcl 9\.
 
 # <a name='section3'></a>Bugs, Ideas, Feedback
 

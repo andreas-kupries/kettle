@@ -8,7 +8,8 @@
 [para]
 
 This document provides an overview of the changes [package kettle]
-underwent from version to version.
+underwent from version to version, with the latest at the top, the
+oldest at the bottom.
 
 [include include/changes.inc]
 [include include/feedback.inc]
