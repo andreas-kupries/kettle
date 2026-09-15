@@ -9,6 +9,18 @@ kettle option define --target {
     configuration.
 }
 
+kettle option define --benchmarks {
+    Critcl build option. Setting it tells critcl that it should build for benchmarking.
+    This information is passed to the critcl module in question via a userconfig option
+    (`--enable benchmarks`).
+}
+
+kettle option define --testing {
+    Critcl build option. Setting it tells critcl that it should build for testing.
+    This information is passed to the critcl module in question via a userconfig option
+    (`--enable testing`).
+}
+
 kettle option define --test-include {
     Critcl test option. Adds additional include-dirs the build needs.
     Because the test recipe overrides the regular --include-dir to
@@ -163,7 +175,6 @@ proc ::kettle::critcl3 {} {
 ## Helper commands.
 
 proc ::kettle::CritclSetup {root file pn pv} {
-
     set pkgdir [path libdir [string map {:: _} $pn]$pv]
 
     recipe define install-package-$pn "Install package $pn $pv" {pkgdir root file pn pv} {
@@ -171,6 +182,12 @@ proc ::kettle::CritclSetup {root file pn pv} {
 	if {[option exists @dependencies]} {
 	    invoke @dependencies install
 	}
+
+	set t [option get --benchmarks]
+	if {($t ne {}) && $t} { lappend cmd --enable benchmarks }
+
+	set t [option get --testing]
+	if {($t ne {}) && $t} { lappend cmd --enable testing }
 
 	set t [option get --target]
 	if {$t ne {}} { lappend cmd -target $t }
@@ -190,6 +207,12 @@ proc ::kettle::CritclSetup {root file pn pv} {
 	if {[option exists @dependencies]} {
 	    invoke @dependencies debug
 	}
+
+	set t [option get --benchmarks]
+	if {($t ne {}) && $t} { lappend cmd --enable benchmarks }
+
+	set t [option get --testing]
+	if {($t ne {}) && $t} { lappend cmd --enable testing }
 
 	set t [option get --target]
 	if {$t ne {}} { lappend cmd -target $t }
