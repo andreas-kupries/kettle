@@ -176,6 +176,8 @@ proc ::kettle::recipe::Run {name} {
     }
 
     foreach cmd $commands {
+	io trace {RUN ($name) ... CMD ($cmd)}
+
 	if {![option get --machine]} {
 	    io note { io puts -nonewline "\n${name}: " }
 	}

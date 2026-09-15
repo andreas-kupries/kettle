@@ -1,4 +1,4 @@
-# -*- tcl -*- Copyright (c) 2012-2024 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2012-2025 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
 ## Path utility commands.
 
@@ -208,7 +208,6 @@ proc ::kettle::path::add-top-comment {comment contents} {
 }
 
 proc ::kettle::path::tcl-package-file {file} {
-
     # Test files may contain fake provide statements for mocks and
     # such. We must not detect them as installable packages.
     if {[tcltest-file $file]} {
