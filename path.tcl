@@ -170,13 +170,13 @@ proc ::kettle::path::rgrep {pattern data} {
     return [lsearch -all -inline -regexp [split $data \n] $pattern]
 }
 
-proc ::kettle::path::fixhashbang {file shell} {
+proc ::kettle::path::fixhashbang {file shell {pattern tclsh}} {
     dry-barrier
 
     set in [open $file rb]
     gets $in line
-    if {![string match "#!*tclsh*" $line]} {
-	return -code error "No tclsh #! in $file"
+    if {![string match "#!*${pattern}*" $line]} {
+	return -code error "No $pattern #! in $file"
     }
 
     io trace {	!fix hash-bang $shell}
@@ -716,7 +716,7 @@ proc ::kettle::path::install-script {src dstdir shell {cmd {}}} {
 	{*}$cmd $dstdir/$fname
     }
 
-    fixhashbang    $dstdir/$fname $shell
+    fixhashbang    $dstdir/$fname $shell [file tail [file rootname $shell]]
     set-executable $dstdir/$fname
     return
 }

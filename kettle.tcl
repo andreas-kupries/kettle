@@ -63,6 +63,7 @@ namespace eval ::kettle {
 ## @owns: strutil.tcl
 ## @owns: tcl.tcl
 ## @owns: tclapp.tcl
+## @owns: bash-app.tcl
 ## @owns: testsuite.tcl
 ## @owns: tool.tcl
 ## @owns: try.tcl
@@ -87,7 +88,7 @@ namespace eval ::kettle {
 # application running a specific .bench file. It is used to communicate
 # build configuration data into the benchmarking environment.
 ##
-# The second provides lots of utilities to make writing tests easier.
+# The second provides lots of utilities to make writing benchmarks easier.
 ##
 # The third is the actual application, snarfed from Tcllib, implementing
 # the benchmark commands and running files.
@@ -130,6 +131,7 @@ namespace eval ::kettle {
     source $selfdir/figures.tcl    ; # figures       (diagram)
     source $selfdir/testsuite.tcl  ; # testsuite     (tcltest)
     source $selfdir/benchmarks.tcl ; # benchmarks    (tclbench)
+    source $selfdir/bash-app.tcl   ; # bash script applications
     # # ## ### ##### ######## ############# #####################
     source $selfdir/doc.tcl        ; # documentation (doctools, gh-pages)
     # # ## ### ##### ######## ############# #####################
