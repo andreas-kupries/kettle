@@ -129,8 +129,8 @@ proc ::kettle::Test::SetupAnd {args} {
     }
 
     try {
-	if {![invoke self debug   --prefix $tmp] &&
-	    ![invoke self install --prefix $tmp]
+	if {![invoke self debug   --testing 1 --prefix $tmp] &&
+	    ![invoke self install --testing 1 --prefix $tmp]
 	} {
 	    status fail "Unable to generate local test installation"
 	}
