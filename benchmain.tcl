@@ -1,4 +1,4 @@
-# -*- tcl -*- Copyright (c) 2012-2024 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2012-2025 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
 ## Benchmark Application (Entry point into .bench files)
 ##
@@ -79,6 +79,7 @@ array set kb::config $kb::uconfig
 kb::Note Benchmark $kb::benchfile
 kb::Note Start [kb::Now]
 
+set errorCode ""
 if {[catch {
     # Read the main application file. This defines
     # bench commands, processes argv and runs the

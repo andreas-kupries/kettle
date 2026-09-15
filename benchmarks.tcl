@@ -1,6 +1,6 @@
-# -*- tcl -*- Copyright (c) 2012-2024 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2012-2025 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
-## Handle a tclbench-based benchmarks
+## Handle tclbench-based benchmarks
 
 # # ## ### ##### ######## ############# #####################
 ## Repetition setting. Number of repeats (beyond the regular run)
@@ -22,7 +22,7 @@ kettle option no-work-key --repeats
 kettle option define --iters {
     Number of iterations to perform per benchmark.
 } 1000 {range 1 Inf}
-kettle option no-work-key --repeats
+kettle option no-work-key --iters
 
 # # ## ### ##### ######## ############# #####################
 ## Collation setting. How to coalesce the data from several
@@ -38,9 +38,8 @@ kettle option no-work-key --collate
 ## Filter settings to select which benchmarks to run.
 ## Irrelevant to work database keying.
 #
-# Note: If both --match and --rmatch are specified then _both_
-# apply. I.e. a benchmark will be run if and only if it matches both
-# patterns.
+# Note: If both --match and --rmatch are specified then __both__ apply.
+#       I.e. a benchmark will be run if and only if it matches both patterns.
 
 kettle option define --match {
     Run only benchmarks matching the glob pattern.
@@ -66,8 +65,8 @@ proc ::kettle::benchmarks {{benchsrcdir bench}} {
     proc ::kettle::benchmarks args {}
 
     # Heuristic search for benchmarks
-    # Aborts caller when nothing is found.
-   lassign [path scan \
+    # Aborts the caller when nothing is found.
+    lassign [path scan \
 		{tclbench benchmarks} \
 		$benchsrcdir \
 		{path bench-file}] \
@@ -76,17 +75,16 @@ proc ::kettle::benchmarks {{benchsrcdir bench}} {
     # Put the benchmarks into recipes.
 
     recipe define bench {
-	Run the benchmarks
+	Run the benchmarks, try debug, then install, before failing
     } {benchsrcdir benchmarks} {
-	# Note: We build and install the package under profiling (and
-	# its dependencies) into a local directory (in the current
-	# working directory). We try to install a debug variant first,
-	# and if that fails a regular one.
+	# Note 1: We build and install the package under profiling (and its
+	#         dependencies) into a local directory (in the current working
+	#         directory). We try to install a debug variant first, and if
+	#         that fails a regular one.
 	#
-	# Note 2: If the user explicitly specified a location to build
-	# to we use that, and do not clean it up aftre the test. This
-	# makes it easy to investigate a core dump generated during
-	# test.
+	# Note 2: If the user explicitly specified a location to build to we use
+	#         that, and do not clean it up after the test. This makes it
+	#         easy to investigate a core dump generated during benchmarking.
 
 	if {[option userdefined --prefix]} {
 	    set tmp [option get --prefix]
@@ -98,10 +96,10 @@ proc ::kettle::benchmarks {{benchsrcdir bench}} {
 	}
 
 	try {
-	    if {![invoke self debug   --prefix $tmp] &&
-		![invoke self install --prefix $tmp]
+	    if {![invoke self debug   --benchmarks 1 --prefix $tmp] &&
+		![invoke self install --benchmarks 1 --prefix $tmp]
 	    } {
-		status fail "Unable to generate local benchmark installation"
+		status fail "Unable to generate local benchmark (debug) installation"
 	    }
 
 	    Bench::Run $benchsrcdir $benchmarks $tmp
@@ -128,11 +126,10 @@ namespace eval ::kettle::Bench {
 }
 
 proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
-    # We are running each bench file in a separate sub process, to
-    # catch crashes, etc. ... We assume that the bench file is self
-    # contained in terms of loading all its dependencies, like
-    # tclbench itself, utility commands it may need, etc. This
-    # assumption allows us to run it directly, using our own
+    # We are running each bench file in a separate sub process, to catch
+    # crashes, etc. ... We assume that the bench file is self contained in terms
+    # of loading all its dependencies, like tclbench itself, utility commands it
+    # may need, etc. This assumption allows us to run it directly, using our own
     # tcl executable as interpreter.
 
     stream to log ============================================================
@@ -140,15 +137,12 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
     set main [path norm [option get @kettledir]/benchmain.tcl]
     InitState
 
-    # Generate map of padded bench file names to ensure vertical
-    # alignment of output across them.
+    # Generate map of padded bench file names to ensure vertical alignment of
+    # output across them.
 
-    set short {}
-    foreach b $benchfiles {
-	lappend short [file tail $b]
-    }
-
-    foreach b $benchfiles pb [strutil padr $short] {
+    foreach b $benchfiles pb [strutil padr $benchfiles] {
+	set b [path norm $srcdir/$b]
+	io trace {fmap add   ($b) -> ($pb)}
 	dict set state fmap $b $pb
     }
 
@@ -168,7 +162,7 @@ proc ::kettle::Bench::Run {srcdir benchfiles localprefix} {
 		dict set state round $round
 
 		path pipe line {
-		    io trace {BENCH: $line}
+		    io trace {BENCH: [string trimright $line]}
 		    ProcessLine $line
 		} [option get --with-shell] $main $bconfig [path norm $bench]
 	    }
@@ -201,8 +195,8 @@ proc ::kettle::Bench::FormatTimings {state} {
 	lappend tmp [list $shell $suite $nbench $sec $usec]
     }
 
-    # Sort tuples by time per benchmark, and transpose into
-    # columns. Add the header and footer lines.
+    # Sort tuples by time per benchmark, and transpose into columns.
+    # Add the header and footer lines.
 
     lappend sh Shell      =====
     lappend ts Benchsuite ==========
@@ -337,9 +331,9 @@ proc ::kettle::Bench::ProcessLine {line} {
     set line [string trim $line]
     if {[string equal $line ""]} return
 
-    # Recognize various parts written by the sub-shell and act on
-    # them. If a line is recognized and acted upon the remaining
-    # matchers are _not_ executed.
+    # Recognize various parts written by the sub-shell and act on them. If a
+    # line is recognized and acted upon the remaining matchers are __not__
+    # executed.
 
     Host;Platform;Cwd;Shell;Tcl
     Start;End;Benchmark
@@ -355,8 +349,8 @@ proc ::kettle::Bench::ProcessLine {line} {
 
     Misc
 
-    # Unknown lines are simply shown (disturbing the animation, good
-    # for this situation, actually), also saved for review.
+    # Unknown lines are simply shown (disturbing the animation, good for this
+    # situation, actually), also saved for review.
     stream term compact !$line
     stream to unprocessed {$line}
     return
@@ -496,7 +490,8 @@ proc ::kettle::Bench::Benchmark {} {
     #stream term compact "Benchmark $file"
     dict set state file $file
     # map from full path to short, and padded for alignment.
-    set padded [dict get $state fmap [file tail $file]]
+    io trace {fmap query ($file)}
+    set padded [dict get $state fmap $file]
     stream aextend "$padded "
     return -code return
 }
