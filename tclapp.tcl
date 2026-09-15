@@ -1,6 +1,6 @@
-# -*- tcl -*- Copyright (c) 2012-2024 Andreas Kupries
+# -*- tcl -*- Copyright (c) 2012-2026 Andreas Kupries
 # # ## ### ##### ######## ############# #####################
-## Handle tklib/diagram figures (documentation)
+## Handle tcl-based applications
 
 namespace eval ::kettle { namespace export tclapp }
 
@@ -27,7 +27,7 @@ proc ::kettle::tclapp {fname} {
     set name [file tail [file rootname $fname]]
     meta read-internal $src application $name
 
-    io trace {    Accepted: $fname}
+    io trace {	  Accepted: $fname}
 
     recipe define install-app-$fname "Install application $fname" {name src} {
 	path install-script \
@@ -50,15 +50,15 @@ proc ::kettle::tclapp {fname} {
     # Hook the application specific recipes into a hierarchy of more
     # general recipes.
 
-    recipe parent install-app-$fname       install-tcl-applications
+    recipe parent install-app-$fname	   install-tcl-applications
     recipe parent install-tcl-applications install-applications
-    recipe parent install-applications     install
+    recipe parent install-applications	   install
 
-    recipe parent uninstall-app-$fname       uninstall-tcl-applications
+    recipe parent uninstall-app-$fname	     uninstall-tcl-applications
     recipe parent uninstall-tcl-applications uninstall-applications
     recipe parent uninstall-applications     uninstall
 
-    recipe parent reinstall-app-$fname       reinstall-tcl-applications
+    recipe parent reinstall-app-$fname	     reinstall-tcl-applications
     recipe parent reinstall-tcl-applications reinstall-applications
     recipe parent reinstall-applications     reinstall
 
@@ -70,13 +70,13 @@ proc ::kettle::tclapp {fname} {
     if {![meta defined? application $name]} {
 	recipe define meta-generate-application-$fname "Generate empty data for application $fname" {src name} {
 
-	    dict set m platform    tcl
-	    dict set m author      ?
-	    dict set m summary     ?
+	    dict set m platform	   tcl
+	    dict set m author	   ?
+	    dict set m summary	   ?
 	    dict set m description ?
-	    dict set m subject     ?
-	    dict set m category    ?
-	    dict set m require     ?
+	    dict set m subject	   ?
+	    dict set m category	   ?
+	    dict set m require	   ?
 
 	    meta fix-location m
 	    if {![dict exists $m location]} {
@@ -88,11 +88,10 @@ proc ::kettle::tclapp {fname} {
 		[list kettle path add-top-comment $m]
 	} $src $name
 
-	recipe parent meta-generate-application-$fname  meta-generate-tcl-applications
-	recipe parent meta-generate-tcl-applications    meta-generate-applications
-	recipe parent meta-generate-applications        meta-generate
+	recipe parent meta-generate-application-$fname	meta-generate-tcl-applications
+	recipe parent meta-generate-tcl-applications	meta-generate-applications
+	recipe parent meta-generate-applications	meta-generate
     }
-
 
     recipe define content-app-$fname "Show found application $fname" {name} {
 	puts ""
@@ -100,9 +99,7 @@ proc ::kettle::tclapp {fname} {
     } $name
 
     recipe parent content-app-$fname content-app
-    recipe parent content-app        content
-
-
+    recipe parent content-app	     content
     return
 }
 
